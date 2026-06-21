@@ -23,8 +23,9 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const API = "/api/analyze"; // Vercel proxy — avoids CORS
+const API = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-sonnet-4-6";
+const KEY = process.env.REACT_APP_ANTHROPIC_KEY || "";
 const PRESETS = ["Scandinavian Enviro Systems", "Ericsson", "Volvo", "Sinch", "H&M"];
 
 // ── Stripe Payment ────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ async function startStripeCheckout(plan) {
   try {
     const resp = await fetch("/api/stripe", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
       body: JSON.stringify({ action: "create-checkout", plan })
     });
     const data = await resp.json();
@@ -4209,7 +4210,7 @@ function AICoach({ inc, expenses, goals }) {
 
       const resp = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
           model: MODEL,
           max_tokens: 600,
@@ -4960,7 +4961,7 @@ function JuridiskAI() {
 
       const resp = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
           model: MODEL,
           max_tokens: 800,
@@ -5764,7 +5765,7 @@ function CompareView({ onClose, onAnalyze }) {
     setLoad(true);
     try {
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000,
           messages: [{ role: "user", content: `Analysera aktien "${name}" och svara ENDAST med JSON:\n{"company":"${name}","sector":"bransch","score":60,"recommendation":"Avvakta","summary":"kort sammanfattning","keyRisks":["r1","r2"],"keyStrengths":["s1","s2"],"nyckeltal":{"pe":20,"direktavkastning":2.5,"ebitdaMarginal":18,"betavarde":1.0},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109]}` }] })
       });
@@ -6342,7 +6343,7 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery }) {
       try {
         const resp = await fetch(API, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
           body: JSON.stringify({
             model: MODEL, max_tokens: 800,
             messages: [{ role: "user", content: 'Generera 6 realistiska svenska ekonominyheter för idag juni 2026. Svara BARA med JSON-array: [{"titel":"nyhet","sammanfattning":"kort sammanfattning","kategori":"Börsen/Räntor/Fastigheter/Ekonomi","sentiment":"positiv/neutral/negativ","bolag":"eventuellt bolag eller null","tid":"för X timmar sedan"}]' }]
@@ -7368,7 +7369,7 @@ function Kapital() {
 
     try {
       const resp = await fetch(API, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
           model: MODEL, max_tokens: 2000,
           messages: [{ role: "user", content: "Analysera aktien \"" + name + "\" och svara ENDAST med ett JSON-objekt. Inga förklaringar, ingen text utanför JSON.\n\n{\"company\":\"" + name + "\",\"sector\":\"Teknik\",\"summary\":\"Kort sammanfattning av bolagets nulage.\",\"score\":60,\"scoreReason\":\"Motivering till poanget\",\"recommendation\":\"Avvakta\",\"keyRisks\":[\"Risk 1\",\"Risk 2\",\"Risk 3\"],\"keyStrengths\":[\"Styrka 1\",\"Styrka 2\",\"Styrka 3\"],\"catalysts\":[\"Katalysator 1\",\"Katalysator 2\"],\"nyckeltal\":{\"pe\":20,\"ps\":2.5,\"ey\":5.0,\"direktavkastning\":2.5,\"borsvarde\":\"100 mdkr\",\"ebitdaMarginal\":20,\"skuldsattning\":\"Lag\",\"betavarde\":1.0},\"utdelning\":{\"belopp\":\"3 kr\",\"datum\":\"2026-04-01\",\"frekvens\":\"Arsvis\",\"historik\":[2.0,2.5,2.8,3.0]},\"insider\":[{\"namn\":\"VD\",\"typ\":\"Kop\",\"antal\":10000,\"kurs\":100,\"datum\":\"2026-05-01\"}],\"grafData\":[95,98,102,99,105,103,108,106,110,107,112,109],\"news\":[{\"headline\":\"Nyhet om " + name + "\",\"date\":\"2026\",\"source\":\"DI\",\"sentiment\":\"positiv\"},{\"headline\":\"Analytiker kommenterar " + name + "\",\"date\":\"2026\",\"source\":\"Reuters\",\"sentiment\":\"neutral\"}],\"timeHorizon\":\"Medel (6-18 man)\",\"lastUpdated\":\"Juni 2026\"}\n\nAnpassa alla värden efter verkligheten för " + name + ". Score: 0-30=salj, 31-60=avvakta, 61-100=kop." }]
