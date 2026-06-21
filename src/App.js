@@ -7368,6 +7368,7 @@ function Kapital() {
     }, 900);
 
     try {
+      if (!KEY) throw new Error("API-nyckel saknas — lägg till REACT_APP_ANTHROPIC_KEY i miljövariabler");
       const resp = await fetch(API, {
         method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
@@ -7379,14 +7380,10 @@ function Kapital() {
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
         console.error("API error:", resp.status, errData);
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        console.error("API error:", resp.status, errData);
         if (resp.status === 401) throw new Error("API-nyckel saknas eller är ogiltig (401)");
         if (resp.status === 400) throw new Error("Fel i anropet (400) — " + (errData.error?.message || JSON.stringify(errData)));
         if (resp.status === 429) throw new Error("För många anrop — vänta lite och försök igen");
         throw new Error("API-fel: " + resp.status);
-      }
       }
 
       const data = await resp.json();
