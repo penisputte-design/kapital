@@ -1,15 +1,24 @@
 {
   "version": 2,
-  "framework": "create-react-app",
-  "buildCommand": "npm run build",
-  "outputDirectory": "build",
-  "functions": {
-    "api/*.js": {
-      "runtime": "@vercel/node@3.0.0"
+  "builds": [
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
     }
-  },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/static/(.*)", "dest": "/static/$1" },
+    { "src": "/(.*\\.(js|css|ico|png|svg|json))", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
+  "env": {
+    "DISABLE_ESLINT_PLUGIN": "true",
+    "CI": "false"
+  }
 }
