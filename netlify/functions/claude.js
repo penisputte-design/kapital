@@ -15,7 +15,8 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  // Accept both variable names
+  const apiKey = process.env.ANTHROPIC_API_KEY || process.env.REACT_APP_ANTHROPIC_KEY;
   if (!apiKey) {
     return {
       statusCode: 500,
