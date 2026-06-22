@@ -2100,11 +2100,44 @@ function BudgetOversiktInline({ inc, totalExp, leftover, savingsRate, goals }) {
         <div style={{ fontSize: 11, color: "#475569", marginTop: 5 }}>Mål: 20% · {savingsRate >= 20 ? "✓ Du klarar det!" : `${(20 - savingsRate).toFixed(1)}% kvar till målet`}</div>
       </div>
 
-      {/* Tillgångar/Skulder */}
-      <TillgangarSkulder />
+      {/* Tillgångar/Skulder — inline */}
+      <TillgangarSkulderInline />
     </div>
   );
 }
+
+function TillgangarSkulder() {
+  const [tillgangar, setTillgangar] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]"); } catch { return []; }
+  });
+  const [skulder, setSkulder] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kapital_skulder") || "[]"); } catch { return []; }
+  });
+  const totalT = tillgangar.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
+  const totalS = skulder.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
+  const netto = totalT - totalS;
+  return (
+    <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>💎 Tillgångar &amp; Skulder</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>Tillgångar</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#10b981" }}>{(totalT/1000).toFixed(0)}k kr</div>
+        </div>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>Skulder</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>{(totalS/1000).toFixed(0)}k kr</div>
+        </div>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: 10, textAlign: "center" }}>
+          <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>Nettovärde</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: netto >= 0 ? "#10b981" : "#ef4444" }}>{(netto/1000).toFixed(0)}k kr</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TillgangarSkulderInline() { return <TillgangarSkulder />; }
 
 function UtgifterInline({ expenses: initExp, inc }) {
   const [expenses, setExpenses] = useState(initExp || {});
@@ -4724,6 +4757,17 @@ function ForsakringsGuide() {
     </div>
   );
 }
+
+const ABONNEMANG_KATEGORIER = [
+  { id: "streaming", emoji: "📺", label: "Streaming & TV" },
+  { id: "musik", emoji: "🎵", label: "Musik" },
+  { id: "nyheter", emoji: "📰", label: "Nyheter & tidningar" },
+  { id: "molntjanster", emoji: "☁️", label: "Molntjänster" },
+  { id: "programvara", emoji: "💻", label: "Programvara" },
+  { id: "halsa", emoji: "🏋️", label: "Hälsa & träning" },
+  { id: "gaming", emoji: "🎮", label: "Gaming" },
+  { id: "ovrigt", emoji: "📦", label: "Övrigt" },
+];
 
 function Abonnemang() {
   const [abos, setAbos] = useState(() => {
@@ -7429,7 +7473,7 @@ function VoiceButton({ voiceControl }) {
 
 
 // ── Daglig Splash / Välkomstskärm ────────────────────────────────────────
-function DagligSplash({ onClose, news }) {
+function DagligSplash({ onClose, news, onDisable }) {
   const name = (() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } })();
   const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
   const income = parseFloat(localStorage.getItem("kapital_income") || "0");
@@ -7538,7 +7582,7 @@ function DagligSplash({ onClose, news }) {
       <button onClick={onClose} style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 16, color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 20px #10b98144" }}>
         Öppna Kapital →
       </button>
-      <button onClick={() => { onDisable(); onClose(); }}
+      <button onClick={() => { if (onDisable) onDisable(); onClose(); }}
         style={{ width: "100%", padding: "10px", background: "none", border: "none", color: "#334155", fontSize: 12, cursor: "pointer", marginTop: 10 }}>
         Visa inte daglig sammanfattning igen
       </button>
@@ -7627,7 +7671,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
 
       {/* Profil completion card */}
       {profilPct < 100 && (
-        <button onClick={() => setShowProfilBuilder && setShowProfilBuilder(true)}
+        <button onClick={() => { if (typeof setShowProfilBuilder === "function") setShowProfilBuilder(true); }}
           style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "linear-gradient(135deg,#0a1f14,#0f172a)", border: "1px solid #10b98133", borderRadius: 16, padding: "14px 16px", cursor: "pointer", textAlign: "left", marginBottom: 14 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🚀</div>
           <div style={{ flex: 1 }}>
