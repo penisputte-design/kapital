@@ -8591,6 +8591,40 @@ function Kapital() {
   );
 }
 
+function CookieBanner() {
+  const [accepted, setAccepted] = useState(() => {
+    try { return localStorage.getItem("kapital_cookies") === "true"; } catch { return false; }
+  });
+
+  if (accepted) return null;
+
+  return (
+    <div style={{ position: "fixed", bottom: 70, left: 0, right: 0, zIndex: 999, padding: "0 12px" }}>
+      <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 16, padding: "16px 18px", maxWidth: 680, margin: "0 auto", boxShadow: "0 -4px 32px #00000066" }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", marginBottom: 6 }}>🍪 Kapital använder lokal lagring</div>
+        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
+          Vi lagrar din data lokalt i din webbläsare för att appen ska fungera. Vi säljer aldrig din data och skickar den inte till tredje part. Läs vår <span style={{ color: "#10b981" }}>integritetspolicy</span> för mer info.
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => { setAccepted(true); try { localStorage.setItem("kapital_cookies", "true"); } catch {} }}
+            style={{ flex: 2, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            Godkänn
+          </button>
+          <button onClick={() => { setAccepted(true); try { localStorage.setItem("kapital_cookies", "true"); } catch {} }}
+            style={{ flex: 1, padding: "10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
+            Stäng
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function KapitalApp() {
-  return <ErrorBoundary><Kapital /></ErrorBoundary>;
+  return (
+    <ErrorBoundary>
+      <Kapital />
+      <CookieBanner />
+    </ErrorBoundary>
+  );
 }
