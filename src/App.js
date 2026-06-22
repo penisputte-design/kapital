@@ -5533,6 +5533,8 @@ function FormansvardeTraktamente() {
 }
 
 
+// ── Juridisk AI ───────────────────────────────────────────────────────────
+function JuridiskAI() {
   const [kategori, setKategori] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
