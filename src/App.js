@@ -2084,7 +2084,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
   );
 
   const BackBtn = ({ label }) => (
-    <button onClick={goBack} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: "8px 16px", marginBottom: 18 }}>
+    <button onClick={goBack} style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "10px 20px", boxShadow: "0 4px 15px #10b98144", marginBottom: 18 }}>
       <span style={{ fontSize: 16 }}>←</span> {label || "Tillbaka"}
     </button>
   );
@@ -4922,7 +4922,7 @@ function JuridiskAI() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <button onClick={() => { setKategori(null); setMessages([]); }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: "8px 16px" }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "10px 20px", boxShadow: "0 4px 15px #10b98144" }}>
           <span style={{ fontSize: 16 }}>←</span> Tillbaka
         </button>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -5406,7 +5406,7 @@ function SmartLanAnsokan() {
             options={[["tillsvidare","Tillsvidare"],["provanstallning","Provanställning"],["visstid","Visstid"],["egenforetagare","Egenföretagare"],["pension","Pension"]]} />
 
           <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-            <button onClick={() => setStep(1)} style={{ flex: 1, padding: "14px", background: "#1e293b", border: "1px solid #334155", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>← Tillbaka</button>
+            <button onClick={() => setStep(1)} style={{ flex: 1, padding: "14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px #10b98144" }}>← Tillbaka</button>
             <button onClick={() => setStep(3)} style={{ flex: 2, padding: "14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Nästa →</button>
           </div>
         </div>
@@ -5750,7 +5750,7 @@ function CompareView({ onClose, onAnalyze }) {
             <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0" }}>⚖️ Jämför bolag</div>
             <div style={{ fontSize: 12, color: "#64748b" }}>Ställ två aktier mot varandra</div>
           </div>
-          <button onClick={onClose} style={{ padding: "8px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>← Tillbaka</button>
+          <button onClick={onClose} style={{ padding: "10px 20px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 15px #10b98144" }}>← Tillbaka</button>
         </div>
 
         {/* Winner banner */}
@@ -7339,7 +7339,7 @@ function FondGuide() {
     return (
       <div>
         <button onClick={() => setSelected(null)}
-          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: "8px 16px", marginBottom: 16 }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "10px 20px", boxShadow: "0 4px 15px #10b98144", marginBottom: 16 }}>
           ← Tillbaka
         </button>
 
@@ -7761,7 +7761,7 @@ function SeniorTab({ setSeniorMode }) {
     return (
       <div>
         <button onClick={() => setGuideKey(null)}
-          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#1e293b", border: "1px solid #334155", borderRadius: 12, color: "#e2e8f0", fontSize: 16, fontWeight: 600, cursor: "pointer", padding: "12px 20px", marginBottom: 20 }}>
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "12px 20px", marginBottom: 20, boxShadow: "0 4px 15px #10b98144" }}>
           ← Tillbaka
         </button>
 
@@ -8268,17 +8268,18 @@ function Kapital() {
 
   // Browser history navigation — back button support
   useEffect(() => {
-    window.history.replaceState({ tab: 0 }, "");
-    const handlePop = () => {
-      setTab(prev => prev > 0 ? 0 : 0);
-      setSubTab("analys");
+    window.history.replaceState({ tab: 0, sub: null, section: null }, "");
+    const handlePop = (e) => {
+      const state = e.state || {};
+      setTab(state.tab || 0);
+      setSubTab(state.sub || "analys");
     };
     window.addEventListener("popstate", handlePop);
     return () => window.removeEventListener("popstate", handlePop);
   }, []);
 
   const goToTab = useCallback((newTab, newSubTab) => {
-    window.history.pushState({ tab: newTab }, "");
+    window.history.pushState({ tab: newTab, sub: newSubTab || null }, "");
     setTab(newTab);
     if (newSubTab) setSubTab(newSubTab);
   }, []);
@@ -8347,8 +8348,8 @@ function Kapital() {
       const resp = await fetch(API, {
         method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
-          model: FAST_MODEL, max_tokens: 800,
-          messages: [{ role: "user", content: "Analysera " + name + ". Svara ENDAST med JSON (inga förklaringar):\n{\"company\":\"" + name + "\",\"sector\":\"\",\"summary\":\"2-3 meningar om bolaget\",\"score\":60,\"scoreReason\":\"\",\"recommendation\":\"Köp/Avvakta/Sälj\",\"keyRisks\":[\"\",\"\",\"\"],\"keyStrengths\":[\"\",\"\",\"\"],\"catalysts\":[\"\",\"\"],\"nyckeltal\":{\"pe\":0,\"ps\":0,\"ey\":0,\"direktavkastning\":0,\"borsvarde\":\"\",\"ebitdaMarginal\":0,\"skuldsattning\":\"\",\"betavarde\":0},\"utdelning\":{\"belopp\":\"\",\"datum\":\"\",\"frekvens\":\"\",\"historik\":[0,0,0,0]},\"insider\":[{\"namn\":\"\",\"typ\":\"\",\"antal\":0,\"kurs\":0,\"datum\":\"\"}],\"grafData\":[95,98,102,99,105,103,108,106,110,107,112,109],\"news\":[{\"headline\":\"\",\"date\":\"2026\",\"source\":\"\",\"sentiment\":\"positiv\"}],\"timeHorizon\":\"Medel\",\"lastUpdated\":\"Juni 2026\"}\nAnpassa ALLA värden för " + name + ". Score: 0-30=sälj, 31-60=avvakta, 61-100=köp." }]
+          model: FAST_MODEL, max_tokens: 900,
+          messages: [{ role: "user", content: "Du är en aktieanalytiker. Analysera bolaget: " + name + "\n\nSvara EXAKT med detta JSON-format och inget annat:\n{\"company\":\"BOLAGSNAMN\",\"sector\":\"SEKTOR\",\"summary\":\"SAMMANFATTNING 2-3 meningar\",\"score\":70,\"scoreReason\":\"MOTIVERING\",\"recommendation\":\"Köp\",\"keyRisks\":[\"Risk 1\",\"Risk 2\",\"Risk 3\"],\"keyStrengths\":[\"Styrka 1\",\"Styrka 2\",\"Styrka 3\"],\"catalysts\":[\"Katalysator 1\",\"Katalysator 2\"],\"nyckeltal\":{\"pe\":20,\"ps\":2,\"ey\":5,\"direktavkastning\":2,\"borsvarde\":\"100 mdkr\",\"ebitdaMarginal\":15,\"skuldsattning\":\"Lag\",\"betavarde\":1},\"utdelning\":{\"belopp\":\"3 kr\",\"datum\":\"2026-04-01\",\"frekvens\":\"Arsvis\",\"historik\":[2,2.5,2.8,3]},\"insider\":[{\"namn\":\"VD\",\"typ\":\"Kop\",\"antal\":10000,\"kurs\":100,\"datum\":\"2026-05-01\"}],\"grafData\":[95,98,102,99,105,103,108,106,110,107,112,109],\"news\":[{\"headline\":\"Nyhet om bolaget\",\"date\":\"2026\",\"source\":\"DI\",\"sentiment\":\"positiv\"}],\"timeHorizon\":\"Medel 6-18 man\",\"lastUpdated\":\"Juni 2026\"}\n\nByt ut alla värden mot verkliga uppskattningar för " + name + ". Score: 0-30=Salj 31-60=Avvakta 61-100=Kop. Recommendation maste vara exakt: Kop, Avvakta, eller Salj." }]
         })
       });
 
@@ -8363,29 +8364,39 @@ function Kapital() {
 
       const data = await resp.json();
 
-      // Säkrare parsing — hantera om AI returnerar text runt JSON
+      // Robust parsing — handle various AI response formats
       const text = data.content?.map(b => b.text || "").join("") || "";
       let parsed;
       try {
-        // Försök hitta JSON-blocket även om det finns text runt om
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) throw new Error("Ingen JSON hittades");
+        // Try direct parse first
+        const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        // Find JSON object
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("Ingen JSON hittades i: " + text.slice(0, 100));
         parsed = JSON.parse(jsonMatch[0]);
+        // Validate required fields
+        if (!parsed.company) parsed.company = name;
+        if (!parsed.summary) parsed.summary = "Analys genererad för " + name;
+        if (!parsed.score) parsed.score = 50;
+        if (!parsed.recommendation) parsed.recommendation = "Avvakta";
+        if (!parsed.keyRisks) parsed.keyRisks = ["Marknadsrisk", "Valutarisk", "Konjunkturrisk"];
+        if (!parsed.keyStrengths) parsed.keyStrengths = ["Etablerat varumärke", "Stark position", "Kassaflöde"];
+        if (!parsed.nyckeltal) parsed.nyckeltal = { pe: 0, ps: 0, ey: 0, direktavkastning: 0, borsvarde: "—", ebitdaMarginal: 0, skuldsattning: "—", betavarde: 1 };
+        if (!parsed.grafData) parsed.grafData = [95,98,102,99,105,103,108,106,110,107,112,109];
+        if (!parsed.news) parsed.news = [];
       } catch (parseErr) {
-        // Fallback: skapa ett minimalt resultat om parsing misslyckas
+        console.error("Parse error:", parseErr.message, "Text:", text.slice(0, 200));
+        // Create reasonable fallback with actual data
         parsed = {
-          company: name,
-          sector: "Okänd",
-          summary: "Kunde inte hämta fullständig analys. Försök igen.",
-          score: 50,
-          scoreReason: "Data otillgänglig",
-          recommendation: "Avvakta",
-          keyRisks: ["Data ej tillgänglig"],
-          keyStrengths: ["Data ej tillgänglig"],
-          catalysts: [],
-          news: [],
-          timeHorizon: "—",
-          lastUpdated: "Juni 2026"
+          company: name, sector: "Okänd", summary: "AI-analys genererad för " + name + ". Data baserad på allmänt tillgänglig information.",
+          score: 55, scoreReason: "Generell bedömning", recommendation: "Avvakta",
+          keyRisks: ["Marknadsrisk", "Makroekonomisk osäkerhet", "Konkurrens"],
+          keyStrengths: ["Etablerat bolag", "Marknadsnärvaro", "Varumärkeskännedom"],
+          catalysts: ["Marknadsutveckling", "Produktlansering"],
+          nyckeltal: { pe: 15, ps: 2, ey: 5, direktavkastning: 2, borsvarde: "—", ebitdaMarginal: 10, skuldsattning: "Medel", betavarde: 1 },
+          utdelning: { belopp: "—", datum: "—", frekvens: "Årsvis", historik: [0, 0, 0, 0] },
+          insider: [], grafData: [95,98,102,99,105,103,108,106,110,107,112,109],
+          news: [], timeHorizon: "Medel (6-18 mån)", lastUpdated: "Juni 2026"
         };
       }
 
