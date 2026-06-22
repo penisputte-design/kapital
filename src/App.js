@@ -7657,7 +7657,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
     { icon: "💰", label: "Min budget", color: "#3b82f6", action: () => { setTab(2); } },
     { icon: "📊", label: "Fonder", color: "#f59e0b", action: () => { setTab(2); } },
     { icon: "🤖", label: "AI-coach", color: "#8b5cf6", action: () => { setTab(2); } },
-    { icon: "🛡️", label: "Trygghet", color: "#06b6d4", action: () => { setTab(3); setSubTab("forsakring"); } },
+    { icon: "🤝", label: "Erbjudanden", color: "#f59e0b", action: () => { setTab(3); setSubTab("deals_hem"); } },
     { icon: "📊", label: "Min profil", color: "#f97316", action: () => { setTab(3); setSubTab("profil"); } },
   ];
 
@@ -8559,6 +8559,469 @@ function ResaSmart() {
         </div>
       ))}
       <div style={{ fontSize: 10, color: "#334155", textAlign: "center" }}>★ Affiliate: Kapital kan erhålla ersättning via dessa länkar.</div>
+    </div>
+  );
+}
+
+// ── Jämför Lån ────────────────────────────────────────────────────────────
+function JamforLan() {
+  const [typ, setTyp] = useState("bolan");
+  const [belopp, setBelopp] = useState("2000000");
+  const [tid, setTid] = useState("25");
+  const [showResult, setShowResult] = useState(false);
+
+  const LANTYPER = [
+    { id: "bolan", label: "🏠 Bolån", desc: "Köp bostad" },
+    { id: "billan", label: "🚗 Billån", desc: "Köp bil" },
+    { id: "batlan", label: "⛵ Båtlån", desc: "Köp båt" },
+    { id: "blanko", label: "💳 Blankolån", desc: "Privatlån" },
+    { id: "samla", label: "🔄 Samla lån", desc: "Slå ihop skulder" },
+  ];
+
+  const BANKER = {
+    bolan: [
+      { namn: "SBAB", rorlig: 3.55, fast3: 3.89, fast5: 4.10, max: 5000000, logo: "🏦", badge: "Lägst ränta", krav: "Max 85% belåning" },
+      { namn: "Avanza Bank", rorlig: 3.58, fast3: 3.92, fast5: 4.15, max: 5000000, logo: "📈", badge: "Populärast", krav: "Kreditbedömning" },
+      { namn: "Hypoteket", rorlig: 3.60, fast3: 3.95, fast5: 4.18, max: 5000000, logo: "🔑", badge: "Helt digitalt", krav: "Svar inom 24h" },
+      { namn: "Handelsbanken", rorlig: 3.72, fast3: 4.05, fast5: 4.28, max: 10000000, logo: "🏛️", badge: null, krav: "Kräver kund" },
+      { namn: "Nordea", rorlig: 3.75, fast3: 4.08, fast5: 4.30, max: 8000000, logo: "🌍", badge: null, krav: "Kräver kund" },
+      { namn: "SEB", rorlig: 3.78, fast3: 4.12, fast5: 4.35, max: 8000000, logo: "🔵", badge: null, krav: "Kräver kund" },
+      { namn: "Swedbank", rorlig: 3.80, fast3: 4.15, fast5: 4.38, max: 8000000, logo: "🔶", badge: null, krav: "Kräver kund" },
+    ],
+    billan: [
+      { namn: "Santander", rorlig: 4.95, fast3: 5.20, fast5: 5.45, max: 800000, logo: "🔴", badge: "Lägst ränta", krav: "1-7 år löptid" },
+      { namn: "Ikano Bank", rorlig: 5.45, fast3: 5.70, fast5: 5.95, max: 600000, logo: "🟡", badge: null, krav: "Snabbt svar" },
+      { namn: "Nordea Billån", rorlig: 6.10, fast3: 6.35, fast5: 6.60, max: 900000, logo: "🌍", badge: null, krav: "Kräver kund" },
+      { namn: "Volvo Financial", rorlig: 5.99, fast3: 6.20, fast5: null, max: 500000, logo: "🔵", badge: "Volvo-bilar", krav: "Volvo-återförsäljare" },
+    ],
+    batlan: [
+      { namn: "Santander Båtlån", rorlig: 6.95, fast3: 7.20, fast5: 7.50, max: 500000, logo: "⛵", badge: "Specialiserad", krav: "1-10 år löptid" },
+      { namn: "Marginalen Bank", rorlig: 7.45, fast3: 7.80, fast5: null, max: 300000, logo: "🌊", badge: null, krav: "Snabbt svar" },
+      { namn: "Nordea Fritidsbåt", rorlig: 7.10, fast3: 7.40, fast5: 7.70, max: 600000, logo: "🌍", badge: null, krav: "Kräver kund" },
+    ],
+    blanko: [
+      { namn: "Ikano Bank", rorlig: 7.95, fast3: null, fast5: null, max: 350000, logo: "🟡", badge: "Populärast", krav: "Svar direkt" },
+      { namn: "Santander", rorlig: 8.95, fast3: null, fast5: null, max: 350000, logo: "🔴", badge: null, krav: "Svar direkt" },
+      { namn: "Nordax", rorlig: 9.45, fast3: null, fast5: null, max: 500000, logo: "🔷", badge: null, krav: "Ingen säkerhet" },
+      { namn: "Zmarta (jämförelse)", rorlig: null, fast3: null, fast5: null, max: 600000, logo: "⚡", badge: "Jämför 30+ banker", krav: "En ansökan räcker" },
+    ],
+    samla: [
+      { namn: "Zmarta", rorlig: 6.95, fast3: null, fast5: null, max: 600000, logo: "⚡", badge: "Populärast", krav: "Jämför 30+ banker" },
+      { namn: "Lendo", rorlig: 7.45, fast3: null, fast5: null, max: 600000, logo: "🟢", badge: null, krav: "En ansökan räcker" },
+      { namn: "Advisa", rorlig: 7.95, fast3: null, fast5: null, max: 400000, logo: "🔵", badge: null, krav: "Snabbt svar" },
+    ],
+  };
+
+  const banker = BANKER[typ] || [];
+  const beloppNum = parseFloat(belopp) || 0;
+  const tidNum = parseInt(tid) || 25;
+
+  const manadsKostnad = (ranta) => {
+    if (!ranta || beloppNum <= 0) return 0;
+    const mr = ranta / 100 / 12;
+    const n = tidNum * 12;
+    return beloppNum * mr * Math.pow(1 + mr, n) / (Math.pow(1 + mr, n) - 1);
+  };
+
+  const billigast = banker.reduce((min, b) => b.rorlig && b.rorlig < (min?.rorlig || 99) ? b : min, null);
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1020)", borderRadius: 16, border: "1px solid #3b82f633", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#3b82f6", marginBottom: 4 }}>🏠 Jämför Lån</div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Se aktuella räntor från alla banker — välj låntyp och belopp</div>
+      </div>
+
+      {/* Loan type selector */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 14, scrollbarWidth: "none" }}>
+        {LANTYPER.map(t => (
+          <button key={t.id} onClick={() => { setTyp(t.id); setShowResult(false); }}
+            style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "10px 14px", background: typ === t.id ? "linear-gradient(135deg,#3b82f6,#2563eb)" : "#0f172a", border: `1px solid ${typ === t.id ? "transparent" : "#1e293b"}`, borderRadius: 14, cursor: "pointer" }}>
+            <span style={{ fontSize: 20 }}>{t.label.split(" ")[0]}</span>
+            <span style={{ fontSize: 11, fontWeight: typ === t.id ? 700 : 400, color: typ === t.id ? "#fff" : "#64748b", whiteSpace: "nowrap" }}>{t.label.split(" ").slice(1).join(" ")}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Amount and period */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+        <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+          <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Lånebelopp (kr)</div>
+          <input value={belopp} onChange={e => setBelopp(e.target.value)} inputMode="decimal"
+            style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 800, color: "#3b82f6", boxSizing: "border-box" }} />
+        </div>
+        <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+          <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Löptid (år)</div>
+          <select value={tid} onChange={e => setTid(e.target.value)}
+            style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 800, color: "#e2e8f0", cursor: "pointer" }}>
+            {[1,2,3,5,7,10,15,20,25,30].map(y => <option key={y} value={y} style={{ background: "#0f172a" }}>{y} år</option>)}
+          </select>
+        </div>
+      </div>
+
+      {/* Best deal highlight */}
+      {billigast && beloppNum > 0 && (
+        <div style={{ background: "linear-gradient(135deg,#0a1f0a,#0f172a)", borderRadius: 14, border: "1px solid #10b98144", padding: 16, marginBottom: 14 }}>
+          <div style={{ fontSize: 12, color: "#10b981", fontWeight: 700, marginBottom: 6 }}>🏆 Billigast just nu — {billigast.namn}</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            {[
+              ["Ränta", billigast.rorlig + "%", "#10b981"],
+              ["Månadsbet.", Math.round(manadsKostnad(billigast.rorlig)).toLocaleString("sv-SE") + " kr", "#e2e8f0"],
+              ["Totalt", (manadsKostnad(billigast.rorlig) * tidNum * 12 / 1000000).toFixed(1) + " Mkr", "#64748b"],
+            ].map(([l, v, c]) => (
+              <div key={l} style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Bank comparison table */}
+      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Alla banker jämfört</div>
+      {banker.sort((a, b) => (a.rorlig || 99) - (b.rorlig || 99)).map((b, i) => (
+        <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${i === 0 ? "#10b98133" : "#1e293b"}`, padding: 14, marginBottom: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 26 }}>{b.logo}</span>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{b.namn}</span>
+                  {b.badge && <span style={{ fontSize: 10, background: i === 0 ? "#10b98122" : "#f59e0b22", color: i === 0 ? "#10b981" : "#f59e0b", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{b.badge}</span>}
+                </div>
+                <div style={{ fontSize: 11, color: "#475569" }}>{b.krav}</div>
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              {b.rorlig && <div style={{ fontSize: 16, fontWeight: 900, color: i === 0 ? "#10b981" : "#e2e8f0" }}>{b.rorlig}%</div>}
+              <div style={{ fontSize: 10, color: "#475569" }}>rörlig</div>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+            {[
+              ["Rörlig ränta", b.rorlig ? b.rorlig + "%" : "—"],
+              ["Fast 3 år", b.fast3 ? b.fast3 + "%" : "—"],
+              ["Fast 5 år", b.fast5 ? b.fast5 + "%" : "—"],
+            ].map(([l, v]) => (
+              <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
+                <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0" }}>{v}</div>
+              </div>
+            ))}
+          </div>
+
+          {beloppNum > 0 && b.rorlig && (
+            <div style={{ marginTop: 8, padding: "8px 10px", background: "#0a0f1e", borderRadius: 8, display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 12, color: "#64748b" }}>Månadskostnad</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#3b82f6" }}>{Math.round(manadsKostnad(b.rorlig)).toLocaleString("sv-SE")} kr/mån</span>
+            </div>
+          )}
+        </div>
+      ))}
+
+      <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 10 }}>
+        ⚠ Räntor är indikativa och uppdateras löpande. Kontakta banken för bindande erbjudande. Kapital kan erhålla affiliate-ersättning.
+      </div>
+    </div>
+  );
+}
+
+// ── Jämför Försäkring ─────────────────────────────────────────────────────
+function JamforForsakring() {
+  const [typ, setTyp] = useState("hem");
+
+  const TYPER = [
+    { id: "hem", label: "🏠 Hemförsäkring" },
+    { id: "bil", label: "🚗 Bilförsäkring" },
+    { id: "hund", label: "🐕 Hundförsäkring" },
+    { id: "katt", label: "🐈 Kattförsäkring" },
+    { id: "hast", label: "🐴 Hästförsäkring" },
+    { id: "bat", label: "⛵ Båtförsäkring" },
+    { id: "villa", label: "🏡 Villaförsäkring" },
+    { id: "resa", label: "✈️ Reseförsäkring" },
+  ];
+
+  const FORSAKRINGAR = {
+    hem: [
+      { bolag: "Hedvig", pris: "99-149", betyg: 5, color: "#10b981", badge: "Populärast 🔥", tack: "Hemförsäkring + olycksfallsförsäkring ingår", skyddar: ["Brand & vattenskada","Stöld & inbrott","Ansvarsskydd","Rättsskydd","Allrisk (tillval)"], url: "hedvig.com" },
+      { bolag: "If", pris: "120-200", betyg: 5, color: "#3b82f6", badge: "Störst i Norden", tack: "Stor och trygg aktör", skyddar: ["Brand & explosion","Stöld & skadegörelse","Ansvarsskydd","Rättsskydd","Reseskydd"], url: "if.se" },
+      { bolag: "Länsförsäkringar", pris: "130-220", betyg: 4, color: "#f59e0b", badge: null, tack: "Lokal närvaro & personlig service", skyddar: ["Brand & vattenskada","Stöld","Ansvar","Rättsskydd","Glasskada"], url: "lansforsakringar.se" },
+      { bolag: "Folksam", pris: "115-180", betyg: 4, color: "#8b5cf6", badge: null, tack: "Kooperativt — återbäring till kunder", skyddar: ["Brand","Stöld","Ansvar","Rättsskydd"], url: "folksam.se" },
+      { bolag: "Trygg-Hansa", pris: "125-195", betyg: 4, color: "#ef4444", badge: null, tack: "Del av Codan/RSA-gruppen", skyddar: ["Brand","Stöld","Ansvar","Rättsskydd","Allrisk"], url: "trygghansa.se" },
+    ],
+    bil: [
+      { bolag: "If Bilförsäkring", pris: "199-499", betyg: 5, color: "#3b82f6", badge: "Bäst i test 🏆", tack: "Toppbetyg i oberoende tester", skyddar: ["Vagnskada","Stöld","Brand","Ansvarsskydd","Rättsskydd","Nödbogsering"], url: "if.se" },
+      { bolag: "Hedvig", pris: "249-449", betyg: 5, color: "#10b981", badge: "Populär", tack: "Digital och enkel skadeanmälan", skyddar: ["Vagnskada","Stöld","Brand","Ansvar","Glasskada"], url: "hedvig.com" },
+      { bolag: "Folksam Bil", pris: "179-420", betyg: 4, color: "#8b5cf6", badge: "Billigast", tack: "Konkurrenskraftigt pris", skyddar: ["Trafik (lag)","Halv-","Helförsäkring"], url: "folksam.se" },
+      { bolag: "Länsförsäkringar", pris: "190-460", betyg: 4, color: "#f59e0b", badge: null, tack: "Lokal service vid skada", skyddar: ["Vagnskada","Stöld","Ansvar","Rättsskydd"], url: "lansforsakringar.se" },
+      { bolag: "Trygg-Hansa", pris: "210-480", betyg: 4, color: "#ef4444", badge: null, tack: "Stark global aktör", skyddar: ["Vagnskada","Brand","Stöld","Ansvar"], url: "trygghansa.se" },
+    ],
+    hund: [
+      { bolag: "Agria", pris: "149-399", betyg: 5, color: "#e879f9", badge: "Störst & bäst 🐾", tack: "Specialiserad på djurförsäkring sedan 1890", skyddar: ["Veterinärvård upp till 1 Mkr","Operationer","Mediciner","Livsförsäkring","Ansvarsskydd"], url: "agria.se" },
+      { bolag: "Hedvig", pris: "179-349", betyg: 4, color: "#10b981", badge: "Digital", tack: "Smidig app och snabb skadereglering", skyddar: ["Veterinärvård","Operationer","Olycksfall"], url: "hedvig.com" },
+      { bolag: "Folksam Hund", pris: "129-299", betyg: 4, color: "#8b5cf6", badge: "Billigast", tack: "Bra grundskydd till lågt pris", skyddar: ["Veterinärvård","Ansvarsskydd","Livsförsäkring"], url: "folksam.se" },
+      { bolag: "Länsförsäkringar", pris: "160-320", betyg: 4, color: "#f59e0b", badge: null, tack: "Lokal service och trygg aktör", skyddar: ["Veterinärvård","Operationer","Ansvar"], url: "lansforsakringar.se" },
+    ],
+    katt: [
+      { bolag: "Agria", pris: "99-249", betyg: 5, color: "#e879f9", badge: "Rekommenderas 🐈", tack: "Ledande inom kattförsäkring", skyddar: ["Veterinärvård upp till 500k","Operationer","Mediciner","Livsförsäkring"], url: "agria.se" },
+      { bolag: "Hedvig", pris: "119-219", betyg: 4, color: "#10b981", badge: null, tack: "Enkel digital hantering", skyddar: ["Veterinärvård","Operationer","Olycksfall"], url: "hedvig.com" },
+      { bolag: "Folksam Katt", pris: "89-189", betyg: 4, color: "#8b5cf6", badge: "Billigast", tack: "Bra pris för grundskydd", skyddar: ["Veterinärvård","Livsförsäkring"], url: "folksam.se" },
+    ],
+    hast: [
+      { bolag: "Agria", pris: "799-1999", betyg: 5, color: "#e879f9", badge: "Specialiserad 🐴", tack: "Marknadsledare inom hästförsäkring", skyddar: ["Veterinärvård upp till 3 Mkr","Operationer","Livsförsäkring","Tävlingsavbrott","Ansvar"], url: "agria.se" },
+      { bolag: "Länsförsäkringar Häst", pris: "699-1599", betyg: 4, color: "#f59e0b", badge: null, tack: "Stark lokal kunskap om hästar", skyddar: ["Veterinärvård","Livsförsäkring","Ansvar"], url: "lansforsakringar.se" },
+      { bolag: "If Häst", pris: "899-1799", betyg: 4, color: "#3b82f6", badge: null, tack: "Bred täckning och hög ersättning", skyddar: ["Veterinärvård","Operationer","Livsförsäkring"], url: "if.se" },
+    ],
+    bat: [
+      { bolag: "If Båtförsäkring", pris: "199-999", betyg: 5, color: "#3b82f6", badge: "Bäst i test ⛵", tack: "Specialiserad båtförsäkring med bred täckning", skyddar: ["Kaskoförsäkring","Ansvar","Räddningskostnader","Stöld","Krisförsäkring"], url: "if.se" },
+      { bolag: "Trygg-Hansa Båt", pris: "179-899", betyg: 4, color: "#ef4444", badge: null, tack: "Bra pris och gedigen aktör", skyddar: ["Kasko","Ansvar","Stöld"], url: "trygghansa.se" },
+      { bolag: "Länsförsäkringar Båt", pris: "219-1099", betyg: 4, color: "#f59e0b", badge: null, tack: "Lokal service vid skada", skyddar: ["Kasko","Ansvar","Stöld","Räddning"], url: "lansforsakringar.se" },
+    ],
+    villa: [
+      { bolag: "If Villa", pris: "299-699", betyg: 5, color: "#3b82f6", badge: "Bäst i test 🏡", tack: "Marknadsledare för villaförsäkring", skyddar: ["Brand","Vattenskada","Stöld","Ansvar","Rättsskydd","Maskinskada","Naturskador"], url: "if.se" },
+      { bolag: "Länsförsäkringar Villa", pris: "279-649", betyg: 5, color: "#f59e0b", badge: "Populärast", tack: "Stark lokal service och skadeservice", skyddar: ["Brand","Vattenskada","Stöld","Ansvar","Rättsskydd"], url: "lansforsakringar.se" },
+      { bolag: "Folksam Villa", pris: "249-599", betyg: 4, color: "#8b5cf6", badge: "Billigast", tack: "Bra grundskydd till bra pris", skyddar: ["Brand","Stöld","Ansvar","Vattenskada"], url: "folksam.se" },
+    ],
+    resa: [
+      { bolag: "Europeiska ERV", pris: "79-299/resa", betyg: 5, color: "#3b82f6", badge: "Specialist ✈️", tack: "Specialiserad på reseförsäkring", skyddar: ["Akutvård utomlands","Hemtransport","Inställd resa","Försenat bagage","Stöld"], url: "erv.se" },
+      { bolag: "If Reseförsäkring", pris: "99-349/resa", betyg: 5, color: "#10b981", badge: null, tack: "Bred täckning och global service", skyddar: ["Sjukvård","Hemtransport","Inställd resa","Stöld","Ansvar"], url: "if.se" },
+      { bolag: "Trygg-Hansa Resa", pris: "89-299/resa", betyg: 4, color: "#ef4444", badge: null, tack: "Bra pris för grundskydd", skyddar: ["Akutvård","Bagage","Inställd resa"], url: "trygghansa.se" },
+    ],
+  };
+
+  const forsakringar = FORSAKRINGAR[typ] || [];
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 16, border: "1px solid #10b98133", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>🛡️ Jämför Försäkringar</div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Hitta rätt försäkring till bästa pris — välj kategori</div>
+      </div>
+
+      {/* Type selector */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6, marginBottom: 16, scrollbarWidth: "none" }}>
+        {TYPER.map(t => (
+          <button key={t.id} onClick={() => setTyp(t.id)}
+            style={{ flexShrink: 0, padding: "8px 14px", background: typ === t.id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${typ === t.id ? "transparent" : "#1e293b"}`, borderRadius: 99, color: typ === t.id ? "#fff" : "#64748b", fontSize: 12, fontWeight: typ === t.id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Comparison cards */}
+      {forsakringar.map((f, i) => (
+        <div key={i} style={{ background: "#0f172a", borderRadius: 16, border: `1px solid ${i === 0 ? f.color + "55" : "#1e293b"}`, padding: 16, marginBottom: 12 }}>
+          {/* Header */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#e2e8f0" }}>{f.bolag}</div>
+                {f.badge && <span style={{ fontSize: 10, background: f.color + "22", color: f.color, padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{f.badge}</span>}
+              </div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>{f.tack}</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 16, fontWeight: 900, color: f.color }}>{f.pris} kr</div>
+              <div style={{ fontSize: 10, color: "#475569" }}>per månad</div>
+              <div style={{ display: "flex", gap: 2, justifyContent: "flex-end", marginTop: 4 }}>
+                {"⭐".repeat(f.betyg).split("").map((s, j) => <span key={j} style={{ fontSize: 11 }}>{s}</span>)}
+              </div>
+            </div>
+          </div>
+
+          {/* Coverage */}
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 11, color: "#475569", marginBottom: 6 }}>Skyddar mot:</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+              {f.skyddar.map((s, j) => (
+                <span key={j} style={{ fontSize: 11, background: f.color + "11", color: f.color, padding: "3px 9px", borderRadius: 99, border: `1px solid ${f.color}22` }}>✓ {s}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <a href={"https://" + f.url} target="_blank" rel="noopener noreferrer"
+            style={{ display: "block", padding: "12px", background: `linear-gradient(135deg,${f.color},${f.color}bb)`, borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>
+            Gå till {f.url} →
+          </a>
+        </div>
+      ))}
+
+      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 4 }}>
+        <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 8 }}>💡 Tips för att spara på försäkringar</div>
+        {["Samla alla försäkringar hos ett bolag — ofta 15-20% rabatt","Höj självrisken — halverar ofta premien","Jämför via Insplanet.se — tar 2 minuter och visar alla priser","Kolla om facket inkluderar försäkringar — A-kassan inkluderar ofta hemförsäkring"].map((t, i) => (
+          <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}>
+            <span style={{ color: "#f59e0b" }}>→</span>{t}
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 10, color: "#334155", textAlign: "center", marginTop: 10 }}>
+        ★ Priser är ungefärliga och varierar med adress, ålder och försäkringsvärde. Kontakta bolagen för exakt offert. Kapital kan erhålla affiliate-ersättning.
+      </div>
+    </div>
+  );
+}
+
+
+function ErbjudandenHubFull({ subTab, setSubTab }) {
+  const [expanded, setExpanded] = useState(null);
+
+  const KATEGORIER = [
+    { id: "deals_hem", icon: "🌟", label: "Alla" },
+    { id: "deals_jamfor_lan", icon: "🏠", label: "Jämför Lån" },
+    { id: "deals_jamfor_forsakring", icon: "🛡️", label: "Jämför Försäkring" },
+    { id: "deals_lan", icon: "🏦", label: "Lån & Bolån" },
+    { id: "deals_forsakring", icon: "🛡️", label: "Försäkring" },
+    { id: "deals_leasing", icon: "🚗", label: "Leasing & Bil" },
+    { id: "deals_el", icon: "⚡", label: "El & Bredband" },
+    { id: "deals_djur", icon: "🐾", label: "Djur" },
+    { id: "deals_kort", icon: "💳", label: "Kreditkort" },
+    { id: "deals_trygghet", icon: "🛡️", label: "Trygghet" },
+  ];
+
+  const ERBJUDANDEN = {
+    deals_lan: [
+      { namn: "SBAB Bolån", badge: "Lägst ränta 🏆", color: "#3b82f6", desc: "Bästa bolåneräntan just nu", detalj: "Rörlig: 3.55% · Fast 3 år: 3.89% · Max 85% belåning", url: "sbab.se", spara: "Spara upp till 15 000 kr/år" },
+      { namn: "Zmarta Lånejämförelse", badge: "Populärast ⭐", color: "#3b82f6", desc: "Jämför 30+ banker — ett svar, flera anbud", detalj: "Blankolån 5 000–600 000 kr · Ränta från 6.95%", url: "zmarta.se", spara: "Jämför och hitta bäst ränta" },
+      { namn: "Hypoteket", badge: null, color: "#3b82f6", desc: "Digitalt bolån utan möten", detalj: "Ränta från 3.58% · Svar inom 24h", url: "hypoteket.se", spara: null },
+      { namn: "Lendo", badge: null, color: "#3b82f6", desc: "En ansökan — flera banker svarar", detalj: "Privatlån upp till 600 000 kr", url: "lendo.se", spara: null },
+    ],
+    deals_forsakring: [
+      { namn: "Insplanet", badge: "Spara mest 💰", color: "#10b981", desc: "Jämför hemförsäkring — 30+ bolag", detalj: "Hemförsäkring från 79 kr/mån · Bilförsäkring från 199 kr/mån", url: "insplanet.se", spara: "Spara upp till 3 000 kr/år" },
+      { namn: "Hedvig", badge: "Populär 🔥", color: "#10b981", desc: "Modern digital försäkring i appen", detalj: "Hemförsäkring från 99 kr/mån · Inkl. djurförsäkring", url: "hedvig.com", spara: null },
+      { namn: "Länsförsäkringar", badge: null, color: "#10b981", desc: "Störst i Sverige — lokal närvaro", detalj: "Hem, bil, djur, liv — ett bolag", url: "lansforsakringar.se", spara: null },
+      { namn: "If Försäkring", badge: null, color: "#10b981", desc: "Skandinaviens största försäkringsbolag", detalj: "Hemförsäkring, villa, bostadsrätt", url: "if.se", spara: null },
+    ],
+    deals_leasing: [
+      { namn: "Leaseonline.se", badge: "Bäst urval 🚗", color: "#f97316", desc: "Jämför privatleasing från alla märken", detalj: "Från 1 995 kr/mån · Inkl. service och vägskatt", url: "leaseonline.se", spara: "Spar tid — jämför direkt" },
+      { namn: "Santander Billån", badge: null, color: "#f97316", desc: "Billån med svar direkt", detalj: "Ränta från 4.95% · Max 800 000 kr · Löptid 1-7 år", url: "santander.se", spara: null },
+      { namn: "Sixt Biluthyrning", badge: "Bäst pris 💸", color: "#f97316", desc: "Hyr bil för dag, vecka eller längre", detalj: "Från 299 kr/dag · Helförsäkring tillval", url: "sixt.se", spara: null },
+      { namn: "Volvo Financial Services", badge: null, color: "#f97316", desc: "Privatleasing direkt från Volvo", detalj: "Från 2 490 kr/mån · Allt inkl.", url: "volvocars.com/se", spara: null },
+    ],
+    deals_el: [
+      { namn: "Tibber", badge: "Bäst pris ⚡", color: "#f59e0b", desc: "Elpris per timme — spara 20-40%", detalj: "Inget bindningstid · Smart styrning av värme och laddbox", url: "tibber.com/se", spara: "Spara 3 000-8 000 kr/år på el" },
+      { namn: "Vattenfall El", badge: null, color: "#f59e0b", desc: "Fast eller rörligt elprisavtal", detalj: "Välj vad som passar din ekonomi och vardag", url: "vattenfall.se", spara: null },
+      { namn: "Bredbandskollen", badge: "Jämför allt 📡", color: "#f59e0b", desc: "Hitta billigaste fibern i ditt område", detalj: "Jämför Telia, Telenor, Bahnhof m.fl.", url: "bredbandskollen.se", spara: "Spara upp till 2 400 kr/år" },
+    ],
+    deals_djur: [
+      { namn: "Agria Djurförsäkring", badge: "Rekommenderas 🐾", color: "#e879f9", desc: "Störst och bäst för hund, katt & häst", detalj: "Hund från 149 kr/mån · Katt från 99 kr/mån", url: "agria.se", spara: "Täcker veterinärvård upp till 1 Mkr" },
+      { namn: "Folksam Djurförsäkring", badge: null, color: "#e879f9", desc: "Bra pris och bred täckning", detalj: "Veterinärvård, operationer och livsförsäkring", url: "folksam.se", spara: null },
+      { namn: "Hedvig Djurförsäkring", badge: "Digital 📱", color: "#e879f9", desc: "Skadeanmälan direkt i appen", detalj: "Katt och hund — enkelt och snabbt", url: "hedvig.com", spara: null },
+    ],
+    deals_kort: [
+      { namn: "SAS EuroBonus Mastercard", badge: "Populärast ✈️", color: "#8b5cf6", desc: "Samla poäng på alla köp — gratis flyg", detalj: "1 p per 15 kr · Välkomstbonus: 5 000 poäng", url: "sas.se/eurobonus", spara: "Tjäna gratis resor" },
+      { namn: "Coop Mastercard", badge: null, color: "#8b5cf6", desc: "1% cashback + matrabatter", detalj: "Inget årsavgift · Cashback direkt på köpet", url: "coop.se/kort", spara: "Upp till 2 400 kr cashback/år" },
+      { namn: "American Express Gold", badge: "Premium 💎", color: "#8b5cf6", desc: "Resförsäkring + lounge-tillgång", detalj: "400 kr årsavgift · Reseskyddsförsäkring inkl.", url: "americanexpress.se", spara: null },
+    ],
+    deals_trygghet: [],
+  };
+
+  const allTopDeals = Object.values(ERBJUDANDEN).flat().filter(d => d.badge);
+  const currentDeals = subTab === "deals_hem" ? allTopDeals : (ERBJUDANDEN[subTab] || []);
+
+  const DealCard = ({ item, keyStr }) => {
+    const open = expanded === keyStr;
+    return (
+      <div style={{ background: "#0f172a", borderRadius: 16, border: `2px solid ${open ? item.color + "88" : "#1e293b"}`, marginBottom: 10, overflow: "hidden", transition: "border-color 0.2s" }}>
+        <div style={{ padding: "16px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }} onClick={() => setExpanded(open ? null : keyStr)}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: item.color + "22", border: `1px solid ${item.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>
+            {item.url.includes("sbab") ? "🏠" : item.url.includes("zmarta") || item.url.includes("lendo") ? "💰" : item.url.includes("insplanet") || item.url.includes("hedvig") || item.url.includes("lans") || item.url.includes("if.se") ? "🛡️" : item.url.includes("lease") || item.url.includes("sixt") || item.url.includes("sant") || item.url.includes("volvo") ? "🚗" : item.url.includes("tibber") || item.url.includes("vattenfall") || item.url.includes("bredband") ? "⚡" : item.url.includes("agria") || item.url.includes("folksam") ? "🐾" : item.url.includes("sas") || item.url.includes("coop") || item.url.includes("amex") ? "💳" : "🤝"}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#e2e8f0" }}>{item.namn}</div>
+              {item.badge && <span style={{ fontSize: 10, background: item.color + "22", color: item.color, padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{item.badge}</span>}
+            </div>
+            <div style={{ fontSize: 13, color: "#64748b" }}>{item.desc}</div>
+            {item.spara && <div style={{ fontSize: 12, color: "#10b981", fontWeight: 700, marginTop: 4 }}>💰 {item.spara}</div>}
+          </div>
+          <span style={{ color: "#475569", fontSize: 18, flexShrink: 0 }}>{open ? "▲" : "▼"}</span>
+        </div>
+        {open && (
+          <div style={{ borderTop: `1px solid ${item.color}33`, padding: "14px 18px", background: "#060a14" }}>
+            <div style={{ background: item.color + "11", borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontSize: 13, color: "#e2e8f0", lineHeight: 1.6, border: `1px solid ${item.color}22` }}>
+              📋 {item.detalj}
+            </div>
+            <a href={"https://" + item.url} target="_blank" rel="noopener noreferrer"
+              style={{ display: "block", padding: "15px", background: `linear-gradient(135deg,${item.color},${item.color}bb)`, borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 800, textDecoration: "none", textAlign: "center", boxShadow: `0 4px 20px ${item.color}44` }}>
+              Öppna {item.url} →
+            </a>
+            <div style={{ fontSize: 10, color: "#334155", textAlign: "center", marginTop: 8 }}>★ Affiliate — Kapital kan erhålla provision vid köp</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ background: "linear-gradient(135deg,#1a1000,#0f172a)", borderRadius: 18, border: "1px solid #f59e0b55", padding: 20, marginBottom: 16, textAlign: "center" }}>
+        <div style={{ fontSize: 42, marginBottom: 8 }}>🤝</div>
+        <div style={{ fontSize: 20, fontWeight: 900, background: "linear-gradient(90deg,#f59e0b,#f97316)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Erbjudanden & Partners</div>
+        <div style={{ fontSize: 13, color: "#64748b", marginTop: 6, lineHeight: 1.5 }}>Sparade pengar direkt i fickan. Kurerade partners — aldrig slumpmässig reklam.</div>
+      </div>
+
+      {/* Category pills */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 16, scrollbarWidth: "none" }}>
+        {KATEGORIER.map(k => (
+          <button key={k.id} onClick={() => { setSubTab(k.id); setExpanded(null); }}
+            style={{ flexShrink: 0, padding: "8px 16px", background: subTab === k.id ? "linear-gradient(135deg,#f59e0b,#f97316)" : "#0f172a", border: `1px solid ${subTab === k.id ? "transparent" : "#1e293b"}`, borderRadius: 99, color: subTab === k.id ? "#fff" : "#64748b", fontSize: 12, fontWeight: subTab === k.id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
+            {k.icon} {k.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Jämför Lån */}
+      {subTab === "deals_jamfor_lan" && <JamforLan />}
+
+      {/* Jämför Försäkring */}
+      {subTab === "deals_jamfor_forsakring" && <JamforForsakring />}
+
+      {/* Trygghet special */}
+      {subTab === "deals_trygghet" && <TrygghetsHub />}
+
+      {/* Deals */}
+      {!["deals_trygghet","deals_jamfor_lan","deals_jamfor_forsakring"].includes(subTab) && (
+        <div>
+          {subTab === "deals_hem" && <div style={{ fontSize: 12, color: "#f59e0b", fontWeight: 700, marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>⭐ Bästa erbjudanden just nu</div>}
+          {currentDeals.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "30px 0", color: "#334155" }}>Fler erbjudanden kommer snart!</div>
+          ) : currentDeals.map((item, i) => (
+            <DealCard key={subTab + i} item={item} keyStr={subTab + i} />
+          ))}
+        </div>
+      )}
+
+      <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 12, lineHeight: 1.7 }}>
+        Kapital är en jämförelsetjänst. Vi är inte kreditförmedlare eller försäkringsförmedlare. Affiliate-ersättning kan utgå vid köp via länkarna.
+      </div>
+    </div>
+  );
+}
+
+function TrygghetsHub() {
+  const [sub, setSub] = useState("forsakring");
+  const TABS = [["forsakring","🛡️","Försäkring"],["lan","🏦","Lån"],["bedömning","🤖","AI-Lånebedömning"],["profil","📊","Min Profil"],["kalkyl","📐","Kalkylatorer"],["maklare","📈","Mäklare"]];
+  return (
+    <div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+        {TABS.map(([id, icon, label]) => (
+          <button key={id} onClick={() => setSub(id)}
+            style={{ flex: "0 0 calc(33% - 4px)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "14px 8px", background: sub === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${sub === id ? "transparent" : "#1e293b"}`, borderRadius: 14, cursor: "pointer" }}>
+            <span style={{ fontSize: 24 }}>{icon}</span>
+            <span style={{ fontSize: 10, fontWeight: sub === id ? 700 : 400, color: sub === id ? "#fff" : "#64748b", textAlign: "center" }}>{label}</span>
+          </button>
+        ))}
+      </div>
+      {sub === "forsakring" && <ForsakringHub />}
+      {sub === "lan" && <SmartLanAnsokan />}
+      {sub === "bedömning" && <AILaneBedömning />}
+      {sub === "profil" && <EkonomiskProfil />}
+      {sub === "kalkyl" && <KalkylatornTab t={{}} />}
+      {sub === "maklare" && <MaklareTab t={{}} />}
     </div>
   );
 }
@@ -11499,17 +11962,50 @@ function Kapital() {
         {/* AKTIER */}
         {tab === 1 && (
           <div>
-            <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
-              {[["topp10","🔥 Topp 10"],["analys","🔍 Analys"],["krypto","₿ Krypto"],["watchlist","⭐ Bevakning"],["portfölj","💼 Portfölj"],["sparade","💾 Sparade"]].map(([id, label]) => (
-                <button key={id} onClick={() => setSubTab(id)} style={{ flexShrink: 0, padding: "9px 10px", background: subTab === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: subTab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: subTab === id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
-                  {label}
+            {/* Aktier — ikonkort navigation */}
+            {!["topp10","analys","krypto","watchlist","portfölj","sparade"].includes(subTab) && (
+              <div>
+                <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1520)", borderRadius: 18, border: "1px solid #10b98133", padding: 20, marginBottom: 20, textAlign: "center" }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>📈</div>
+                  <div style={{ fontSize: 20, fontWeight: 900, color: "#e2e8f0", marginBottom: 4 }}>Aktier & Investeringar</div>
+                  <div style={{ fontSize: 13, color: "#64748b" }}>AI-analys, live-priser och portföljhantering</div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  {[
+                    { id: "topp10", icon: "🔥", label: "Topp 10 Aktier", desc: "AI-analyserade toppval", color: "#f97316", big: true },
+                    { id: "analys", icon: "🔍", label: "Analysera Aktie", desc: "AI-analys på sekunder", color: "#10b981", big: true },
+                    { id: "krypto", icon: "₿", label: "Krypto", desc: "Live-priser & AI-analys", color: "#f59e0b" },
+                    { id: "watchlist", icon: "⭐", label: "Bevakningslista", desc: "Dina favoriter", color: "#3b82f6" },
+                    { id: "portfölj", icon: "💼", label: "Min Portfölj", desc: "Spåra dina innehav", color: "#8b5cf6" },
+                    { id: "sparade", icon: "💾", label: "Sparade analyser", desc: "Tidigare analyser", color: "#06b6d4" },
+                  ].map(card => (
+                    <button key={card.id} onClick={() => setSubTab(card.id)}
+                      style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "18px 16px", background: "#0f172a", border: `1px solid ${card.color}33`, borderRadius: 18, cursor: "pointer", textAlign: "left", gridColumn: card.big ? "span 1" : "span 1" }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 14, background: card.color + "22", border: `1px solid ${card.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 12 }}>
+                        {card.icon}
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: "#e2e8f0", marginBottom: 4 }}>{card.label}</div>
+                      <div style={{ fontSize: 12, color: "#475569" }}>{card.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Back button when in a section */}
+            {["topp10","analys","krypto","watchlist","portfölj","sparade"].includes(subTab) && (
+              <div style={{ marginBottom: 16 }}>
+                <button onClick={() => setSubTab("hem")}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", padding: "9px 18px", boxShadow: "0 4px 15px #10b98144" }}>
+                  ← Aktier
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
+
             {subTab === "topp10" && <Topp10Tab analyze={analyze} setSubTab={setSubTab} />}
-            {(subTab === "analys" || !["topp10","krypto","watchlist","portfölj","sparade","ekonomi","kalender"].includes(subTab)) && (
+            {(subTab === "analys" || subTab === "hem") && subTab === "analys" && (
               <AnalysTab result={result} loading={loading} loadStep={loadStep} error={error} query={query} setQuery={setQuery} analyze={analyze} history={history} setResult={setResult} isPro={isPro} usageCount={usageCount} onUpgrade={() => setShowUpgrade(true)} t={t}
-                onGoMaklare={() => { setTab(3); setSubTab("maklare"); }}
+                onGoMaklare={() => { setTab(3); setSubTab("deals_trygghet"); }}
                 onGoKalender={() => { setTab(1); setSubTab("kalender"); }}
                 onCompare={() => setShowCompare(true)}
               />
@@ -11517,9 +12013,7 @@ function Kapital() {
             {subTab === "krypto" && <KryptoAnalysTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />}
             {subTab === "watchlist" && <WatchlistTab onAnalyze={(name) => { setQuery(name); analyze(name); setSubTab("analys"); }} isPro={isPro} onUpgrade={() => setShowUpgrade(true)} t={t} onlySection="watchlist" />}
             {subTab === "portfölj" && <PortfoljTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} t={t} />}
-            {subTab === "ekonomi" && <MinEkonomi isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />}
             {subTab === "sparade" && <WatchlistTab onAnalyze={(name) => { setQuery(name); analyze(name); setSubTab("analys"); }} isPro={isPro} onUpgrade={() => setShowUpgrade(true)} t={t} onlySection="saved" />}
-            {subTab === "kalender" && <KalenderTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} t={t} />}
           </div>
         )}
 
@@ -11534,6 +12028,10 @@ function Kapital() {
         {/* TRYGGHET - försäkringar, lån, kalkylator */}
         {tab === 3 && (
           <div>
+            <ErbjudandenHubFull subTab={subTab} setSubTab={setSubTab} />
+          </div>
+        )}
+        {tab === 99 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
               {[["forsakring","🛡️","Försäkring"],["lan","🏦","Lån & Kredit"],["bedömning","🤖","AI-Lånebedömning"],["profil","📊","Min Profil"],["kalkyl","📐","Kalkylatorer"],["maklare","📈","Mäklare"]].map(([id, icon, label]) => (
                 <button key={id} onClick={() => setSubTab(id)}
@@ -11571,14 +12069,14 @@ function Kapital() {
             { icon: "🏠", label: "Hem", idx: 0 },
             { icon: "📈", label: "Aktier", idx: 1 },
             { icon: "💰", label: "Ekonomi", idx: 2 },
-            { icon: "🛡️", label: "Trygghet", idx: 3 },
+            { icon: "🤝", label: "Erbjudanden", idx: 3 },
             { icon: seniorMode ? "👴" : "👤", label: seniorMode ? "Senior" : "Profil", idx: 4 },
           ].map(({ icon, label, idx }) => (
             <button key={idx} onClick={() => {
               window.history.pushState({ tab: idx }, "");
               setTab(idx);
-              if (idx === 1) setSubTab("topp10");
-              if (idx === 3) setSubTab("forsakring");
+              if (idx === 1) setSubTab("hem");
+              if (idx === 3) setSubTab("deals_hem");
             }} style={{
               flex: 1, padding: "10px 4px 12px", background: "none", border: "none",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer"
