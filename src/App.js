@@ -7671,7 +7671,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
 
       {/* Profil completion card */}
       {profilPct < 100 && (
-        <button onClick={() => { if (typeof setShowProfilBuilder === "function") setShowProfilBuilder(true); }}
+        <button onClick={() => { if (onBuildProfile) onBuildProfile(); }}
           style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "linear-gradient(135deg,#0a1f14,#0f172a)", border: "1px solid #10b98133", borderRadius: 16, padding: "14px 16px", cursor: "pointer", textAlign: "left", marginBottom: 14 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🚀</div>
           <div style={{ flex: 1 }}>
