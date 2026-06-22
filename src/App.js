@@ -25,6 +25,7 @@ class ErrorBoundary extends React.Component {
 
 const API = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-sonnet-4-6";
+const FAST_MODEL = "claude-haiku-4-5-20251001";
 const KEY = process.env.REACT_APP_ANTHROPIC_KEY || "";
 const PRESETS = ["Scandinavian Enviro Systems", "Ericsson", "Volvo", "Sinch", "H&M"];
 
@@ -6234,13 +6235,26 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery }) {
 
   useEffect(() => {
     const fetchNews = async () => {
+      // Check cache first — max 30 min old
+      try {
+        const cached = localStorage.getItem("kapital_news_cache");
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < 30 * 60 * 1000) {
+            setNews(data);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {}
+
       try {
         const resp = await fetch(API, {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
           body: JSON.stringify({
-            model: MODEL, max_tokens: 800,
-            messages: [{ role: "user", content: 'Generera 6 realistiska svenska ekonominyheter för idag juni 2026. Svara BARA med JSON-array: [{"titel":"nyhet","sammanfattning":"kort sammanfattning","kategori":"Börsen/Räntor/Fastigheter/Ekonomi","sentiment":"positiv/neutral/negativ","bolag":"eventuellt bolag eller null","tid":"för X timmar sedan"}]' }]
+            model: FAST_MODEL, max_tokens: 600,
+            messages: [{ role: "user", content: 'Ge 6 svenska ekonominyheter juni 2026. Svara BARA med JSON-array utan text utanför: [{"titel":"","sammanfattning":"","kategori":"Börsen/Räntor/Fastigheter/Ekonomi","sentiment":"positiv/neutral/negativ","bolag":null,"tid":"för X timmar sedan"}]' }]
           })
         });
         if (!resp.ok) throw new Error("API error");
@@ -6248,7 +6262,9 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery }) {
         const text = data.content?.[0]?.text || "";
         const match = text.match(/\[[\s\S]*\]/);
         if (match) {
-          setNews(JSON.parse(match[0]));
+          const parsed = JSON.parse(match[0]);
+          setNews(parsed);
+          try { localStorage.setItem("kapital_news_cache", JSON.stringify({ data: parsed, timestamp: Date.now() })); } catch {}
         } else {
           throw new Error("Parse error");
         }
@@ -8331,7 +8347,7 @@ function Kapital() {
       const resp = await fetch(API, {
         method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
-          model: MODEL, max_tokens: 1200,
+          model: FAST_MODEL, max_tokens: 800,
           messages: [{ role: "user", content: "Analysera " + name + ". Svara ENDAST med JSON (inga förklaringar):\n{\"company\":\"" + name + "\",\"sector\":\"\",\"summary\":\"2-3 meningar om bolaget\",\"score\":60,\"scoreReason\":\"\",\"recommendation\":\"Köp/Avvakta/Sälj\",\"keyRisks\":[\"\",\"\",\"\"],\"keyStrengths\":[\"\",\"\",\"\"],\"catalysts\":[\"\",\"\"],\"nyckeltal\":{\"pe\":0,\"ps\":0,\"ey\":0,\"direktavkastning\":0,\"borsvarde\":\"\",\"ebitdaMarginal\":0,\"skuldsattning\":\"\",\"betavarde\":0},\"utdelning\":{\"belopp\":\"\",\"datum\":\"\",\"frekvens\":\"\",\"historik\":[0,0,0,0]},\"insider\":[{\"namn\":\"\",\"typ\":\"\",\"antal\":0,\"kurs\":0,\"datum\":\"\"}],\"grafData\":[95,98,102,99,105,103,108,106,110,107,112,109],\"news\":[{\"headline\":\"\",\"date\":\"2026\",\"source\":\"\",\"sentiment\":\"positiv\"}],\"timeHorizon\":\"Medel\",\"lastUpdated\":\"Juni 2026\"}\nAnpassa ALLA värden för " + name + ". Score: 0-30=sälj, 31-60=avvakta, 61-100=köp." }]
         })
       });
