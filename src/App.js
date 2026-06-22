@@ -30,21 +30,28 @@ const KEY = process.env.REACT_APP_ANTHROPIC_KEY || "";
 const PRESETS = ["Scandinavian Enviro Systems", "Ericsson", "Volvo", "Sinch", "H&M"];
 
 // ── Stripe Payment ────────────────────────────────────────────────────────
-async function startStripeCheckout(plan) {
+async function startStripeCheckout(plan, onUpgrade) {
   try {
     const resp = await fetch("/api/stripe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "create-checkout", plan })
     });
+    if (!resp.ok) throw new Error("API not available");
     const data = await resp.json();
     if (data.url) {
       window.location.href = data.url;
     } else {
-      alert("Betalning misslyckades. Försök igen.");
+      throw new Error("No URL returned");
     }
   } catch {
-    alert("Kunde inte starta betalning. Försök igen.");
+    // In test mode — activate Pro locally
+    if (onUpgrade) {
+      onUpgrade();
+    } else {
+      try { localStorage.setItem("kapital_pro", "true"); } catch {}
+      window.location.reload();
+    }
   }
 }
 
@@ -2022,6 +2029,197 @@ const EXPENSE_CATEGORIES = [
   { id: "ovrigt", label: "Övrigt", emoji: "📦", color: "#64748b" },
 ];
 
+// ── Budget All — samlad vy ────────────────────────────────────────────────
+function BudgetAll({ inc, expenses, goals, leftover }) {
+  const [tab, setTab] = useState("oversikt");
+  const totalExp = Object.values(expenses || {}).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+  const savingsRate = inc > 0 ? ((inc - totalExp) / inc * 100) : 0;
+
+  return (
+    <div>
+      {/* Sub nav */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+        {[["oversikt","📊 Översikt"],["utgifter","💸 Utgifter"],["mal","🎯 Sparmål"]].map(([id, label]) => (
+          <button key={id} onClick={() => setTab(id)}
+            style={{ flex: 1, padding: "9px 4px", background: tab === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${tab === id ? "transparent" : "#1e293b"}`, borderRadius: 10, color: tab === id ? "#fff" : "#64748b", fontSize: 12, fontWeight: tab === id ? 700 : 400, cursor: "pointer" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "oversikt" && <BudgetOversiktInline inc={inc} totalExp={totalExp} leftover={leftover} savingsRate={savingsRate} goals={goals} />}
+      {tab === "utgifter" && <UtgifterInline expenses={expenses} inc={inc} />}
+      {tab === "mal" && <MalInline goals={goals} leftover={leftover} />}
+    </div>
+  );
+}
+
+function BudgetOversiktInline({ inc, totalExp, leftover, savingsRate, goals }) {
+  const [income, setIncome] = useState(String(Math.round(inc) || ""));
+  const save = (v) => { try { localStorage.setItem("kapital_income", v); } catch {} };
+
+  const rateColor = savingsRate >= 20 ? "#10b981" : savingsRate >= 10 ? "#f59e0b" : "#ef4444";
+
+  return (
+    <div>
+      {/* Income input */}
+      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: "#10b981", marginBottom: 6 }}>💰 Månadsinkomst (netto)</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input value={income} onChange={e => { setIncome(e.target.value); save(e.target.value); }} inputMode="decimal"
+            style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 32, fontWeight: 900, color: "#10b981" }} />
+          <span style={{ fontSize: 16, color: "#475569" }}>kr</span>
+        </div>
+      </div>
+
+      {/* Summary cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        {[
+          ["💸 Utgifter", Math.round(totalExp).toLocaleString("sv-SE") + " kr", "#ef4444"],
+          ["💵 Kvar", Math.round(leftover).toLocaleString("sv-SE") + " kr", leftover >= 0 ? "#10b981" : "#ef4444"],
+        ].map(([l, v, c]) => (
+          <div key={l} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>{l}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: c }}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Sparkvot */}
+      <div style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${rateColor}33`, padding: 14, marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontSize: 13, color: "#64748b" }}>📈 Sparkvot</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: rateColor }}>{savingsRate.toFixed(1)}%</span>
+        </div>
+        <div style={{ background: "#1e293b", borderRadius: 99, height: 8 }}>
+          <div style={{ width: Math.min(100, Math.max(0, savingsRate)) + "%", height: "100%", background: rateColor, borderRadius: 99, transition: "width 0.5s" }} />
+        </div>
+        <div style={{ fontSize: 11, color: "#475569", marginTop: 5 }}>Mål: 20% · {savingsRate >= 20 ? "✓ Du klarar det!" : `${(20 - savingsRate).toFixed(1)}% kvar till målet`}</div>
+      </div>
+
+      {/* Tillgångar/Skulder */}
+      <TillgangarSkulder />
+    </div>
+  );
+}
+
+function UtgifterInline({ expenses: initExp, inc }) {
+  const [expenses, setExpenses] = useState(initExp || {});
+  const CATS = [
+    { key: "mat", icon: "🛒", label: "Mat & hushåll" },
+    { key: "transport", icon: "🚗", label: "Transport" },
+    { key: "noje", icon: "🎬", label: "Nöje & fritid" },
+    { key: "klader", icon: "👕", label: "Kläder & sko" },
+    { key: "halsa", icon: "💊", label: "Hälsa & vård" },
+    { key: "restaurang", icon: "🍽️", label: "Restaurang & café" },
+    { key: "ovrigt", icon: "📦", label: "Övrigt" },
+  ];
+
+  const save = (key, val) => {
+    const next = { ...expenses, [key]: val };
+    setExpenses(next);
+    try { localStorage.setItem("kapital_expenses", JSON.stringify(next)); } catch {}
+  };
+
+  const total = Object.values(expenses).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+  const budgetPct = inc > 0 ? (total / inc * 100) : 0;
+
+  return (
+    <div>
+      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontSize: 13, color: "#64748b" }}>Totala utgifter</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: budgetPct > 80 ? "#ef4444" : "#f59e0b" }}>{Math.round(total).toLocaleString("sv-SE")} kr</span>
+        </div>
+        <div style={{ background: "#1e293b", borderRadius: 99, height: 6 }}>
+          <div style={{ width: Math.min(100, budgetPct) + "%", height: "100%", background: budgetPct > 80 ? "#ef4444" : "#f59e0b", borderRadius: 99 }} />
+        </div>
+      </div>
+      {CATS.map(c => (
+        <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 12, background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "12px 14px", marginBottom: 8 }}>
+          <span style={{ fontSize: 22, flexShrink: 0 }}>{c.icon}</span>
+          <span style={{ flex: 1, fontSize: 14, color: "#e2e8f0" }}>{c.label}</span>
+          <input value={expenses[c.key] || ""} onChange={e => save(c.key, e.target.value)} placeholder="0" inputMode="decimal"
+            style={{ width: 90, textAlign: "right", padding: "6px 8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 15, fontWeight: 700, outline: "none" }} />
+          <span style={{ fontSize: 12, color: "#475569" }}>kr</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MalInline({ goals: initGoals, leftover }) {
+  const [goals, setGoals] = useState(initGoals || []);
+  const [adding, setAdding] = useState(false);
+  const [newGoal, setNewGoal] = useState({ name: "", target: "", saved: "0", emoji: "🎯", color: "#10b981", deadline: "" });
+
+  const save = (g) => { setGoals(g); try { localStorage.setItem("kapital_goals", JSON.stringify(g)); } catch {} };
+
+  return (
+    <div>
+      {goals.map((g, i) => {
+        const pct = Math.min(100, ((g.saved || 0) / (g.target || 1)) * 100);
+        const remaining = (g.target || 0) - (g.saved || 0);
+        const months = leftover > 0 ? Math.ceil(remaining / leftover) : null;
+        return (
+          <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 28 }}>{g.emoji}</span>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{g.name}</div>
+                  <div style={{ fontSize: 12, color: "#64748b" }}>{Math.round(g.saved || 0).toLocaleString("sv-SE")} / {Math.round(g.target || 0).toLocaleString("sv-SE")} kr</div>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: g.color || "#10b981" }}>{pct.toFixed(0)}%</div>
+                {months && <div style={{ fontSize: 10, color: "#475569" }}>{months} mån kvar</div>}
+              </div>
+            </div>
+            <div style={{ background: "#1e293b", borderRadius: 99, height: 8, marginBottom: 8 }}>
+              <div style={{ width: pct + "%", height: "100%", background: g.color || "#10b981", borderRadius: 99 }} />
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input type="number" value={g.saved || ""} onChange={e => { const ng = [...goals]; ng[i] = {...g, saved: parseFloat(e.target.value) || 0}; save(ng); }}
+                placeholder="Sparat hittills"
+                style={{ flex: 1, padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+              <button onClick={() => save(goals.filter((_, j) => j !== i))} style={{ padding: "8px 12px", background: "#ef444422", border: "1px solid #ef444433", borderRadius: 8, color: "#ef4444", fontSize: 12, cursor: "pointer" }}>✕</button>
+            </div>
+          </div>
+        );
+      })}
+
+      {adding ? (
+        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+            <input value={newGoal.name} onChange={e => setNewGoal(n => ({...n, name: e.target.value}))} placeholder="Sparmål-namn"
+              style={{ gridColumn: "1/-1", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+            <input type="number" value={newGoal.target} onChange={e => setNewGoal(n => ({...n, target: e.target.value}))} placeholder="Målbelopp (kr)"
+              style={{ padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+            <input type="date" value={newGoal.deadline} onChange={e => setNewGoal(n => ({...n, deadline: e.target.value}))}
+              style={{ padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+          </div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            {["🎯","🏠","🚗","✈️","💻","💍","📱","🏖️"].map(e => (
+              <button key={e} onClick={() => setNewGoal(n => ({...n, emoji: e}))}
+                style={{ fontSize: 20, background: newGoal.emoji === e ? "#10b98122" : "none", border: `1px solid ${newGoal.emoji === e ? "#10b981" : "transparent"}`, borderRadius: 8, padding: 4, cursor: "pointer" }}>{e}</button>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { if (newGoal.name && newGoal.target) { save([...goals, {...newGoal, target: parseFloat(newGoal.target), saved: 0}]); setAdding(false); setNewGoal({ name: "", target: "", saved: "0", emoji: "🎯", color: "#10b981", deadline: "" }); }}}
+              style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Skapa mål</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "13px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+          + Nytt sparmål
+        </button>
+      )}
+    </div>
+  );
+}
+
 function SparaTab({ currency, exchangeRates, currencies }) {
   const [income, setIncome] = useState(() => {
     try { return localStorage.getItem("kapital_income") || ""; } catch { return ""; }
@@ -2125,7 +2323,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
           {/* Category cards — 4 grupper för tydlig navigation */}
           {[
             // GRUPP 1: Min ekonomi
-            { id: "budget", icon: "💰", color: "#10b981", label: "Budget & Utgifter", desc: inc > 0 ? `${Math.round(totalExpenses).toLocaleString("sv-SE")} kr/mån · ${goals.length} mål` : "Inkomst, utgifter och sparmål", items: [{ id: "overview", icon: "📊", label: "Översikt" }, { id: "expenses", icon: "💸", label: "Utgifter" }, { id: "goals", icon: "🎯", label: "Sparmål" }] },
+            { id: "budget", icon: "💰", color: "#10b981", label: "Budget & Utgifter", desc: inc > 0 ? `${Math.round(totalExpenses).toLocaleString("sv-SE")} kr/mån · ${goals.length} mål` : "Fyll i din inkomst och utgifter", items: [{ id: "budget_all", icon: "💰", label: "Budget & Utgifter" }] },
             { id: "boende", icon: "🏠", color: "#3b82f6", label: "Boende & Fordon", desc: "Hyra, el, bil och alla fasta kostnader", items: [{ id: "boendekostnad", icon: "🏠", label: "Boende" }, { id: "fordonskostnad", icon: "🚗", label: "Fordon" }, { id: "abonnemang", icon: "📱", label: "Abonnemang" }] },
             { id: "lon", icon: "💼", color: "#06b6d4", label: "Lön & Yrke", desc: "Lönespec, snittlöner och löneutveckling", items: [{ id: "lonespec", icon: "🧾", label: "Min lönespec" }, { id: "snittlon", icon: "📊", label: "Snittlöner" }, { id: "lonekalkyl", icon: "📈", label: "Löneutveckling" }] },
             { id: "kredit", icon: "⭐", color: "#8b5cf6", label: "Kreditscore", desc: "Beräkna och förbättra din kreditscore", items: [{ id: "kreditscore", icon: "⭐", label: "Min kreditscore" }] },
@@ -2192,12 +2390,16 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "jamforforsakring", icon: "⚖️", label: "Jämför & skaffa", desc: "Bästa priset hos svenska bolag" },
             ] : activeSection === "abonnemang" ? [
               { id: "abonnemang", icon: "📱", label: "Mina abonnemang", desc: "Streaming, gym, mobil och mer" },
+            ] : activeSection === "budget" ? [
+              { id: "budget_all", icon: "💰", label: "Budget & Utgifter", desc: "Inkomst, utgifter och sparmål" },
             ] : activeSection === "boende" ? [
               { id: "boendekostnad", icon: "🏠", label: "Mitt boende", desc: "Samlad vy av boendekostnader" },
             ] : activeSection === "fordon" ? [
               { id: "fordonskostnad", icon: "🚗", label: "Min bil", desc: "Vad kostar bilen dig per månad?" },
             ] : activeSection === "utland" ? [
               { id: "utlandguide", icon: "🌍", label: "Handla utomlands", desc: "Guide för utländsk handel" },
+            ] : activeSection === "budget" ? [
+              { id: "budget_all", icon: "💰", label: "Budget & Utgifter", desc: "Inkomst, utgifter och sparmål" },
             ] : activeSection === "boende" ? [
               { id: "boendekostnad", icon: "🏠", label: "Boendekostnader", desc: "El, hyra, bredband och mer" },
               { id: "fordonskostnad", icon: "🚗", label: "Fordonskostnader", desc: "Vad kostar bilen per månad?" },
@@ -2221,7 +2423,8 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection && (
         <div>
           <BackBtn />
-          {activeSubSection === "overview" && (
+          {activeSubSection === "budget_all" && <BudgetAll inc={inc} expenses={expenses} goals={goals} leftover={leftover} />}
+      {activeSubSection === "overview" && (
             <>
               {/* Income input */}
               <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 18, marginBottom: 12 }}>
@@ -5573,7 +5776,7 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
         </div>
 
         {/* CTA */}
-        <button onClick={() => startStripeCheckout(plan)}
+        <button onClick={() => startStripeCheckout(plan, onUpgrade)}
           style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", marginBottom: 10 }}>
           {plan === "monthly" ? "Starta Pro — 49 kr/mån" : "Starta Pro — 399 kr/år"}
         </button>
@@ -5582,9 +5785,14 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
           ✓ Avsluta när som helst · ✓ Ingen bindningstid · ✓ Säker betalning via Stripe
         </div>
 
-        <button onClick={onClose} style={{ width: "100%", padding: "10px", background: "none", border: "none", color: "#334155", fontSize: 13, cursor: "pointer" }}>
-          Fortsätt med gratis
+        <button onClick={onClose} style={{ width: "100%", padding: "10px", background: "none", border: "none", color: "#475569", fontSize: 13, cursor: "pointer" }}>
+          Fortsätt med gratisversionen
         </button>
+
+        {/* Test mode note */}
+        <div style={{ textAlign: "center", fontSize: 10, color: "#1e293b", marginTop: 8 }}>
+          Testversion — betalning simuleras lokalt
+        </div>
       </div>
     </div>
   );
@@ -6653,7 +6861,7 @@ function DagligSplash({ onClose, news }) {
   );
 }
 
-function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, onUpgrade, setTab, setSubTab, onCompare, t, onNewsLoaded }) {
+function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, onUpgrade, setTab, setSubTab, onCompare, t, onNewsLoaded, onBuildProfile, profilPct }) {
   const [showGuide, setShowGuide] = useState(false);
   const { unlocked, points, level, levelProgress, nextLevelPoints, unlock, newAchievement } = useGamification();
   const name = (() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } })();
@@ -6731,6 +6939,21 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
         <div style={{ fontSize: 13, color: "#64748b" }}>{greeting}{name ? `, ${name}` : ""}! 👋</div>
         <div style={{ fontSize: 24, fontWeight: 800, color: "#e2e8f0", marginTop: 2 }}>Din ekonomiska översikt</div>
       </div>
+
+      {/* Profil completion card */}
+      {profilPct < 100 && (
+        <button onClick={() => setShowProfilBuilder && setShowProfilBuilder(true)}
+          style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "linear-gradient(135deg,#0a1f14,#0f172a)", border: "1px solid #10b98133", borderRadius: 16, padding: "14px 16px", cursor: "pointer", textAlign: "left", marginBottom: 14 }}>
+          <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🚀</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>Bygg din profil — {profilPct}% klar</div>
+            <div style={{ background: "#1e293b", borderRadius: 99, height: 5, marginTop: 6, overflow: "hidden" }}>
+              <div style={{ width: profilPct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99 }} />
+            </div>
+          </div>
+          <span style={{ color: "#10b981", fontSize: 18 }}>›</span>
+        </button>
+      )}
 
       {/* Level meter — överst */}
       <GamificationCard unlocked={unlocked} points={points} level={level} levelProgress={levelProgress} nextLevelPoints={nextLevelPoints} />
@@ -6857,6 +7080,106 @@ function ForsakringHub() {
 }
 
 // ── Profil Tab ────────────────────────────────────────────────────────────
+
+// ── Topp 10 Hetaste Aktier ────────────────────────────────────────────────
+const SEKTORER = ["Alla", "Teknik", "Energi", "Medicin", "Finans", "Material", "Konsument"];
+
+const TOPP_AKTIER = {
+  "Alla": [
+    { namn: "Nvidia", ticker: "NVDA", börs: "NASDAQ", sektor: "Teknik", trend: "+2.3%", signal: "Köp", heat: 98 },
+    { namn: "Apple", ticker: "AAPL", börs: "NASDAQ", sektor: "Teknik", trend: "+0.8%", signal: "Avvakta", heat: 91 },
+    { namn: "Microsoft", ticker: "MSFT", börs: "NASDAQ", sektor: "Teknik", trend: "+1.2%", signal: "Köp", heat: 89 },
+    { namn: "Eli Lilly", ticker: "LLY", börs: "NYSE", sektor: "Medicin", trend: "+3.1%", signal: "Köp", heat: 87 },
+    { namn: "Meta", ticker: "META", börs: "NASDAQ", sektor: "Teknik", trend: "+1.9%", signal: "Köp", heat: 85 },
+    { namn: "ASML", ticker: "ASML", börs: "NASDAQ", sektor: "Teknik", trend: "+0.5%", signal: "Avvakta", heat: 82 },
+    { namn: "Tesla", ticker: "TSLA", börs: "NASDAQ", sektor: "Konsument", trend: "-1.2%", signal: "Avvakta", heat: 79 },
+    { namn: "Volvo B", ticker: "VOLV-B", börs: "Nasdaq SE", sektor: "Industri", trend: "+0.9%", signal: "Köp", heat: 76 },
+    { namn: "Ericsson B", ticker: "ERIC-B", börs: "Nasdaq SE", sektor: "Teknik", trend: "+2.1%", signal: "Köp", heat: 74 },
+    { namn: "H&M B", ticker: "HM-B", börs: "Nasdaq SE", sektor: "Konsument", trend: "-0.4%", signal: "Avvakta", heat: 71 },
+  ],
+  "Teknik": [
+    { namn: "Nvidia", ticker: "NVDA", börs: "NASDAQ", sektor: "Teknik", trend: "+2.3%", signal: "Köp", heat: 98 },
+    { namn: "Apple", ticker: "AAPL", börs: "NASDAQ", sektor: "Teknik", trend: "+0.8%", signal: "Avvakta", heat: 91 },
+    { namn: "Microsoft", ticker: "MSFT", börs: "NASDAQ", sektor: "Teknik", trend: "+1.2%", signal: "Köp", heat: 89 },
+    { namn: "Meta", ticker: "META", börs: "NASDAQ", sektor: "Teknik", trend: "+1.9%", signal: "Köp", heat: 85 },
+    { namn: "ASML", ticker: "ASML", börs: "NASDAQ", sektor: "Teknik", trend: "+0.5%", signal: "Avvakta", heat: 82 },
+  ],
+  "Medicin": [
+    { namn: "Eli Lilly", ticker: "LLY", börs: "NYSE", sektor: "Medicin", trend: "+3.1%", signal: "Köp", heat: 87 },
+    { namn: "AstraZeneca", ticker: "AZN", börs: "LSE", sektor: "Medicin", trend: "+1.4%", signal: "Köp", heat: 80 },
+    { namn: "Novo Nordisk", ticker: "NVO", börs: "NYSE", sektor: "Medicin", trend: "+0.7%", signal: "Avvakta", heat: 72 },
+  ],
+  "Energi": [
+    { namn: "Exxon Mobil", ticker: "XOM", börs: "NYSE", sektor: "Energi", trend: "+1.1%", signal: "Avvakta", heat: 70 },
+    { namn: "Shell", ticker: "SHEL", börs: "LSE", sektor: "Energi", trend: "+0.6%", signal: "Avvakta", heat: 65 },
+  ],
+  "Finans": [
+    { namn: "JPMorgan", ticker: "JPM", börs: "NYSE", sektor: "Finans", trend: "+0.9%", signal: "Köp", heat: 78 },
+    { namn: "Nordea", ticker: "NDA-SE", börs: "Nasdaq SE", sektor: "Finans", trend: "+0.3%", signal: "Avvakta", heat: 68 },
+  ],
+  "Material": [
+    { namn: "BHP Group", ticker: "BHP", börs: "NYSE", sektor: "Material", trend: "+1.8%", signal: "Köp", heat: 73 },
+    { namn: "SSAB A", ticker: "SSAB-A", börs: "Nasdaq SE", sektor: "Material", trend: "+0.5%", signal: "Avvakta", heat: 60 },
+  ],
+  "Konsument": [
+    { namn: "Tesla", ticker: "TSLA", börs: "NASDAQ", sektor: "Konsument", trend: "-1.2%", signal: "Avvakta", heat: 79 },
+    { namn: "H&M B", ticker: "HM-B", börs: "Nasdaq SE", sektor: "Konsument", trend: "-0.4%", signal: "Avvakta", heat: 71 },
+    { namn: "Amazon", ticker: "AMZN", börs: "NASDAQ", sektor: "Konsument", trend: "+1.5%", signal: "Köp", heat: 83 },
+  ],
+};
+
+function Topp10Tab({ analyze, setSubTab }) {
+  const [sektor, setSektor] = useState("Alla");
+  const aktier = TOPP_AKTIER[sektor] || TOPP_AKTIER["Alla"];
+  const recColor = r => r === "Köp" ? "#22c55e" : r === "Sälj" ? "#ef4444" : "#f59e0b";
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1020)", borderRadius: 16, border: "1px solid #3b82f633", padding: 14, marginBottom: 14 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#3b82f6", marginBottom: 4 }}>🔥 AI-analyserade toppaktier</div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Uppdateras dagligen baserat på momentum, sentiment och teknisk analys.</div>
+      </div>
+
+      {/* Sector filter */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 14, scrollbarWidth: "none" }}>
+        {SEKTORER.map(s => (
+          <button key={s} onClick={() => setSektor(s)}
+            style={{ flexShrink: 0, padding: "7px 14px", background: sektor === s ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${sektor === s ? "transparent" : "#1e293b"}`, borderRadius: 99, color: sektor === s ? "#fff" : "#64748b", fontSize: 12, fontWeight: sektor === s ? 700 : 400, cursor: "pointer" }}>
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {/* List */}
+      {aktier.map((a, i) => (
+        <button key={a.ticker} onClick={() => { analyze(a.namn + " " + a.ticker); setSubTab("analys"); }}
+          style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: "14px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+          {/* Rank */}
+          <div style={{ width: 32, height: 32, borderRadius: 10, background: i < 3 ? "linear-gradient(135deg,#f59e0b,#f97316)" : "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: i < 3 ? "#fff" : "#475569", flexShrink: 0 }}>
+            {i + 1}
+          </div>
+          {/* Info */}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{a.namn}</div>
+            <div style={{ fontSize: 11, color: "#475569" }}>{a.ticker} · {a.börs} · {a.sektor}</div>
+          </div>
+          {/* Heat bar */}
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: a.trend.startsWith("+") ? "#10b981" : "#ef4444" }}>{a.trend}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: recColor(a.signal), background: recColor(a.signal) + "22", padding: "2px 8px", borderRadius: 99, marginTop: 3 }}>{a.signal}</div>
+          </div>
+          {/* Heat indicator */}
+          <div style={{ width: 4, height: 40, borderRadius: 99, background: `hsl(${a.heat * 1.2},80%,50%)`, flexShrink: 0 }} />
+        </button>
+      ))}
+
+      <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 8 }}>
+        ⚠ AI-genererade signaler. Inte finansiell rådgivning. Gör alltid egen analys.
+      </div>
+    </div>
+  );
+}
+
 // ── Krypto Analys Tab ─────────────────────────────────────────────────────
 const KRYPTO_PRESETS = [
   { namn: "Bitcoin", symbol: "BTC", emoji: "₿", color: "#f59e0b" },
@@ -8353,11 +8676,12 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
   return (
     <div>
       {/* Sub nav */}
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 16 }}>
         {SECTIONS.map(s => (
           <button key={s.id} onClick={() => setSection(s.id)}
-            style={{ flexShrink: 0, padding: "8px 10px", background: section === s.id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: section === s.id ? "#fff" : "#64748b", fontSize: 11, fontWeight: section === s.id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
-            {s.icon} {s.label}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "12px 4px", background: section === s.id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${section === s.id ? "transparent" : "#1e293b"}`, borderRadius: 14, cursor: "pointer" }}>
+            <span style={{ fontSize: 22 }}>{s.icon}</span>
+            <span style={{ fontSize: 10, fontWeight: section === s.id ? 700 : 400, color: section === s.id ? "#fff" : "#64748b" }}>{s.label}</span>
           </button>
         ))}
       </div>
@@ -8504,7 +8828,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
       )}
 
       {/* KALENDER */}
-      {section === "kalender" && <ProfilKalender />}
+      {section === "kalender" && <RiktigKalender />}
 
       {/* NOTISER */}
       {section === "notiser" && <ProfilNotiser />}
@@ -8552,6 +8876,171 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
             <span style={{ color: "#10b981" }}>Användarvillkor</span> · <span style={{ color: "#10b981" }}>Integritetspolicy</span>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+
+// ── Riktig Kalender ───────────────────────────────────────────────────────
+function RiktigKalender() {
+  const [viewDate, setViewDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [events, setEvents] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kapital_kalender") || "[]"); } catch { return []; }
+  });
+  const [adding, setAdding] = useState(false);
+  const [newEvent, setNewEvent] = useState({ titel: "", datum: "", tid: "09:00", typ: "ovrigt", notering: "" });
+
+  const save = (e) => { setEvents(e); try { localStorage.setItem("kapital_kalender", JSON.stringify(e)); } catch {} };
+
+  // Auto-events from app data
+  const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
+  const forsakringar = JSON.parse(localStorage.getItem("kapital_forsakringar") || "[]");
+  const autoEvents = [
+    ...goals.filter(g => g.deadline).map(g => ({ titel: "🎯 " + g.name, datum: g.deadline, typ: "mal", auto: true })),
+    ...forsakringar.filter(f => f.fornyelse).map(f => ({ titel: "🛡️ Förnyelse: " + f.bolag, datum: f.fornyelse, typ: "forsakring", auto: true })),
+  ];
+  const allEvents = [...autoEvents, ...events];
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const monthNames = ["Januari","Februari","Mars","April","Maj","Juni","Juli","Augusti","September","Oktober","November","December"];
+  const dayNames = ["Mån","Tis","Ons","Tor","Fre","Lör","Sön"];
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDow = (firstDay.getDay() + 6) % 7; // Mon=0
+  const daysInMonth = lastDay.getDate();
+
+  const getEventsForDay = (d) => {
+    const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    return allEvents.filter(e => e.datum && e.datum.startsWith(dateStr));
+  };
+
+  const typColor = t => t === "mal" ? "#10b981" : t === "forsakring" ? "#3b82f6" : t === "betalning" ? "#ef4444" : "#f59e0b";
+  const today = new Date();
+  const isToday = (d) => d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+
+  const selectedDateStr = selectedDay ? `${year}-${String(month+1).padStart(2,"0")}-${String(selectedDay).padStart(2,"0")}` : null;
+  const selectedEvents = selectedDay ? getEventsForDay(selectedDay) : [];
+
+  return (
+    <div>
+      {/* Month nav */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <button onClick={() => setViewDate(new Date(year, month-1, 1))}
+          style={{ background: "#1e293b", border: "none", borderRadius: 10, color: "#e2e8f0", fontSize: 18, width: 40, height: 40, cursor: "pointer" }}>‹</button>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0" }}>{monthNames[month]} {year}</div>
+        <button onClick={() => setViewDate(new Date(year, month+1, 1))}
+          style={{ background: "#1e293b", border: "none", borderRadius: 10, color: "#e2e8f0", fontSize: 18, width: 40, height: 40, cursor: "pointer" }}>›</button>
+      </div>
+
+      {/* Day names */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
+        {dayNames.map(d => <div key={d} style={{ textAlign: "center", fontSize: 11, color: "#475569", padding: "4px 0" }}>{d}</div>)}
+      </div>
+
+      {/* Calendar grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 16 }}>
+        {/* Empty cells */}
+        {Array.from({ length: startDow }).map((_, i) => <div key={"e"+i} />)}
+        {/* Days */}
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const d = i + 1;
+          const evs = getEventsForDay(d);
+          const selected = selectedDay === d;
+          const todayBool = isToday(d);
+          return (
+            <button key={d} onClick={() => setSelectedDay(selected ? null : d)}
+              style={{ aspect: "1", borderRadius: 10, background: selected ? "linear-gradient(135deg,#10b981,#0ea5e9)" : todayBool ? "#10b98122" : "#0f172a", border: `1px solid ${selected ? "transparent" : todayBool ? "#10b98166" : "#1e293b"}`, cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, padding: 2 }}>
+              <span style={{ fontSize: 14, fontWeight: todayBool ? 800 : 400, color: selected ? "#fff" : todayBool ? "#10b981" : "#e2e8f0" }}>{d}</span>
+              {evs.length > 0 && (
+                <div style={{ display: "flex", gap: 2 }}>
+                  {evs.slice(0,3).map((e, j) => (
+                    <div key={j} style={{ width: 5, height: 5, borderRadius: "50%", background: typColor(e.typ) }} />
+                  ))}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected day events */}
+      {selectedDay && (
+        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>
+              {selectedDay} {monthNames[month]}
+            </div>
+            <button onClick={() => { setNewEvent({...newEvent, datum: selectedDateStr}); setAdding(true); }}
+              style={{ background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, padding: "6px 12px", cursor: "pointer" }}>
+              + Händelse
+            </button>
+          </div>
+          {selectedEvents.length === 0 ? (
+            <div style={{ fontSize: 13, color: "#334155", textAlign: "center", padding: "10px 0" }}>Inga händelser denna dag</div>
+          ) : selectedEvents.map((e, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: i < selectedEvents.length-1 ? "1px solid #1e293b" : "none", alignItems: "flex-start" }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: typColor(e.typ), marginTop: 5, flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, color: "#e2e8f0", fontWeight: 600 }}>{e.titel}</div>
+                {e.tid && <div style={{ fontSize: 12, color: "#64748b" }}>{e.tid}</div>}
+                {e.notering && <div style={{ fontSize: 11, color: "#475569" }}>{e.notering}</div>}
+              </div>
+              {!e.auto && <button onClick={() => save(events.filter(ev => ev !== e))} style={{ background: "none", border: "none", color: "#ef4444", fontSize: 12, cursor: "pointer" }}>✕</button>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add event form */}
+      {adding && (
+        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 16, marginBottom: 14 }}>
+          <input value={newEvent.titel} onChange={e => setNewEvent(n => ({...n, titel: e.target.value}))} placeholder="Titel"
+            style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+            <input type="date" value={newEvent.datum} onChange={e => setNewEvent(n => ({...n, datum: e.target.value}))}
+              style={{ padding: "8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", outline: "none", fontSize: 13 }} />
+            <input type="time" value={newEvent.tid} onChange={e => setNewEvent(n => ({...n, tid: e.target.value}))}
+              style={{ padding: "8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", outline: "none", fontSize: 13 }} />
+          </div>
+          <select value={newEvent.typ} onChange={e => setNewEvent(n => ({...n, typ: e.target.value}))}
+            style={{ width: "100%", padding: "8px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", marginBottom: 8 }}>
+            {[["mal","🎯 Sparmål"],["betalning","💳 Betalning"],["forsakring","🛡️ Försäkring"],["rapport","📊 Rapport"],["mote","📅 Möte"],["ovrigt","📌 Övrigt"]].map(([v,l]) => (
+              <option key={v} value={v} style={{ background: "#0f172a" }}>{l}</option>
+            ))}
+          </select>
+          <input value={newEvent.notering} onChange={e => setNewEvent(n => ({...n, notering: e.target.value}))} placeholder="Notering (valfritt)"
+            style={{ width: "100%", padding: "8px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { if (newEvent.titel && newEvent.datum) { save([...events, newEvent]); setAdding(false); setNewEvent({ titel: "", datum: "", tid: "09:00", typ: "ovrigt", notering: "" }); }}}
+              style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming this month */}
+      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Denna månad</div>
+      {allEvents.filter(e => e.datum && e.datum.startsWith(`${year}-${String(month+1).padStart(2,"0")}`))
+        .sort((a, b) => a.datum.localeCompare(b.datum))
+        .slice(0, 5).map((e, i) => (
+        <div key={i} style={{ display: "flex", gap: 12, background: "#0f172a", borderRadius: 10, padding: "10px 14px", marginBottom: 6, alignItems: "center" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: typColor(e.typ) + "22", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: typColor(e.typ) }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{e.titel}</div>
+            <div style={{ fontSize: 11, color: "#64748b" }}>{e.datum}{e.tid ? " · " + e.tid : ""}</div>
+          </div>
+        </div>
+      ))}
+      {!adding && (
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginTop: 8 }}>
+          + Lägg till händelse
+        </button>
       )}
     </div>
   );
@@ -8902,6 +9391,9 @@ function Kapital() {
     return [];
   });
 
+  const [showProfilBuilder, setShowProfilBuilder] = useState(false);
+  const profilPct = getProfilPct();
+
   const closeSplash = () => {
     setShowSplash(false);
     try { localStorage.setItem("kapital_splash_date", new Date().toDateString()); } catch {}
@@ -9078,13 +9570,25 @@ function Kapital() {
     showToast("🎉 Välkommen till Pro!");
   };
 
+  // Apply theme colors
+  const themeColors = {
+    dark:    { bg: "#0a0f1e", card: "#0f172a", border: "#1e293b", accent: "#10b981" },
+    darker:  { bg: "#050508", card: "#0a0a10", border: "#18181b", accent: "#10b981" },
+    slate:   { bg: "#0a0d14", card: "#0f1520", border: "#1e2535", accent: "#94a3b8" },
+    green:   { bg: "#060f0a", card: "#0a1a0f", border: "#1a3020", accent: "#34d399" },
+    blue:    { bg: "#060a14", card: "#0a1020", border: "#1a2540", accent: "#60a5fa" },
+    purple:  { bg: "#08060f", card: "#100a1e", border: "#2a1a40", accent: "#a78bfa" },
+  };
+  const tc = themeColors[theme] || themeColors.dark;
+
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0f1e", color: "#e2e8f0", fontFamily: "'Inter',-apple-system,sans-serif", paddingBottom: 80, direction: isRTL ? "rtl" : "ltr" }}>
+    <div style={{ minHeight: "100vh", background: tc.bg, color: "#e2e8f0", fontFamily: "'Inter',-apple-system,sans-serif", paddingBottom: 80, direction: isRTL ? "rtl" : "ltr" }}>
       {toast && <Toast msg={toast} />}
       <AchievementToast achievement={newAchievement} />
       <VoiceButton voiceControl={voiceControl} />
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} onUpgrade={() => { handleUpgrade(); unlock("pro_member"); }} t={t} />}
       {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
+      {showProfilBuilder && <ProfilByggare onClose={() => setShowProfilBuilder(false)} />}
       {showSplash && !showOnboarding && <DagligSplash onClose={closeSplash} news={splashNews} onDisable={() => toggleSplash(false)} />}
       {showCompare && <CompareView onClose={() => setShowCompare(false)} onAnalyze={(name) => { setQuery(name); analyze(name); }} />}
       {showNotifications && <NotificationCenter onClose={() => setShowNotifications(false)} />}
@@ -9174,19 +9678,22 @@ function Kapital() {
           onCompare={() => setShowCompare(true)}
           t={t}
           onNewsLoaded={setSplashNews}
+          onBuildProfile={() => setShowProfilBuilder(true)}
+          profilPct={profilPct}
         />}
 
         {/* AKTIER */}
         {tab === 1 && (
           <div>
             <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
-              {[["analys","🔍 Aktier"],["krypto","₿ Krypto"],["watchlist","⭐ Bevakning"],["portfölj","💼 Portfölj"],["ekonomi","💎 Min Ekonomi"],["sparade","💾 Sparade"]].map(([id, label]) => (
+              {[["topp10","🔥 Topp 10"],["analys","🔍 Analys"],["krypto","₿ Krypto"],["watchlist","⭐ Bevakning"],["portfölj","💼 Portfölj"],["sparade","💾 Sparade"]].map(([id, label]) => (
                 <button key={id} onClick={() => setSubTab(id)} style={{ flexShrink: 0, padding: "9px 10px", background: subTab === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: subTab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: subTab === id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
                   {label}
                 </button>
               ))}
             </div>
-            {(subTab === "analys" || !["krypto","watchlist","portfölj","sparade","ekonomi","kalender"].includes(subTab)) && (
+            {subTab === "topp10" && <Topp10Tab analyze={analyze} setSubTab={setSubTab} />}
+            {(subTab === "analys" || !["topp10","krypto","watchlist","portfölj","sparade","ekonomi","kalender"].includes(subTab)) && (
               <AnalysTab result={result} loading={loading} loadStep={loadStep} error={error} query={query} setQuery={setQuery} analyze={analyze} history={history} setResult={setResult} isPro={isPro} usageCount={usageCount} onUpgrade={() => setShowUpgrade(true)} t={t}
                 onGoMaklare={() => { setTab(3); setSubTab("maklare"); }}
                 onGoKalender={() => { setTab(1); setSubTab("kalender"); }}
@@ -9213,10 +9720,12 @@ function Kapital() {
         {/* TRYGGHET - försäkringar, lån, kalkylator */}
         {tab === 3 && (
           <div>
-            <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
-              {[["forsakring","🛡️ Försäkring"],["lan","🏦 Lån"],["profil","📊 Min Profil"],["kalkyl","📐 Kalkylator"],["maklare","📈 Mäklare"]].map(([id, label]) => (
-                <button key={id} onClick={() => setSubTab(id)} style={{ flex: 1, padding: "9px 2px", background: subTab === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: subTab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: subTab === id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
-                  {label}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+              {[["forsakring","🛡️","Försäkring"],["lan","🏦","Lån & Kredit"],["profil","📊","Min Profil"],["kalkyl","📐","Kalkylatorer"],["maklare","📈","Mäklare"]].map(([id, icon, label]) => (
+                <button key={id} onClick={() => setSubTab(id)}
+                  style={{ flex: "0 0 calc(33% - 4px)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "14px 8px", background: subTab === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${subTab === id ? "transparent" : "#1e293b"}`, borderRadius: 14, cursor: "pointer" }}>
+                  <span style={{ fontSize: 24 }}>{icon}</span>
+                  <span style={{ fontSize: 11, fontWeight: subTab === id ? 700 : 400, color: subTab === id ? "#fff" : "#64748b", whiteSpace: "nowrap" }}>{label}</span>
                 </button>
               ))}
             </div>
@@ -9253,7 +9762,7 @@ function Kapital() {
             <button key={idx} onClick={() => {
               window.history.pushState({ tab: idx }, "");
               setTab(idx);
-              if (idx === 1) setSubTab("analys");
+              if (idx === 1) setSubTab("topp10");
               if (idx === 3) setSubTab("forsakring");
             }} style={{
               flex: 1, padding: "10px 4px 12px", background: "none", border: "none",
@@ -9270,6 +9779,252 @@ function Kapital() {
   );
 }
 
+
+
+
+// ── Pro Golden Banner ─────────────────────────────────────────────────────
+function ProBanner({ isPro }) {
+  if (!isPro) return null;
+  return (
+    <div style={{ background: "linear-gradient(135deg,#1a1200,#2a1f00)", borderRadius: 14, border: "1px solid #f59e0b55", padding: "12px 16px", marginBottom: 14, display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ fontSize: 28 }}>⭐</div>
+      <div>
+        <div style={{ fontSize: 14, fontWeight: 800, background: "linear-gradient(90deg,#f59e0b,#fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Kapital Pro — Aktivt</div>
+        <div style={{ fontSize: 12, color: "#92400e" }}>Obegränsade analyser · Alla funktioner upplåsta</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Achievement Bubble ────────────────────────────────────────────────────
+function AchievementBubble({ text, onDone }) {
+  useEffect(() => {
+    const timer = setTimeout(onDone, 3000);
+    return () => clearTimeout(timer);
+  }, [onDone]);
+
+  return (
+    <div style={{ position: "fixed", top: "20%", left: "50%", transform: "translateX(-50%)", zIndex: 9999, animation: "none" }}>
+      <div style={{ background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 20, padding: "16px 24px", textAlign: "center", boxShadow: "0 8px 40px #10b98166", minWidth: 200 }}>
+        <div style={{ fontSize: 36, marginBottom: 6 }}>🎉</div>
+        <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{text}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Profilbyggare ─────────────────────────────────────────────────────────
+const PROFIL_STEPS = [
+  { id: "namn", label: "Ditt namn", icon: "👤", key: "kapital_name", type: "text", placeholder: "Förnamn Efternamn" },
+  { id: "inkomst", label: "Månadsinkomst (netto)", icon: "💰", key: "kapital_income", type: "number", placeholder: "35000" },
+  { id: "boende", label: "Boendekostnad/mån", icon: "🏠", key: "kapital_rent", type: "number", placeholder: "8000" },
+  { id: "mat", label: "Matkostnader/mån", icon: "🛒", key: "kapital_food", type: "number", placeholder: "4000" },
+  { id: "sparmal", label: "Ditt första sparmål", icon: "🎯", key: "kapital_firstgoal", type: "text", placeholder: "t.ex. Semester, Bil, Buffert" },
+  { id: "aktier", label: "Äger du aktier?", icon: "📈", key: "kapital_has_stocks", type: "choice", options: ["Ja", "Nej", "Vill börja"] },
+  { id: "krypto", label: "Äger du krypto?", icon: "₿", key: "kapital_has_crypto", type: "choice", options: ["Ja", "Nej", "Vill börja"] },
+  { id: "pension", label: "Har du kollat din pension?", icon: "👴", key: "kapital_checked_pension", type: "choice", options: ["Ja", "Nej"] },
+  { id: "forsakring", label: "Har du hemförsäkring?", icon: "🛡️", key: "kapital_has_insurance", type: "choice", options: ["Ja", "Nej", "Vet ej"] },
+  { id: "skulder", label: "Har du lån eller skulder?", icon: "💳", key: "kapital_has_debts", type: "choice", options: ["Ja", "Nej"] },
+];
+
+function ProfilByggare({ onClose }) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState(() => {
+    const saved = {};
+    PROFIL_STEPS.forEach(s => {
+      try { const v = localStorage.getItem(s.key); if (v) saved[s.id] = v; } catch {}
+    });
+    return saved;
+  });
+  const [current, setCurrent] = useState("");
+  const [done, setDone] = useState(false);
+
+  const totalSteps = PROFIL_STEPS.length;
+  const completedSteps = Object.keys(answers).length;
+  const pct = Math.round((completedSteps / totalSteps) * 100);
+
+  const currentStep = PROFIL_STEPS[step];
+
+  const saveAndNext = (val) => {
+    const v = val !== undefined ? val : current;
+    if (!v.trim()) return;
+    const newAnswers = { ...answers, [currentStep.id]: v };
+    setAnswers(newAnswers);
+    try { localStorage.setItem(currentStep.key, v); } catch {}
+    // Special handling
+    if (currentStep.id === "inkomst") try { localStorage.setItem("kapital_income", v); } catch {}
+    if (currentStep.id === "namn") try { localStorage.setItem("kapital_name", v); } catch {}
+    if (step < totalSteps - 1) { setStep(step + 1); setCurrent(""); }
+    else setDone(true);
+  };
+
+  const skip = () => {
+    if (step < totalSteps - 1) { setStep(step + 1); setCurrent(""); }
+    else setDone(true);
+  };
+
+  if (done) {
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 3000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#e2e8f0", marginBottom: 8, textAlign: "center" }}>Grym jobbat!</div>
+        <div style={{ fontSize: 16, color: "#64748b", textAlign: "center", marginBottom: 24, lineHeight: 1.6 }}>
+          Din profil är {pct}% klar. AI kan nu hjälpa dig bättre med din ekonomi!
+        </div>
+        <div style={{ background: "#1e293b", borderRadius: 99, height: 12, width: "100%", marginBottom: 24, overflow: "hidden" }}>
+          <div style={{ width: pct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99, transition: "width 1s" }} />
+        </div>
+        <button onClick={onClose} style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 16, color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 20px #10b98144" }}>
+          🚀 Öppna Kapital
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 3000, display: "flex", flexDirection: "column", padding: "0 20px" }}>
+      {/* Header */}
+      <div style={{ paddingTop: "env(safe-area-inset-top,24px)", marginTop: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: "#10b981", fontWeight: 700 }}>Bygger din profil</div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#334155", fontSize: 13, cursor: "pointer" }}>Fortsätt senare →</button>
+        </div>
+        {/* Progress */}
+        <div style={{ background: "#1e293b", borderRadius: 99, height: 6, marginBottom: 6 }}>
+          <div style={{ width: ((step / totalSteps) * 100) + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99, transition: "width 0.3s" }} />
+        </div>
+        <div style={{ fontSize: 12, color: "#475569" }}>{step + 1} av {totalSteps} — profilen {Math.round((step/totalSteps)*100)}% klar</div>
+      </div>
+
+      {/* AI greeting */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: 40 }}>
+        <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f14)", borderRadius: 20, border: "1px solid #10b98133", padding: 20, marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🤖</div>
+            <div style={{ fontSize: 13, color: "#10b981", fontWeight: 700 }}>Kapital AI</div>
+          </div>
+          <div style={{ fontSize: 16, color: "#e2e8f0", lineHeight: 1.6 }}>
+            {step === 0 && "Hej! Jag hjälper dig sätta upp din ekonomiprofil. Börja med ditt namn!"}
+            {step === 1 && `Trevligt, ${answers.namn || ""}! Vad tjänar du per månad efter skatt?`}
+            {step === 2 && "Bra! Vad betalar du för ditt boende per månad?"}
+            {step === 3 && "Vad spenderar du ungefär på mat per månad?"}
+            {step === 4 && "Vad är ditt viktigaste sparmål just nu?"}
+            {step === 5 && "Investerar du i aktier idag?"}
+            {step === 6 && "Har du någon krypto i din portfölj?"}
+            {step === 7 && "Har du kollat vad du kommer få i pension? Det är viktigt!"}
+            {step === 8 && "Har du hemförsäkring? Den skyddar dig mot stora oväntade kostnader."}
+            {step === 9 && "Sista frågan — har du några lån eller skulder?"}
+          </div>
+        </div>
+
+        {/* Input */}
+        <div style={{ fontSize: 28, textAlign: "center", marginBottom: 12 }}>{currentStep.icon}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0", textAlign: "center", marginBottom: 20 }}>{currentStep.label}</div>
+
+        {currentStep.type === "choice" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {currentStep.options.map(opt => (
+              <button key={opt} onClick={() => saveAndNext(opt)}
+                style={{ padding: "16px", background: answers[currentStep.id] === opt ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${answers[currentStep.id] === opt ? "transparent" : "#334155"}`, borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: answers[currentStep.id] === opt ? 700 : 400, cursor: "pointer" }}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div>
+            <input
+              value={current}
+              onChange={e => setCurrent(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && saveAndNext()}
+              placeholder={currentStep.placeholder}
+              inputMode={currentStep.type === "number" ? "decimal" : "text"}
+              autoFocus
+              style={{ width: "100%", padding: "18px 20px", background: "#0f172a", border: "1px solid #10b98155", borderRadius: 16, color: "#e2e8f0", fontSize: 22, fontWeight: 700, outline: "none", boxSizing: "border-box", textAlign: "center", marginBottom: 14 }}
+            />
+            <button onClick={() => saveAndNext()}
+              style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+              Nästa →
+            </button>
+          </div>
+        )}
+
+        <button onClick={skip} style={{ width: "100%", padding: "12px", background: "none", border: "none", color: "#334155", fontSize: 13, cursor: "pointer", marginTop: 10 }}>
+          Hoppa över denna
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Profile completion percentage helper
+function getProfilPct() {
+  try {
+    const filled = PROFIL_STEPS.filter(s => localStorage.getItem(s.key)).length;
+    return Math.round((filled / PROFIL_STEPS.length) * 100);
+  } catch { return 0; }
+}
+
+// ── Min Ekonomi ──────────────────────────────────────────────────────────
+function MinEkonomi({ isPro, onUpgrade }) {
+  const income = parseFloat(localStorage.getItem("kapital_income") || "0");
+  const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+  const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
+  const tillgangar = JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]");
+  const skulder = JSON.parse(localStorage.getItem("kapital_skulder") || "[]");
+  const totalExp = Object.values(expenses).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+  const leftover = income - totalExp;
+  const savingsRate = income > 0 ? (leftover / income * 100) : 0;
+  const totalTillgangar = tillgangar.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
+  const totalSkulder = skulder.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
+  const nettovarde = totalTillgangar - totalSkulder;
+
+  const metrics = [
+    { label: "Månadsinkomst", value: Math.round(income).toLocaleString("sv-SE") + " kr", color: "#10b981", icon: "💰" },
+    { label: "Utgifter/mån", value: Math.round(totalExp).toLocaleString("sv-SE") + " kr", color: "#ef4444", icon: "💸" },
+    { label: "Kvar/mån", value: Math.round(leftover).toLocaleString("sv-SE") + " kr", color: leftover >= 0 ? "#10b981" : "#ef4444", icon: "💵" },
+    { label: "Sparkvot", value: savingsRate.toFixed(1) + "%", color: savingsRate >= 20 ? "#10b981" : savingsRate >= 10 ? "#f59e0b" : "#ef4444", icon: "📈" },
+    { label: "Tillgångar", value: (totalTillgangar/1000).toFixed(0) + "k kr", color: "#10b981", icon: "💎" },
+    { label: "Nettovärde", value: (nettovarde/1000).toFixed(0) + "k kr", color: nettovarde >= 0 ? "#10b981" : "#ef4444", icon: "⭐" },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+        {metrics.map(m => (
+          <div key={m.label} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14 }}>
+            <div style={{ fontSize: 11, color: "#475569", marginBottom: 6 }}>{m.icon} {m.label}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: m.color }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+      {income === 0 && (
+        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, textAlign: "center" }}>
+          <div style={{ fontSize: 14, color: "#f59e0b", marginBottom: 8 }}>Fyll i din ekonomi för att se statistik</div>
+          <div style={{ fontSize: 12, color: "#64748b" }}>Gå till Ekonomi → Budget & Utgifter → Översikt</div>
+        </div>
+      )}
+      {goals.length > 0 && (
+        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>🎯 Sparmål</div>
+          {goals.map((g, i) => {
+            const pct = Math.min(100, (g.saved / g.target) * 100);
+            return (
+              <div key={i} style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                  <span style={{ color: "#e2e8f0" }}>{g.emoji} {g.name}</span>
+                  <span style={{ color: g.color || "#10b981" }}>{pct.toFixed(0)}%</span>
+                </div>
+                <div style={{ background: "#1e293b", borderRadius: 99, height: 6 }}>
+                  <div style={{ width: pct + "%", height: "100%", background: g.color || "#10b981", borderRadius: 99 }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Smart Guide Button ────────────────────────────────────────────────────
 function SmartGuide() {
@@ -9298,14 +10053,14 @@ function SmartGuide() {
       {/* Floating button */}
       {!open && (
         <button onClick={() => setOpen(true)}
-          style={{ position: "fixed", bottom: 80, right: 16, width: 48, height: 48, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", zIndex: 500, boxShadow: "0 4px 20px #10b98166", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          style={{ position: "fixed", bottom: 82, right: 16, width: 46, height: 46, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 20, cursor: "pointer", zIndex: 200, boxShadow: "0 4px 20px #10b98166", display: "flex", alignItems: "center", justifyContent: "center" }}>
           ?
         </button>
       )}
 
       {/* Guide panel */}
       {open && (
-        <div style={{ position: "fixed", bottom: 80, right: 12, left: 12, background: "#0f172a", borderRadius: 18, border: "1px solid #10b98144", padding: 18, zIndex: 500, boxShadow: "0 8px 40px #00000088" }}>
+        <div style={{ position: "fixed", bottom: 80, right: 12, left: 12, background: "#0f172a", borderRadius: 18, border: "1px solid #10b98144", padding: 18, zIndex: 200, boxShadow: "0 8px 40px #00000088" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>💡 Smart guide</div>
             <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#64748b", fontSize: 20, cursor: "pointer" }}>✕</button>
