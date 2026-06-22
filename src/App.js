@@ -1,6 +1,23 @@
 // @ts-nocheck
 import React, { useState, useCallback, useEffect, useRef } from "react";
 
+
+// ── Simple page router ────────────────────────────────────────────────────
+function useRoute() {
+  const [path, setPath] = React.useState(window.location.pathname);
+  React.useEffect(() => {
+    const handler = () => setPath(window.location.pathname);
+    window.addEventListener("popstate", handler);
+    return () => window.removeEventListener("popstate", handler);
+  }, []);
+  return path;
+}
+
+function navigate(path) {
+  window.history.pushState({}, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
+
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null }; }
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
@@ -1701,9 +1718,12 @@ function MaklareTab() {
                 <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
                   <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: "var(--border2)", color: "#94a3b8" }}>Min. {b.minFee} kr</span>
                   <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: "var(--border2)", color: "#94a3b8" }}>ISK: {b.isk ? `${b.isk}%` : "❌"}</span>
-                  <a href={b.affiliate} target="_blank" rel="noopener noreferrer" style={{ marginLeft: "auto", fontSize: 12, padding: "4px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 8, color: "#fff", textDecoration: "none", fontWeight: 600 }}>
-                    {b.bonus} →
-                  </a>
+                  <div style={{ marginLeft: "auto", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                    <span style={{ fontSize: 9, color: "#64748b", letterSpacing: "0.05em" }}>ANNONS</span>
+                    <a href={b.affiliate} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, padding: "4px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 8, color: "#fff", textDecoration: "none", fontWeight: 600 }}>
+                      {b.bonus} →
+                    </a>
+                  </div>
                 </div>
               </div>
             );
@@ -1788,6 +1808,7 @@ function MaklareTab() {
                       </span>
                     ))}
                   </div>
+                  <span style={{ fontSize: 9, color: "#64748b", letterSpacing: "0.05em", display: "block", textAlign: "right", marginBottom: 2 }}>ANNONS</span>
                   <a href={b.affiliate} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, padding: "5px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 8, color: "#fff", textDecoration: "none", fontWeight: 600 }}>
                     Ansök →
                   </a>
@@ -1865,6 +1886,7 @@ function MaklareTab() {
                   </div>
                 )}
                 <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end" }}>
+                  <span style={{ fontSize: 9, color: "#64748b", letterSpacing: "0.05em", display: "block", textAlign: "right", marginBottom: 2 }}>ANNONS</span>
                   <a href={b.affiliate} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, padding: "5px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 8, color: "#fff", textDecoration: "none", fontWeight: 600 }}>
                     Ansök →
                   </a>
@@ -1940,6 +1962,7 @@ function MaklareTab() {
                   </div>
                 )}
                 <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end" }}>
+                  <span style={{ fontSize: 9, color: "#64748b", letterSpacing: "0.05em", display: "block", textAlign: "right", marginBottom: 2 }}>ANNONS</span>
                   <a href={b.affiliate} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, padding: "5px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 8, color: "#fff", textDecoration: "none", fontWeight: 600 }}>
                     Ansök →
                   </a>
@@ -4599,7 +4622,7 @@ function LanAnsokan() {
       })}
 
       <div style={{ fontSize: 10, color: "#334155", textAlign: "center", marginTop: 8, lineHeight: 1.7 }}>
-        * Jämförelsetjänst. Kapital är inte en kreditförmedlare och lämnar inga kreditrekommendationer. Räntor är indikativa — exakt ränta och villkor bestäms av respektive långivare baserat på din kreditvärdighet. Effektiv ränta (ÅR) kan variera. Kapital kan erhålla ersättning vid beviljat lån via affiliate-avtal. Utgör inte finansiell rådgivning enligt lag (2014:968) om särskild tillsyn över kreditinstitut.
+        * Jämförelsetjänst. Kapital är inte en kreditförmedlare. Räntor är indikativa. Kapital kan erhålla provision via affiliate-avtal — detta påverkar inte vår objektiva bedömning. Utgör inte finansiell rådgivning.
       </div>
     </div>
   );
@@ -12564,7 +12587,7 @@ function CookieBanner() {
       <div style={{ background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 16, padding: "16px 18px", maxWidth: 680, margin: "0 auto", boxShadow: "0 -4px 32px #00000066" }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", marginBottom: 6 }}>🍪 Kapital använder lokal lagring</div>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
-          Vi lagrar din data lokalt i din webbläsare för att appen ska fungera. Vi säljer aldrig din data och skickar den inte till tredje part. Läs vår <span style={{ color: "#10b981" }}>integritetspolicy</span> för mer info.
+          Vi lagrar din data lokalt i din webbläsare för att appen ska fungera. Vi säljer aldrig din data och skickar den inte till tredje part. Läs vår <a href="/integritetspolicy" style={{ color: "#10b981", textDecoration: "underline" }}>integritetspolicy</a> och våra <a href="/anvandarvillkor" style={{ color: "#10b981", textDecoration: "underline" }}>användarvillkor</a> för mer info.
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => { setAccepted(true); try { localStorage.setItem("kapital_cookies", "true"); } catch {} }}
@@ -12581,7 +12604,64 @@ function CookieBanner() {
   );
 }
 
+function IntegritetspolicyPage() {
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg, #0a0f1e)", color: "var(--text, #e2e8f0)", fontFamily: "'Inter',-apple-system,sans-serif", padding: "24px 16px 80px" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto" }}>
+        <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "#10b981", fontSize: 14, cursor: "pointer", marginBottom: 20, padding: 0 }}>← Tillbaka</button>
+        <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Integritetspolicy</h1>
+        <p style={{ fontSize: 12, color: "#64748b", marginBottom: 32 }}>Kapital AB · Senast uppdaterad: juni 2026</p>
+        {[
+          ["1. Vem är vi?", "Kapital AB är personuppgiftsansvarig. Under registrering hos Bolagsverket. Kontakt: hej@mykapital.se"],
+          ["2. Vad samlar vi in?", "Namn och e-post (om du fyller i dem), ekonomisk data du registrerar, analyshistorik, bevakningslista och inställningar. All data lagras lokalt i din webbläsare — inte på våra servrar."],
+          ["3. AI-analys", "Vid analys skickas bolagsnamnet till vår server och Anthropic PBC:s API. Inga personuppgifter om dig ingår."],
+          ["4. Affiliate-länkar", "Kapital innehåller reklamlänkar (märkta ANNONS) till Avanza, Nordnet, DEGIRO m.fl. Vi kan erhålla provision. Detta påverkar inte vår bedömning."],
+          ["5. Dina rättigheter (GDPR)", "Du har rätt till tillgång, rättelse, radering, begränsning, dataportabilitet och att invända mot behandling. Kontakta hej@mykapital.se. Du kan också klaga till IMY (imy.se)."],
+          ["6. Radera din data", "All lokal data raderas under Profil → Data → Radera all data."],
+          ["7. Kontakt", "hej@mykapital.se | mykapital.se"],
+        ].map(([title, text]) => (
+          <div key={title} style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#10b981", marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid #1e293b" }}>{title}</h2>
+            <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.7 }}>{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AnvandarvillkorPage() {
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg, #0a0f1e)", color: "var(--text, #e2e8f0)", fontFamily: "'Inter',-apple-system,sans-serif", padding: "24px 16px 80px" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto" }}>
+        <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "#10b981", fontSize: 14, cursor: "pointer", marginBottom: 20, padding: 0 }}>← Tillbaka</button>
+        <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Användarvillkor</h1>
+        <p style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>Kapital AB · Senast uppdaterad: juni 2026</p>
+        <p style={{ fontSize: 13, color: "#94a3b8", marginBottom: 32 }}>Genom att använda Kapital godkänner du dessa villkor.</p>
+        {[
+          ["1. Om tjänsten", "Kapital är ett informations- och analysverktyg. Kapital är INTE en finansiell rådgivare. AI-analyser utgör inte investeringsrådgivning enligt lag (2007:528)."],
+          ["2. Ålder", "Du måste vara minst 18 år för att använda Kapital."],
+          ["3. Pro-prenumeration", "49 kr/mån eller 399 kr/år. Förnyas automatiskt. Du har 14 dagars ångerrätt — kontakta hej@mykapital.se med namn och ordernummer."],
+          ["4. Ansvarsbegränsning", "Vi garanterar inte att tjänsten alltid är felfri. Vårt ansvar är begränsat till belopp du betalat de senaste 12 månaderna. Alla investeringsbeslut fattas på eget ansvar."],
+          ["5. Affiliate-länkar", "Reklamlänkar märks med ANNONS. Vi kan erhålla provision — påverkar inte vår objektiva bedömning."],
+          ["6. Förbjuden användning", "Inga olagliga ändamål, hacking, scraping eller delning av kontotillgång."],
+          ["7. Tillämplig lag", "Svensk lag. Tvister: Allmänna reklamationsnämnden (arn.se) eller allmän domstol."],
+          ["8. Kontakt", "hej@mykapital.se | mykapital.se"],
+        ].map(([title, text]) => (
+          <div key={title} style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#10b981", marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid #1e293b" }}>{title}</h2>
+            <p style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.7 }}>{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function KapitalApp() {
+  const path = useRoute();
+  if (path === "/integritetspolicy") return <IntegritetspolicyPage />;
+  if (path === "/anvandarvillkor") return <AnvandarvillkorPage />;
   return (
     <ErrorBoundary>
       <Kapital />
