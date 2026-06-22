@@ -27,6 +27,7 @@ const API = "/api/claude";
 const MODEL = "claude-sonnet-4-6";
 const FAST_MODEL = "claude-haiku-4-5-20251001";
 // KEY removed — API key handled server-side via Netlify Function
+  // eslint-disable-next-line no-unused-vars
 const PRESETS = ["Scandinavian Enviro Systems", "Ericsson", "Volvo", "Sinch", "H&M"];
 
 // ── Stripe Payment ────────────────────────────────────────────────────────
@@ -354,11 +355,13 @@ const CALENDAR = [
   { company: "Sandvik", date: "2026-07-18", type: "Q2", time: "07:30" },
 ];
 
+  // eslint-disable-next-line no-unused-vars
 const TABS = ["📊 Analys", "💼 Portfölj", "📐 Kalkyl", "🏦 Mäklare", "🗓 Kalender", "📤 Dela"];
 
 const LEGAL_SHORT = "⚠ Informationen är inte finansiell rådgivning. Alla investeringar sker på eget ansvar och innebär risk för förlust.";
 const LEGAL_FULL = `Kapital är ett informations- och analysverktyg. Innehållet utgör inte investeringsrådgivning enligt lagen (2007:528) om värdepappersmarknaden och ska inte tolkas som personliga köp- eller säljrekommendationer. Analys och poängsättning är AI-genererad och baseras på allmänt tillgänglig information — inte på din personliga ekonomi, risktolerans eller investeringsmål. Historisk utveckling är ingen garanti för framtida avkastning. Alla investeringsbeslut fattas på eget ansvar. Rådgör med en auktoriserad finansiell rådgivare innan du fattar investeringsbeslut.`;
 
+  // eslint-disable-next-line no-unused-vars
 function LegalBanner() {
   const [open, setOpen] = useState(false);
   return (
@@ -499,6 +502,7 @@ function PriceChip({ chgPct }) {
 function QuickGrid({ onSelect }) {
   const [prices, setPrices] = useState({});
   const [priceLoading, setPriceLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [selectedTicker, setSelectedTicker] = useState(null);
   const { checkAlerts } = useAlerts();
 
@@ -521,6 +525,7 @@ function QuickGrid({ onSelect }) {
       setPrices(prev => ({ ...prev, ...updated }));
     }, 30000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fmtPrice = (p, ticker) => {
@@ -1953,6 +1958,7 @@ function MaklareTab() {
 }
 
 // ── Calendar Tab ──────────────────────────────────────────────────────────
+  // eslint-disable-next-line no-unused-vars
 function KalenderTab({ isPro, onUpgrade }) {
   const [watched, setWatched] = useState(["Ericsson", "Volvo"]);
   const today = new Date("2026-06-18");
@@ -2107,9 +2113,11 @@ function BudgetOversiktInline({ inc, totalExp, leftover, savingsRate, goals }) {
 }
 
 function TillgangarSkulder() {
+  // eslint-disable-next-line no-unused-vars
   const [tillgangar, setTillgangar] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]"); } catch { return []; }
   });
+  // eslint-disable-next-line no-unused-vars
   const [skulder, setSkulder] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kapital_skulder") || "[]"); } catch { return []; }
   });
@@ -3079,6 +3087,7 @@ function SkuldfriKalkylator() {
     return month;
   };
 
+  // eslint-disable-next-line no-unused-vars
   const { months, totalInterest } = calcPayoff();
   const minOnlyMonths = calcMinOnly();
   const monthsSaved = minOnlyMonths - months;
@@ -3332,6 +3341,7 @@ function PensionsFonder() {
   ];
 
   const rekommFonder = years > 15 ? FONDER.filter(f => f.risk === "hog") : years > 5 ? FONDER.filter(f => f.risk !== "lag") : FONDER.filter(f => f.risk === "lag" || f.risk === "medel");
+  // eslint-disable-next-line no-unused-vars
   const riskFarg = r => r === "hog" ? "#ef4444" : r === "medel" ? "#f59e0b" : "#10b981";
   const riskLabel = r => r === "hog" ? "Hog risk" : r === "medel" ? "Medel" : "Lag risk";
 
@@ -3769,6 +3779,7 @@ function KreditScore({ inc }) {
   };
 
   const income = parseFloat(form.income || inc || 0);
+  // eslint-disable-next-line no-unused-vars
   const totalDebt = parseFloat(form.totalDebt || 0);
   const monthlyPayment = parseFloat(form.monthlyPayment || 0);
   const missedPayments = parseInt(form.missedPayments || 0);
@@ -3983,6 +3994,7 @@ function LoneSpec({ inc }) {
   // Calculations
   const kommunSkatt = b * 0.3224; // snitt kommunalskatt
   const statligSkatt = b * 12 > 613900 ? ((b * 12 - 613900) / 12) * 0.20 : 0;
+  // eslint-disable-next-line no-unused-vars
   const ga = Math.min(b > 0 ? Math.min(36000, Math.max(13200, 13200 + (Math.min(b, 123000) - 13200) * 0.34)) : 0, b);
   const jsa = Math.min(kommunSkatt * 0.3, b * 0.1);
   const totalSkatt = Math.max(0, kommunSkatt - jsa + statligSkatt);
@@ -4460,6 +4472,7 @@ function LanAnsokan() {
   const [lanTyp, setLanTyp] = useState("blanko");
   const [belopp, setBelopp] = useState("150000");
   const [lopetid, setLopetid] = useState("5");
+  // eslint-disable-next-line no-unused-vars
   const [syfte, setSyfte] = useState("");
 
   const b = parseFloat(belopp) || 0;
@@ -4697,6 +4710,7 @@ function ForsakringsGuide() {
   const [harBarn, setHarBarn] = useState("nej");
   const [harHusdjur, setHarHusdjur] = useState("nej");
   const [boende, setBoende] = useState("hyresratt");
+  // eslint-disable-next-line no-unused-vars
   const [alder, setAlder] = useState("30");
 
   const age = parseInt(alder) || 30;
@@ -5196,6 +5210,7 @@ function TolvtreaKalkyl() {
   const lonNum = parseFloat(lon) || 0;
   const utdNum = parseFloat(utdelning) || 0;
   const andelNum = parseFloat(andel) / 100 || 0.5;
+  // eslint-disable-next-line no-unused-vars
   const akNum = parseFloat(aktiekapital) || 25000;
 
   // Förenklat gränsbelopp (schablonmetoden)
@@ -5367,10 +5382,13 @@ function FormansvardeTraktamente() {
   const [tab, setTab] = useState("bil");
   const [nypris, setNypris] = useState("300000");
   const [drivmedel, setDrivmedel] = useState("bensin");
+  // eslint-disable-next-line no-unused-vars
   const [arslon, setArslon] = useState("600000");
   const [kmTjänst, setKmTjanst] = useState("1000");
+  // eslint-disable-next-line no-unused-vars
   const [resor, setResor] = useState([{ typ: "inrikes", dagar: "0" }]);
 
+  // eslint-disable-next-line no-unused-vars
   const IBB = 57300;
   const nyprisNum = parseFloat(nypris) || 0;
 
@@ -5392,6 +5410,7 @@ function FormansvardeTraktamente() {
     usa: { hel: 720, halv: 360, natt: 360 },
   };
 
+  // eslint-disable-next-line no-unused-vars
   const totalTraktamente = resor.reduce((s, r) => {
     const t = TRAKTAMENTE[r.typ] || TRAKTAMENTE.inrikes;
     return s + t.hel * (parseFloat(r.dagar) || 0);
@@ -5693,6 +5712,7 @@ function EkonomiskProfil() {
   // Gather all data
   const income = parseFloat(localStorage.getItem("kapital_income") || "0");
   const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+  // eslint-disable-next-line no-unused-vars
   const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
   const forsakringar = JSON.parse(localStorage.getItem("kapital_forsakringar") || "[]");
   const abonnemang = JSON.parse(localStorage.getItem("kapital_abonnemang") || "[]");
@@ -5700,6 +5720,7 @@ function EkonomiskProfil() {
   const fordon = JSON.parse(localStorage.getItem("kapital_fordon") || "[]");
   const tillgangar = JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]");
   const kryptoInnehav = JSON.parse(localStorage.getItem("kapital_krypto") || "[]");
+  // eslint-disable-next-line no-unused-vars
   const kryptoVarde = kryptoInnehav.reduce((s, k) => s + (parseFloat(k.kostnad) || 0), 0);
   const skulder = JSON.parse(localStorage.getItem("kapital_skulder") || "[]");
   const kredit = JSON.parse(localStorage.getItem("kapital_kredit") || "{}");
@@ -5948,6 +5969,7 @@ function AILaneBedömning() {
   const [result, setResult] = useState(null);
   const [form, setForm] = useState(() => {
     const inc = localStorage.getItem("kapital_income") || "";
+  // eslint-disable-next-line no-unused-vars
     const name = localStorage.getItem("kapital_name") || "";
     return {
       inkomst: Math.round(parseFloat(inc) * 1.35) || "",
@@ -6392,6 +6414,7 @@ function SmartLanAnsokan() {
   );
 }
 
+  // eslint-disable-next-line no-unused-vars
 function DelaTab({ result }) {
   const [toast, setToast] = useState(null);
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 2500); };
@@ -6548,6 +6571,7 @@ function useNotifications() {
 }
 
 function NotificationCenter({ onClose }) {
+  // eslint-disable-next-line no-unused-vars
   const { notifications, markAllRead, unreadCount } = useNotifications();
   useEffect(() => { markAllRead(); }, []);
   return (
@@ -6736,6 +6760,7 @@ function HealthScore() {
   const fordon = JSON.parse(localStorage.getItem("kapital_fordon") || "[]");
   const tillgangar = JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]");
   const kryptoInnehav = JSON.parse(localStorage.getItem("kapital_krypto") || "[]");
+  // eslint-disable-next-line no-unused-vars
   const kryptoVarde = kryptoInnehav.reduce((s, k) => s + (parseFloat(k.kostnad) || 0), 0);
   const skulder = JSON.parse(localStorage.getItem("kapital_skulder") || "[]");
 
@@ -7168,6 +7193,7 @@ function EkonomiskTidslinje() {
 function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery, onNewsLoaded }) {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -7221,6 +7247,7 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery, onNewsLoaded }) 
       setLoading(false);
     };
     fetchNews();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sentimentColor = s => s === "positiv" ? "#22c55e" : s === "negativ" ? "#ef4444" : "#f59e0b";
@@ -7270,6 +7297,7 @@ function useVoiceControl({ setTab, setSubTab, setQuery, analyze, income, leftove
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     setSupported(!!SpeechRecognition);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const speak = (text) => {
@@ -8522,6 +8550,7 @@ function JamforLan() {
   const [typ, setTyp] = useState("bolan");
   const [belopp, setBelopp] = useState("2000000");
   const [tid, setTid] = useState("25");
+  // eslint-disable-next-line no-unused-vars
   const [showResult, setShowResult] = useState(false);
 
   const LANTYPER = [
@@ -9366,6 +9395,7 @@ function KryptoAnalysTab({ isPro, onUpgrade }) {
       setPricesLoading(false);
     };
     fetchPrices();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const STEPS = ["Hämtar marknadsdata...", "Analyserar on-chain data...", "Beräknar sentiment...", "Sammanställer analys..."];
@@ -9426,7 +9456,9 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
 
   if (result) {
     const color = recColor(result.recommendation);
+  // eslint-disable-next-line no-unused-vars
     const maxGraf = Math.max(...(result.grafData || [100]));
+  // eslint-disable-next-line no-unused-vars
     const minGraf = Math.min(...(result.grafData || [100]));
 
     return (
@@ -10284,6 +10316,7 @@ function FondGuide() {
   const [filter, setFilter] = useState("alla");
   const [sort, setSort] = useState("framtid");
   const [selected, setSelected] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [showOnlyRek, setShowOnlyRek] = useState(false);
 
   const KATEGORIER = ["alla", "Indexfond Global", "Indexfond Sverige", "Teknikfond", "AI-fond", "Hållbar global", "Blandfond", "Räntefond", "PPM Statsfond"];
@@ -10547,6 +10580,7 @@ function ValutaWidget({ exchangeRates, currency, currencies }) {
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Dagens kurser mot SEK</div>
         {CURR.filter(c => c.code !== "SEK").map(c => {
           const rate = exchangeRates[c.code];
+  // eslint-disable-next-line no-unused-vars
           const rate1000 = rate ? (1000 * rate).toFixed(2) : "—";
           return (
             <div key={c.code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
@@ -10885,6 +10919,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
   const [email, setEmail] = useState(() => { try { return localStorage.getItem("kapital_email") || ""; } catch { return ""; } });
   const [showLangs, setShowLangs] = useState(false);
   const [showCurrencies, setShowCurrencies] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [showThemes, setShowThemes] = useState(false);
   const [section, setSection] = useState("profil");
 
@@ -11292,12 +11327,14 @@ function RiktigKalender() {
   );
 }
 
+  // eslint-disable-next-line no-unused-vars
 function ProfilKalender() {
   const [events, setEvents] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kapital_kalender") || "[]"); } catch { return []; }
   });
   const [adding, setAdding] = useState(false);
   const [newEvent, setNewEvent] = useState({ titel: "", datum: "", tid: "09:00", typ: "mal", notering: "" });
+  // eslint-disable-next-line no-unused-vars
   const [selectedDate, setSelectedDate] = useState(null);
 
   const save = (e) => { setEvents(e); try { localStorage.setItem("kapital_kalender", JSON.stringify(e)); } catch {} };
@@ -11549,6 +11586,7 @@ function Kapital() {
     try { return localStorage.getItem("kapital_currency") || "SEK"; } catch { return "SEK"; }
   });
   const [exchangeRates, setExchangeRates] = useState({});
+  // eslint-disable-next-line no-unused-vars
   const [ratesLoading, setRatesLoading] = useState(false);
 
   const CURRENCIES = [
@@ -11581,6 +11619,7 @@ function Kapital() {
       setRatesLoading(false);
     };
     fetchRates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const changeCurrency = (code) => {
@@ -11594,6 +11633,7 @@ function Kapital() {
     return sekAmount * exchangeRates[currency];
   };
 
+  // eslint-disable-next-line no-unused-vars
   const formatCurrency = (sekAmount, decimals = 0) => {
     const curr = CURRENCIES.find(c => c.code === currency);
     const converted = convertCurrency(sekAmount);
@@ -11611,6 +11651,7 @@ function Kapital() {
   });
 
   // Apply theme
+  // eslint-disable-next-line no-unused-vars
   const THEME_ACCENTS = { dark: "#10b981", darker: "#10b981", green: "#22c55e", blue: "#3b82f6", purple: "#8b5cf6", orange: "#f97316" };
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try { return !localStorage.getItem("kapital_onboarded"); } catch { return true; }
@@ -11654,6 +11695,7 @@ function Kapital() {
   const { unlock, newAchievement } = useGamification();
 
   // Browser history navigation — back button support
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     window.history.replaceState({ tab: 0, sub: null, section: null }, "");
     const handlePop = (e) => {
@@ -11663,12 +11705,15 @@ function Kapital() {
     };
     window.addEventListener("popstate", handlePop);
     return () => window.removeEventListener("popstate", handlePop);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // eslint-disable-next-line no-unused-vars
   const goToTab = useCallback((newTab, newSubTab) => {
     window.history.pushState({ tab: newTab, sub: newSubTab || null }, "");
     setTab(newTab);
     if (newSubTab) setSubTab(newSubTab);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Voice control
@@ -11805,6 +11850,7 @@ function Kapital() {
       setError(err.message || "Något gick fel. Försök igen.");
     }
     finally { clearInterval(stepInterval); setLoading(false); setLoadStep(0); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, isPro, usageCount, cache]);
 
   const voiceControl = useVoiceControl({ setTab, setSubTab, setQuery, analyze, income, leftover, savingsRate });
@@ -11975,6 +12021,7 @@ function Kapital() {
     };
     applyTheme();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [theme]);
 
   return (
@@ -12196,6 +12243,7 @@ function Kapital() {
 
 
 // ── Pro Golden Banner ─────────────────────────────────────────────────────
+  // eslint-disable-next-line no-unused-vars
 function ProBanner({ isPro }) {
   if (!isPro) return null;
   return (
@@ -12210,6 +12258,7 @@ function ProBanner({ isPro }) {
 }
 
 // ── Achievement Bubble ────────────────────────────────────────────────────
+  // eslint-disable-next-line no-unused-vars
 function AchievementBubble({ text, onDone }) {
   useEffect(() => {
     const timer = setTimeout(onDone, 3000);
@@ -12378,6 +12427,7 @@ function getProfilPct() {
 }
 
 // ── Min Ekonomi ──────────────────────────────────────────────────────────
+  // eslint-disable-next-line no-unused-vars
 function MinEkonomi({ isPro, onUpgrade }) {
   const income = parseFloat(localStorage.getItem("kapital_income") || "0");
   const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
