@@ -23,10 +23,10 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const API = "https://api.anthropic.com/v1/messages";
+const API = "/api/claude";
 const MODEL = "claude-sonnet-4-6";
 const FAST_MODEL = "claude-haiku-4-5-20251001";
-const KEY = process.env.REACT_APP_ANTHROPIC_KEY || "";
+// KEY removed — API key handled server-side via Netlify Function
 const PRESETS = ["Scandinavian Enviro Systems", "Ericsson", "Volvo", "Sinch", "H&M"];
 
 // ── Stripe Payment ────────────────────────────────────────────────────────
@@ -4342,7 +4342,7 @@ function AICoach({ inc, expenses, goals }) {
 
       const resp = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: MODEL,
           max_tokens: 600,
@@ -5497,7 +5497,7 @@ function JuridiskAI() {
 
       const resp = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: MODEL,
           max_tokens: 800,
@@ -5965,7 +5965,7 @@ Svara BARA med JSON:
 
       const resp = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model: FAST_MODEL, max_tokens: 800, messages: [{ role: "user", content: prompt }] })
       });
       const data = await resp.json();
@@ -6550,8 +6550,8 @@ function CompareView({ onClose, onAnalyze }) {
     if (!name.trim()) return;
     setLoad(true);
     try {
-      const resp = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+      const resp = await fetch(API, {
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000,
           messages: [{ role: "user", content: `Analysera aktien "${name}" och svara ENDAST med JSON:\n{"company":"${name}","sector":"bransch","score":60,"recommendation":"Avvakta","summary":"kort sammanfattning","keyRisks":["r1","r2"],"keyStrengths":["s1","s2"],"nyckeltal":{"pe":20,"direktavkastning":2.5,"ebitdaMarginal":18,"betavarde":1.0},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109]}` }] })
       });
@@ -7144,7 +7144,7 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery, onNewsLoaded }) 
       try {
         const resp = await fetch(API, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model: FAST_MODEL, max_tokens: 600,
             messages: [{ role: "user", content: 'Ge 6 svenska ekonominyheter juni 2026. Svara BARA med JSON-array utan text utanför: [{"titel":"","sammanfattning":"","kategori":"Börsen/Räntor/Fastigheter/Ekonomi","sentiment":"positiv/neutral/negativ","bolag":null,"tid":"för X timmar sedan"}]' }]
@@ -8117,7 +8117,7 @@ function InvesterarAI() {
     try {
       const resp = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: FAST_MODEL,
           max_tokens: 600,
@@ -9342,7 +9342,7 @@ function KryptoAnalysTab({ isPro, onUpgrade }) {
     try {
       const resp = await fetch(API, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: FAST_MODEL, max_tokens: 900,
           messages: [{ role: "user", content: `Du är en kryptoanalytiker. Analysera kryptovalutan: ${n}
@@ -11687,9 +11687,8 @@ function Kapital() {
     }, 600);
 
     try {
-      if (!KEY) throw new Error("API-nyckel saknas — lägg till REACT_APP_ANTHROPIC_KEY i miljövariabler");
       const resp = await fetch(API, {
-        method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: FAST_MODEL, max_tokens: 900,
           messages: [{ role: "user", content: "Du är en aktieanalytiker. Analysera bolaget: " + name + "\n\nSvara EXAKT med detta JSON-format och inget annat:\n{\"company\":\"BOLAGSNAMN\",\"sector\":\"SEKTOR\",\"summary\":\"SAMMANFATTNING 2-3 meningar\",\"score\":70,\"scoreReason\":\"MOTIVERING\",\"recommendation\":\"Köp\",\"keyRisks\":[\"Risk 1\",\"Risk 2\",\"Risk 3\"],\"keyStrengths\":[\"Styrka 1\",\"Styrka 2\",\"Styrka 3\"],\"catalysts\":[\"Katalysator 1\",\"Katalysator 2\"],\"nyckeltal\":{\"pe\":20,\"ps\":2,\"ey\":5,\"direktavkastning\":2,\"borsvarde\":\"100 mdkr\",\"ebitdaMarginal\":15,\"skuldsattning\":\"Lag\",\"betavarde\":1},\"utdelning\":{\"belopp\":\"3 kr\",\"datum\":\"2026-04-01\",\"frekvens\":\"Arsvis\",\"historik\":[2,2.5,2.8,3]},\"insider\":[{\"namn\":\"VD\",\"typ\":\"Kop\",\"antal\":10000,\"kurs\":100,\"datum\":\"2026-05-01\"}],\"grafData\":[95,98,102,99,105,103,108,106,110,107,112,109],\"news\":[{\"headline\":\"Nyhet om bolaget\",\"date\":\"2026\",\"source\":\"DI\",\"sentiment\":\"positiv\"}],\"timeHorizon\":\"Medel 6-18 man\",\"lastUpdated\":\"Juni 2026\"}\n\nByt ut alla värden mot verkliga uppskattningar för " + name + ". Score: 0-30=Salj 31-60=Avvakta 61-100=Kop. Recommendation maste vara exakt: Kop, Avvakta, eller Salj." }]
