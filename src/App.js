@@ -2341,6 +2341,10 @@ function SparaTab({ currency, exchangeRates, currencies }) {
             // GRUPP 4: AI & Hjälp
             { id: "aicoach", icon: "🤖", color: "#10b981", label: "AI-ekonomicoach", desc: "Fråga om allt inom ekonomi och skatt", items: [{ id: "aicoach", icon: "💬", label: "AI-coachen" }] },
             { id: "juridisk", icon: "⚖️", color: "#8b5cf6", label: "Juridisk AI", desc: "Avtal, hyresrätt, arbetsrätt och mer", items: [{ id: "juridiskAI", icon: "⚖️", label: "Juridisk AI" }] },
+
+            // GRUPP 5: Hem & Liv
+            { id: "bygghus", icon: "🏗️", color: "#f97316", label: "Bygg & Renovera", desc: "Kostnadsplan för hus, renovering och VVS", items: [{ id: "bygghusguide", icon: "🏗️", label: "Bygg ditt hem" }, { id: "renoveringskalkyl", icon: "🔨", label: "Renovering" }] },
+            { id: "billigtliv", icon: "💡", color: "#06b6d4", label: "Lev billigare", desc: "Tips och verktyg för att sänka dina kostnader", items: [{ id: "billigboende", icon: "🏠", label: "Billigt boende" }, { id: "resebiljett", icon: "🚌", label: "Resa smart" }, { id: "affiliates", icon: "🤝", label: "Erbjudanden" }] },
           ].map(cat => (
             <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "16px", background: "#0f172a", border: `1px solid ${cat.color}22`, borderRadius: 16, cursor: "pointer", textAlign: "left", marginBottom: 10 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
@@ -2376,6 +2380,13 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "lonespec", icon: "🧾", label: "Min lönespecifikation", desc: "Se hur din lön fördelas" },
               { id: "snittlon", icon: "📊", label: "Snittlön per yrke", desc: "Jämför med branschsnittet" },
               { id: "lonekalkyl", icon: "📈", label: "Löneutveckling", desc: "Vad är din lön värd om 5-10 år?" },
+            ] : activeSection === "bygghus" ? [
+              { id: "bygghusguide", icon: "🏗️", label: "Bygg ditt hem", desc: "Ekonomisk plan för husbygge" },
+              { id: "renoveringskalkyl", icon: "🔨", label: "Renovering & VVS", desc: "Vad kostar renoveringen?" },
+            ] : activeSection === "billigtliv" ? [
+              { id: "billigboende", icon: "🏠", label: "Billigt boende", desc: "Hyra, Airbnb, byte och mer" },
+              { id: "resebiljett", icon: "🚌", label: "Resa smart", desc: "Buss, tåg, taxi och flyg billigast" },
+              { id: "affiliates", icon: "🤝", label: "Erbjudanden", desc: "Lån, försäkring, leasing och mer" },
             ] : activeSection === "juridisk" ? [
               { id: "juridiskAI", icon: "⚖️", label: "Juridisk AI-assistent", desc: "Avtal, försäkring, lån och dina rättigheter" },
             ] : activeSection === "valuta" ? [
@@ -2698,6 +2709,11 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "kryptokuide" && <KryptoGuide />}
       {activeSubSection === "kryptoskatt" && <KryptoSkatt />}
       {activeSubSection === "utlandguide" && <UtlandGuide />}
+      {activeSubSection === "bygghusguide" && <ByggHusGuide />}
+      {activeSubSection === "renoveringskalkyl" && <RenoveringKalkyl />}
+      {activeSubSection === "billigboende" && <BilligtBoende />}
+      {activeSubSection === "resebiljett" && <ResaSmart />}
+      {activeSubSection === "affiliates" && <ErbjudandenHub />}
       {activeSubSection === "fondguide" && <FondGuide />}
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
       {activeSubSection === "aicoach" && <AICoach inc={inc} expenses={expenses} goals={goals} />}
@@ -5455,6 +5471,249 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
 }
 
 // ── Smart Låneansökan ─────────────────────────────────────────────────────
+// ── AI Lånebedömning & Lånelöfte ─────────────────────────────────────────
+function AILaneBedömning() {
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [form, setForm] = useState(() => {
+    const inc = localStorage.getItem("kapital_income") || "";
+    const name = localStorage.getItem("kapital_name") || "";
+    return {
+      inkomst: Math.round(parseFloat(inc) * 1.35) || "",
+      medinkomst: "",
+      anstallning: "tillsvidare",
+      arAnstald: "3",
+      utgifter: "",
+      befintligaSkulder: "",
+      hyra: "",
+      barn: "0",
+      objekt: "bostad",
+      kontantinsats: "",
+      onskatBelopp: "",
+      kreditmarkningar: "nej",
+      kronofogden: "nej",
+    };
+  });
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const INP = ({ label, k, placeholder, type = "text", opts }) => (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 5 }}>{label}</div>
+      {opts ? (
+        <select value={form[k]} onChange={e => set(k, e.target.value)}
+          style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
+          {opts.map(([v, l]) => <option key={v} value={v} style={{ background: "#0f172a" }}>{l}</option>)}
+        </select>
+      ) : (
+        <input value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder}
+          inputMode={type === "number" ? "decimal" : "text"}
+          style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+      )}
+    </div>
+  );
+
+  const analyze = async () => {
+    setLoading(true);
+    try {
+      const prompt = `Du är en svensk bankkreditanalytiker. Analysera denna låneansökan och svara EXAKT med JSON:
+
+UPPGIFTER:
+- Månadsinkomst (brutto): ${form.inkomst} kr
+- Medinkomst: ${form.medinkomst || "Ingen"} kr
+- Anställningsform: ${form.anstallning}
+- År anställd: ${form.arAnstald}
+- Månadsutgifter: ${form.utgifter} kr
+- Befintliga skulder: ${form.befintligaSkulder || "0"} kr
+- Hyra/boendekostnad: ${form.hyra} kr
+- Antal barn: ${form.barn}
+- Typ av lån: ${form.objekt}
+- Önskat lånebelopp: ${form.onskatBelopp || "Ej angivet"} kr
+- Kontantinsats: ${form.kontantinsats || "Ej angivet"} kr
+- Betalningsanmärkningar: ${form.kreditmarkningar}
+- Kronofogden: ${form.kronofogden}
+
+Svara BARA med JSON:
+{"godkand":true,"maxBelopp":3000000,"rekommenderatBelopp":2500000,"maxRanta":4.5,"minRanta":3.8,"manadskostnad":12500,"kvar":8500,"dti":35,"ltv":75,"bedömning":"Sammanfattning 2-3 meningar","styrkor":["Styrka 1","Styrka 2","Styrka 3"],"risker":["Risk 1","Risk 2"],"villkor":["Villkor 1","Villkor 2"],"tips":["Tips 1","Tips 2","Tips 3"],"banker":["Avanza Bank","SBAB","Handelsbanken"],"lanelofte":"Du är preliminärt berättigad till ett lånelöfte på upp till X kr baserat på dina uppgifter. Detta är en AI-uppskattning och ersätter inte en formell kreditprövning."}`
+
+      const resp = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({ model: FAST_MODEL, max_tokens: 800, messages: [{ role: "user", content: prompt }] })
+      });
+      const data = await resp.json();
+      const text = data.content?.map(b => b.text || "").join("") || "";
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) setResult(JSON.parse(match[0]));
+    } catch (e) {
+      console.error(e);
+    }
+    setLoading(false);
+  };
+
+  if (result) {
+    const color = result.godkand ? "#10b981" : "#ef4444";
+    return (
+      <div>
+        <button onClick={() => setResult(null)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "10px 20px", marginBottom: 16, boxShadow: "0 4px 15px #10b98144" }}>
+          ← Tillbaka
+        </button>
+
+        {/* Verdict */}
+        <div style={{ background: `linear-gradient(135deg,#0f172a,${color}11)`, borderRadius: 18, border: `2px solid ${color}55`, padding: 20, marginBottom: 16, textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 8 }}>{result.godkand ? "✅" : "❌"}</div>
+          <div style={{ fontSize: 20, fontWeight: 900, color, marginBottom: 4 }}>
+            {result.godkand ? "Sannolikt godkänd" : "Troligen ej godkänd just nu"}
+          </div>
+          <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>{result.bedömning}</div>
+        </div>
+
+        {/* Loan amount */}
+        {result.godkand && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+            {[
+              ["Max lånebelopp", Math.round(result.maxBelopp || 0).toLocaleString("sv-SE") + " kr", "#10b981"],
+              ["Rekommenderat", Math.round(result.rekommenderatBelopp || 0).toLocaleString("sv-SE") + " kr", "#3b82f6"],
+              ["Ränteintervall", (result.minRanta || 0) + "–" + (result.maxRanta || 0) + "%", "#f59e0b"],
+              ["Månadskostnad", Math.round(result.manadskostnad || 0).toLocaleString("sv-SE") + " kr/mån", "#e2e8f0"],
+              ["Kvar efter lån", Math.round(result.kvar || 0).toLocaleString("sv-SE") + " kr/mån", result.kvar > 5000 ? "#10b981" : "#ef4444"],
+              ["Skuld/inkomst", (result.dti || 0) + "%", result.dti < 40 ? "#10b981" : "#f59e0b"],
+            ].map(([l, v, c]) => (
+              <div key={l} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 12 }}>
+                <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>{l}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Lånelöfte box */}
+        {result.godkand && result.lanelofte && (
+          <div style={{ background: "linear-gradient(135deg,#0a1f14,#0f172a)", borderRadius: 16, border: "1px solid #10b98144", padding: 18, marginBottom: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>🏦 Preliminärt Lånelöfte</div>
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>{result.lanelofte}</div>
+            <div style={{ fontSize: 11, color: "#334155", marginTop: 10 }}>
+              ⚠ Detta är en AI-baserad uppskattning. Kontakta bank för formell kreditprövning och bindande lånelöfte.
+            </div>
+          </div>
+        )}
+
+        {/* Styrkor & Risker */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>✅ Styrkor</div>
+            {(result.styrkor || []).map((s, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 6 }}><span style={{ color: "#10b981" }}>+</span>{s}</div>)}
+          </div>
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #ef444433", padding: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>⚠ Risker</div>
+            {(result.risker || []).map((r, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 6 }}><span style={{ color: "#ef4444" }}>!</span>{r}</div>)}
+          </div>
+        </div>
+
+        {/* Villkor & Tips */}
+        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", marginBottom: 8 }}>📋 Troliga villkor</div>
+          {(result.villkor || []).map((v, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}><span style={{ color: "#f59e0b" }}>→</span>{v}</div>)}
+        </div>
+
+        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#3b82f6", marginBottom: 8 }}>💡 Tips för att förbättra chanserna</div>
+          {(result.tips || []).map((t, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}><span style={{ color: "#3b82f6" }}>→</span>{t}</div>)}
+        </div>
+
+        {/* Recommended banks */}
+        {result.banker?.length > 0 && (
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>🏦 Rekommenderade banker att ansöka hos</div>
+            {result.banker.map((b, i) => (
+              <div key={i} style={{ fontSize: 13, color: "#e2e8f0", padding: "6px 0", borderBottom: i < result.banker.length - 1 ? "1px solid #1e293b" : "none", display: "flex", gap: 8 }}>
+                <span style={{ color: "#10b981" }}>→</span>{b}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ fontSize: 11, color: "#334155", textAlign: "center", lineHeight: 1.7 }}>
+          ⚠ AI-baserad uppskattning för informationsändamål. Ersätter inte formell kreditprövning. Kapital är inte kreditförmedlare (lag 2014:275).
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f14)", borderRadius: 16, border: "1px solid #10b98133", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>🏦 AI-Lånebedömning</div>
+        <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
+          Fyll i dina uppgifter och få en AI-bedömning av hur mycket du kan låna, vilken ränta du sannolikt får och ett preliminärt lånelöfte.
+        </div>
+      </div>
+
+      {/* Step indicators */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+        {[1, 2, 3].map(s => (
+          <div key={s} style={{ flex: 1, height: 4, borderRadius: 99, background: step >= s ? "#10b981" : "#1e293b", transition: "background 0.3s" }} />
+        ))}
+      </div>
+
+      {step === 1 && (
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", marginBottom: 14 }}>Steg 1 — Din ekonomi</div>
+          <INP label="Månadsinkomst brutto (kr)" k="inkomst" placeholder="45000" type="number" />
+          <INP label="Medinlånantas inkomst (kr, valfritt)" k="medinkomst" placeholder="0" type="number" />
+          <INP label="Anställningsform" k="anstallning" opts={[["tillsvidare","Tillsvidare"],["provanstallning","Provanställning"],["visstid","Visstid/Projekt"],["egenforetagare","Egenföretagare"],["pension","Pension/Sjukersättning"]]} />
+          <INP label="Antal år anställd/i branschen" k="arAnstald" placeholder="3" type="number" />
+          <INP label="Totala månadsutgifter (kr)" k="utgifter" placeholder="15000" type="number" />
+          <INP label="Befintliga skulder totalt (kr)" k="befintligaSkulder" placeholder="0" type="number" />
+          <button onClick={() => setStep(2)} style={{ width: "100%", padding: "14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+            Nästa →
+          </button>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", marginBottom: 14 }}>Steg 2 — Om lånet</div>
+          <INP label="Typ av lån" k="objekt" opts={[["bostad","Bostad/Bolån"],["bil","Billån"],["blanko","Blankolån/Privatlån"],["renovering","Renovering"],["samla","Samla lån"]]} />
+          <INP label="Önskat lånebelopp (kr)" k="onskatBelopp" placeholder="2000000" type="number" />
+          <INP label="Kontantinsats/eget kapital (kr)" k="kontantinsats" placeholder="500000" type="number" />
+          <INP label="Nuvarande hyra/boendekostnad (kr/mån)" k="hyra" placeholder="8000" type="number" />
+          <INP label="Antal barn under 18 år" k="barn" opts={[["0","Inga barn"],["1","1 barn"],["2","2 barn"],["3","3 barn"],["4","4+ barn"]]} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setStep(1)} style={{ flex: 1, padding: "12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>← Tillbaka</button>
+            <button onClick={() => setStep(3)} style={{ flex: 2, padding: "12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Nästa →</button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", marginBottom: 14 }}>Steg 3 — Kredithistorik</div>
+          <INP label="Har du betalningsanmärkningar?" k="kreditmarkningar" opts={[["nej","Nej"],["ja","Ja"]]} />
+          <INP label="Är du registrerad hos Kronofogden?" k="kronofogden" opts={[["nej","Nej"],["ja","Ja"]]} />
+
+          <div style={{ background: "#f59e0b11", borderRadius: 12, border: "1px solid #f59e0b33", padding: 14, marginBottom: 16 }}>
+            <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 4 }}>💡 Vad händer med dina uppgifter?</div>
+            <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
+              Uppgifterna skickas bara till Anthropic AI för analys och sparas inte. Ingen UC-kontroll görs — det är en uppskattning.
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => setStep(2)} style={{ flex: 1, padding: "14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>← Tillbaka</button>
+            <button onClick={analyze} disabled={loading}
+              style={{ flex: 2, padding: "14px", background: loading ? "#1e293b" : "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
+              {loading ? "Analyserar..." : "🤖 Få AI-bedömning"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SmartLanAnsokan() {
   const [step, setStep] = useState(1);
   const [lanTyp, setLanTyp] = useState("blanko");
@@ -7175,6 +7434,345 @@ function Topp10Tab({ analyze, setSubTab }) {
 
       <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 8 }}>
         ⚠ AI-genererade signaler. Inte finansiell rådgivning. Gör alltid egen analys.
+      </div>
+    </div>
+  );
+}
+
+// ── Bygg Hus Guide ────────────────────────────────────────────────────────
+function ByggHusGuide() {
+  const [tab, setTab] = useState("plan");
+  const [form, setForm] = useState({ yta: "150", standard: "medel", tomt: "ja", region: "mitt" });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const yta = parseFloat(form.yta) || 150;
+  const stdFaktor = form.standard === "enkel" ? 18000 : form.standard === "medel" ? 24000 : 32000;
+  const regionFaktor = form.region === "storstad" ? 1.25 : form.region === "mitt" ? 1.0 : 0.85;
+  const tomtKostnad = form.tomt === "nej" ? 800000 : 0;
+  const byggKostnad = yta * stdFaktor * regionFaktor;
+  const grundKostnad = yta * 3000;
+  const vaVsKostnad = yta * 1500;
+  const externtKostnad = 150000;
+  const oforutsett = byggKostnad * 0.1;
+  const totalKostnad = byggKostnad + grundKostnad + vaVsKostnad + externtKostnad + oforutsett + tomtKostnad;
+  const kontantinsats = totalKostnad * 0.15;
+  const lan = totalKostnad - kontantinsats;
+  const manadsKostnad = lan * 0.045 / 12;
+
+  const SBtn = ({ id, label }) => (
+    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", background: tab === id ? "linear-gradient(135deg,#f97316,#f59e0b)" : "#0f172a", border: `1px solid ${tab === id ? "transparent" : "#1e293b"}`, borderRadius: 9, color: tab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: tab === id ? 700 : 400, cursor: "pointer" }}>
+      {label}
+    </button>
+  );
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+        <SBtn id="plan" label="🏗️ Kostnadsplan" />
+        <SBtn id="spar" label="💰 Sparplan" />
+        <SBtn id="guide" label="📋 Steg-för-steg" />
+      </div>
+
+      {tab === "plan" && (
+        <div>
+          <div style={{ background: "linear-gradient(135deg,#0f172a,#1a0800)", borderRadius: 16, border: "1px solid #f9731633", padding: 16, marginBottom: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#f97316", marginBottom: 12 }}>🏗️ Bygg din kostnadskalkyl</div>
+            {[
+              { label: "Boyta (kvm)", k: "yta", opts: null },
+              { label: "Standard", k: "standard", opts: [["enkel","Enkel (18 000 kr/kvm)"],["medel","Medel (24 000 kr/kvm)"],["lyx","Lyx (32 000 kr/kvm)"]] },
+              { label: "Region", k: "region", opts: [["storstad","Storstad (+25%)"],["mitt","Mellansverige"],["norrland","Norrland (-15%)"]] },
+              { label: "Har du tomt?", k: "tomt", opts: [["ja","Ja, tomt finns"],["nej","Nej, måste köpa"]] },
+            ].map(({ label, k, opts }) => (
+              <div key={k} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{label}</div>
+                {opts ? (
+                  <select value={form[k]} onChange={e => set(k, e.target.value)} style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }}>
+                    {opts.map(([v, l]) => <option key={v} value={v} style={{ background: "#0f172a" }}>{l}</option>)}
+                  </select>
+                ) : (
+                  <input value={form[k]} onChange={e => set(k, e.target.value)} inputMode="decimal"
+                    style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                )}
+              </div>
+            ))}
+          </div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f9731633", padding: 16, marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Kostnadssammanställning</div>
+            {[["🏗️ Byggnation", byggKostnad], ["🏚️ Grund & källare", grundKostnad], ["🚿 VVS, el & värme", vaVsKostnad], ["🌿 Tomt & utomhus", externtKostnad], ["⚠️ Oförutsett (10%)", oforutsett], ...(form.tomt === "nej" ? [["🌍 Tomt", tomtKostnad]] : [])].map(([l, v]) => (
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+                <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
+                <span style={{ fontSize: 13, color: "#e2e8f0" }}>{Math.round(v).toLocaleString("sv-SE")} kr</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0 0" }}>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#e2e8f0" }}>Totalt</span>
+              <span style={{ fontSize: 18, fontWeight: 900, color: "#f97316" }}>{Math.round(totalKostnad).toLocaleString("sv-SE")} kr</span>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+            {[["Kontantinsats 15%", Math.round(kontantinsats).toLocaleString("sv-SE") + " kr", "#f59e0b"], ["Bolån", (lan/1000000).toFixed(1) + " Mkr", "#3b82f6"], ["Kostnad/mån", Math.round(manadsKostnad).toLocaleString("sv-SE") + " kr", "#10b981"]].map(([l, v, c]) => (
+              <div key={l} style={{ background: "#0f172a", borderRadius: 10, padding: 12, border: "1px solid #1e293b" }}>
+                <div style={{ fontSize: 9, color: "#475569", marginBottom: 4 }}>{l}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: c }}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === "spar" && (
+        <div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981", marginBottom: 10 }}>💰 Sparplan för kontantinsats</div>
+            <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12 }}>Du behöver: <b style={{ color: "#f97316" }}>{Math.round(kontantinsats).toLocaleString("sv-SE")} kr</b></div>
+            {[1000, 2000, 3000, 5000, 8000, 10000].map(mån => {
+              const år = Math.ceil(kontantinsats / (mån * 12 * 1.05));
+              return (
+                <div key={mån} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #1e293b", alignItems: "center" }}>
+                  <span style={{ fontSize: 14, color: "#e2e8f0", fontWeight: 600 }}>{mån.toLocaleString("sv-SE")} kr/mån</span>
+                  <span style={{ fontSize: 13, color: år <= 5 ? "#10b981" : år <= 10 ? "#f59e0b" : "#ef4444" }}>≈ {år} år{år <= 3 ? " 🔥" : ""}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+            <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 8 }}>💡 Tips</div>
+            {["Investera i ISK med globala indexfonder — 7-10% snittavkastning", "Undersök Startlån och Bostadsbidrag via Boverket", "Sök ROT-avdrag vid renovering — 30% avdrag", "Hyra ut rum ökar sparkvoten med 3 000-8 000 kr/mån"].map((t, i) => (
+              <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6, display: "flex", gap: 8 }}><span style={{ color: "#f59e0b" }}>→</span>{t}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === "guide" && (
+        <div>
+          {[
+            { num: 1, icon: "💰", title: "Spara kontantinsats (15%)", color: "#10b981", text: "Börja spara i ISK med indexfonder. Du behöver minst 15% av husets värde — ofta 300 000–800 000 kr." },
+            { num: 2, icon: "🌍", title: "Hitta tomt", color: "#3b82f6", text: "Kolla Hemnet, Blocket och kommuners exploateringsenheter. Tomt kostar 300 000–1,5 Mkr beroende på läge." },
+            { num: 3, icon: "📐", title: "Välj hustyp", color: "#f59e0b", text: "Typhus (prefab): snabbast och billigast. Arkitektritad: dyrare men unikt. Självbyggeri: sparar 20-40% men kräver tid." },
+            { num: 4, icon: "📋", title: "Bygglov & detaljplan", color: "#8b5cf6", text: "Ansök om bygglov hos kommunen (2 000–30 000 kr). Kräver situationsplan, fasadritning och planritning." },
+            { num: 5, icon: "👷", title: "Anlita entreprenör", color: "#f97316", text: "Generalentreprenör tar totalansvaret. Hämta in 3 anbud. Kolla ROT och F-skattesedel." },
+            { num: 6, icon: "🏗️", title: "Byggstart", color: "#06b6d4", text: "Byggtid: typhus 3-6 månader, arkitektritad 12-18 månader. Ha alltid 10% buffert." },
+            { num: 7, icon: "🏠", title: "Inflyttning & slutbesiktning", color: "#22c55e", text: "Kräv slutbesiktning av oberoende besiktningsman. Reklamationsrätt 10 år." },
+          ].map(s => (
+            <div key={s.num} style={{ display: "flex", gap: 14, marginBottom: 16, alignItems: "flex-start" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: s.color + "22", border: `1px solid ${s.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{s.icon}</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: s.color, marginBottom: 4 }}>{s.num}. {s.title}</div>
+                <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{s.text}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RenoveringKalkyl() {
+  const [val, setVal] = useState({});
+  const set = (k, v) => setVal(f => ({ ...f, [k]: v }));
+  const POSTER = [
+    { key: "kok", label: "Kök", icon: "🍳", rot: true },
+    { key: "badrum", label: "Badrum", icon: "🚿", rot: true },
+    { key: "golv", label: "Golv & parkett", icon: "🪵", rot: true },
+    { key: "fasad", label: "Fasad & målning", icon: "🎨", rot: true },
+    { key: "fonster", label: "Fönster & dörrar", icon: "🪟", rot: true },
+    { key: "tak", label: "Tak", icon: "🏠", rot: true },
+    { key: "vvs", label: "VVS & rör", icon: "🔧", rot: true },
+    { key: "el", label: "El & belysning", icon: "⚡", rot: true },
+    { key: "altan", label: "Altan & terrass", icon: "🌿", rot: true },
+    { key: "garage", label: "Garage & carport", icon: "🚗", rot: false },
+  ];
+  const total = POSTER.reduce((s, p) => s + (parseFloat(val[p.key]) || 0), 0);
+  const rotBase = POSTER.filter(p => p.rot).reduce((s, p) => s + (parseFloat(val[p.key]) || 0), 0);
+  const rotAvdrag = Math.min(rotBase * 0.3, 50000);
+  const netto = total - rotAvdrag;
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#1a1000)", borderRadius: 16, border: "1px solid #f59e0b33", padding: 14, marginBottom: 14 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b" }}>🔨 Renoveringskalkyl</div>
+        <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>ROT-avdrag (30%, max 50 000 kr) beräknas automatiskt.</div>
+      </div>
+      {POSTER.map(p => (
+        <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f172a", borderRadius: 10, border: "1px solid #1e293b", padding: "10px 12px", marginBottom: 6 }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>{p.icon}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: "#e2e8f0" }}>{p.label}</div>
+            {p.rot && <div style={{ fontSize: 10, color: "#10b981" }}>ROT-berättigat</div>}
+          </div>
+          <input value={val[p.key] || ""} onChange={e => set(p.key, e.target.value)} placeholder="0" inputMode="decimal"
+            style={{ width: 100, textAlign: "right", padding: "6px 8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, fontWeight: 700, outline: "none" }} />
+          <span style={{ fontSize: 11, color: "#475569" }}>kr</span>
+        </div>
+      ))}
+      {total > 0 && (
+        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginTop: 12 }}>
+          {[["Totalt", total, "#e2e8f0"], ["ROT-avdrag", -rotAvdrag, "#10b981"], ["Netto att betala", netto, "#f97316"]].map(([l, v, c]) => (
+            <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: l !== "Netto att betala" ? "1px solid #1e293b" : "none" }}>
+              <span style={{ fontSize: 14, color: "#64748b" }}>{l}</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: c }}>{v < 0 ? "-" : ""}{Math.round(Math.abs(v)).toLocaleString("sv-SE")} kr</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BilligtBoende() {
+  const sektioner = [
+    { title: "⚖️ Hyra vs Äga", color: "#3b82f6", items: ["Hyresrätt: lägre risk, ingen insats — bra vid osäker inkomst", "Bostadsrätt: bygg förmögenhet men kräver kontantinsats och avgifter", "Andrahandsuthyrning av rum täcker 30-50% av kostnaden", "Bostadskö: registrera dig i alla kommuner du kan tänka dig bo i"] },
+    { title: "🌍 Airbnb & Korttidsboende", color: "#f59e0b", items: ["Airbnb.se — boka privata rum från 300 kr/natt", "Hostelworld — vandrarhem 150-400 kr/natt", "Booking.com — jämför hotell, B&B och lägenheter", "HomeExchange.com — byt hem gratis globalt"] },
+    { title: "👥 Dela boende & Coliving", color: "#10b981", items: ["Hyra rum: sparar 3 000-8 000 kr/mån vs ensamboende", "Blocket Bostad — rum och delägarskap", "Facebook: 'Rum att hyra [din stad]'", "Coliving: möblerat inkl el och internet — från 6 000 kr/mån"] },
+    { title: "💡 Sänk boendekostnaden", color: "#8b5cf6", items: ["Bostadsbidrag: ansök via Försäkringskassan om låg inkomst", "El: byt till Tibber eller timavtal — spara 20-40%", "Bredband: förhandla — ofta 30-50% rabatt vid hot om byte", "Hyresförhandling: 30% av hyresgäster lyckas sänka hyran"] },
+  ];
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#060a14)", borderRadius: 16, border: "1px solid #06b6d433", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#06b6d4" }}>🏠 Lev billigare — Boende</div>
+        <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Smarta sätt att sänka boendekostnaden</div>
+      </div>
+      {sektioner.map(s => (
+        <div key={s.title} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${s.color}22`, padding: 16, marginBottom: 10 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: s.color, marginBottom: 10 }}>{s.title}</div>
+          {s.items.map((item, i) => (
+            <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6, display: "flex", gap: 8 }}>
+              <span style={{ color: s.color, flexShrink: 0 }}>→</span>{item}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ResaSmart() {
+  const kategorier = [
+    { title: "🚌 Buss & Kollektivtrafik", color: "#10b981", items: [
+      { namn: "SL / Västtrafik / Skånetrafiken", desc: "Lokal kollektivtrafik — månadskort billigast", url: "sl.se", badge: "Officiell" },
+      { namn: "Flixbus", desc: "Långfärdsbuss Sverige & Europa — från 99 kr", url: "flixbus.se", badge: "Billigast" },
+      { namn: "Nettbuss", desc: "Expressbuss mellan svenska städer", url: "nettbuss.se", badge: null },
+    ]},
+    { title: "🚆 Tåg", color: "#3b82f6", items: [
+      { namn: "SJ Tåg", desc: "Snabbtåg & regionaltåg — boka tidigt för bäst pris", url: "sj.se", badge: "Rekommenderas" },
+      { namn: "Omio", desc: "Jämför tåg, buss och flyg på ett ställe", url: "omio.com", badge: "Jämför allt" },
+      { namn: "Vy Tåg", desc: "Norrland & Mälardalen — studentrabatt 25%", url: "vy.se", badge: null },
+    ]},
+    { title: "🚕 Taxi & Samåkning", color: "#f59e0b", items: [
+      { namn: "Bolt", desc: "Ofta billigare än Uber i svenska städer", url: "bolt.eu", badge: "Billigast" },
+      { namn: "Uber", desc: "Tillgängligt i alla större svenska städer", url: "uber.com", badge: null },
+      { namn: "GoMore", desc: "Samåkning med privatpersoner — 50-70% billigare", url: "gomore.se", badge: "Spara mest" },
+    ]},
+    { title: "✈️ Flyg & Hotell", color: "#8b5cf6", items: [
+      { namn: "Skyscanner", desc: "Jämför alla flygbolag — sätt prisalarm", url: "skyscanner.se", badge: "Bäst jämförelse" },
+      { namn: "Airbnb", desc: "Privata boenden — ofta 30-50% billigare än hotell", url: "airbnb.se", badge: "★ Affiliate" },
+      { namn: "Booking.com", desc: "Hotell & lägenheter — gratis avbokning", url: "booking.com", badge: "★ Affiliate" },
+    ]},
+  ];
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#060a14)", borderRadius: 16, border: "1px solid #06b6d433", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#06b6d4" }}>🚌 Resa smart & billigt</div>
+        <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Hitta billigaste sättet att resa</div>
+      </div>
+      {kategorier.map(kat => (
+        <div key={kat.title} style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: kat.color, marginBottom: 10 }}>{kat.title}</div>
+          {kat.items.map((item, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{item.namn}</div>
+                {item.badge && <span style={{ fontSize: 10, background: item.badge.includes("Affiliate") ? "#f59e0b22" : "#10b98122", color: item.badge.includes("Affiliate") ? "#f59e0b" : "#10b981", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{item.badge}</span>}
+              </div>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>{item.desc}</div>
+              <a href={"https://" + item.url} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-block", padding: "6px 14px", background: kat.color + "22", border: `1px solid ${kat.color}44`, borderRadius: 8, color: kat.color, fontSize: 12, fontWeight: 700, textDecoration: "none" }}>
+                Öppna → {item.url}
+              </a>
+            </div>
+          ))}
+        </div>
+      ))}
+      <div style={{ fontSize: 10, color: "#334155", textAlign: "center" }}>★ Affiliate: Kapital kan erhålla ersättning via dessa länkar.</div>
+    </div>
+  );
+}
+
+function ErbjudandenHub() {
+  const [expanded, setExpanded] = useState(null);
+  const ERBJUDANDEN = [
+    { kategori: "🏦 Lån & Bolån", color: "#3b82f6", items: [
+      { namn: "SBAB Bolån", desc: "Bästa bolåneräntan — från 3.55%", badge: "Lägst ränta", url: "sbab.se", detalj: "Rörlig: 3.55% · Fast 3 år: 3.89% · Max 85% belåning" },
+      { namn: "Zmarta Lånejämförelse", desc: "Jämför 30+ banker — ett svar, flera anbud", badge: "Populärast", url: "zmarta.se", detalj: "Blankolån 5 000–600 000 kr · Ränta från 6.95%" },
+      { namn: "Hypoteket", desc: "Digitalt bolån utan fysiska möten", badge: null, url: "hypoteket.se", detalj: "Ränta från 3.58% · Svar inom 24h" },
+    ]},
+    { kategori: "🛡️ Försäkring", color: "#10b981", items: [
+      { namn: "Insplanet", desc: "Jämför hemförsäkring från 30+ bolag", badge: "Spara mest", url: "insplanet.se", detalj: "Hemförsäkring från 79 kr/mån · Bilförsäkring från 199 kr/mån" },
+      { namn: "Hedvig", desc: "Modern digital försäkring i appen", badge: "Populär", url: "hedvig.com", detalj: "Hemförsäkring från 99 kr/mån · Inkl. djurförsäkring" },
+      { namn: "Länsförsäkringar", desc: "Störst i Sverige — lokal närvaro", badge: null, url: "lansforsakringar.se", detalj: "Hem, bil, djur, liv — ett bolag för allt" },
+    ]},
+    { kategori: "🚗 Leasing & Bil", color: "#f97316", items: [
+      { namn: "Leaseonline.se", desc: "Jämför privatleasing från alla märken", badge: "Bäst urval", url: "leaseonline.se", detalj: "Från 1 995 kr/mån · Inkl. service och vägskatt" },
+      { namn: "Santander Billån", desc: "Billån med svar direkt", badge: null, url: "santander.se", detalj: "Ränta från 4.95% · Löptid 1-7 år · Max 800 000 kr" },
+      { namn: "Sixt / Europcar", desc: "Hyr bil för dag eller längre resa", badge: null, url: "sixt.se", detalj: "Från 299 kr/dag · Helförsäkring tillval" },
+    ]},
+    { kategori: "⚡ El & Bredband", color: "#f59e0b", items: [
+      { namn: "Tibber", desc: "Elpris per timme — spara 20-40%", badge: "Bäst pris", url: "tibber.com/se", detalj: "Ingen bindningstid · Smart styrning av värme och laddbox" },
+      { namn: "Bredbandskollen", desc: "Jämför alla bredbandsleverantörer", badge: null, url: "bredbandskollen.se", detalj: "Hitta billigaste fibern i ditt område" },
+    ]},
+    { kategori: "🐾 Djurförsäkring", color: "#e879f9", items: [
+      { namn: "Agria Djurförsäkring", desc: "Störst och bäst för hund, katt & häst", badge: "Rekommenderas", url: "agria.se", detalj: "Hund från 149 kr/mån · Katt från 99 kr/mån" },
+      { namn: "Folksam Djurförsäkring", desc: "Bra pris och bred täckning", badge: null, url: "folksam.se", detalj: "Veterinärvård, operationer och livsförsäkring" },
+    ]},
+    { kategori: "💳 Kreditkort & Bonus", color: "#8b5cf6", items: [
+      { namn: "SAS EuroBonus Mastercard", desc: "Samla poäng på alla köp", badge: "Populärast", url: "sas.se/eurobonus", detalj: "1 poäng per 15 kr · Välkomstbonus: 5 000 poäng" },
+      { namn: "Coop Mastercard", desc: "1% cashback + matrabatter", badge: null, url: "coop.se/kort", detalj: "Inget årsavgift · Cashback direkt på köpet" },
+    ]},
+  ];
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#1a1000)", borderRadius: 16, border: "1px solid #f59e0b33", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b" }}>🤝 Erbjudanden & Partners</div>
+        <div style={{ fontSize: 12, color: "#64748b", marginTop: 4, lineHeight: 1.5 }}>Kurerade erbjudanden. Kapital kan erhålla ersättning via affiliate-avtal — påverkar inte vår rekommendation.</div>
+      </div>
+      {ERBJUDANDEN.map(kat => (
+        <div key={kat.kategori} style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: kat.color, marginBottom: 10 }}>{kat.kategori}</div>
+          {kat.items.map((item, i) => {
+            const key = kat.kategori + i;
+            const open = expanded === key;
+            return (
+              <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${open ? kat.color + "55" : "#1e293b"}`, padding: 16, marginBottom: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }} onClick={() => setExpanded(open ? null : key)}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{item.namn}</div>
+                      {item.badge && <span style={{ fontSize: 10, background: kat.color + "22", color: kat.color, padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{item.badge}</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#64748b" }}>{item.desc}</div>
+                  </div>
+                  <span style={{ color: "#475569", fontSize: 16 }}>{open ? "▲" : "▼"}</span>
+                </div>
+                {open && (
+                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 10, marginTop: 10 }}>
+                    <div style={{ background: kat.color + "11", borderRadius: 8, padding: "8px 12px", marginBottom: 10, fontSize: 13, color: "#e2e8f0" }}>📋 {item.detalj}</div>
+                    <a href={"https://" + item.url} target="_blank" rel="noopener noreferrer"
+                      style={{ display: "block", padding: "12px", background: `linear-gradient(135deg,${kat.color},${kat.color}99)`, borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
+                      Gå till {item.url} →
+                    </a>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ))}
+      <div style={{ fontSize: 10, color: "#334155", textAlign: "center", marginTop: 8, lineHeight: 1.7 }}>
+        Kapital är en jämförelsetjänst. Vi är inte kreditförmedlare eller försäkringsförmedlare. Affiliate-ersättning kan utgå vid köp via länkarna.
       </div>
     </div>
   );
@@ -9721,7 +10319,7 @@ function Kapital() {
         {tab === 3 && (
           <div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-              {[["forsakring","🛡️","Försäkring"],["lan","🏦","Lån & Kredit"],["profil","📊","Min Profil"],["kalkyl","📐","Kalkylatorer"],["maklare","📈","Mäklare"]].map(([id, icon, label]) => (
+              {[["forsakring","🛡️","Försäkring"],["lan","🏦","Lån & Kredit"],["bedömning","🤖","AI-Lånebedömning"],["profil","📊","Min Profil"],["kalkyl","📐","Kalkylatorer"],["maklare","📈","Mäklare"]].map(([id, icon, label]) => (
                 <button key={id} onClick={() => setSubTab(id)}
                   style={{ flex: "0 0 calc(33% - 4px)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "14px 8px", background: subTab === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${subTab === id ? "transparent" : "#1e293b"}`, borderRadius: 14, cursor: "pointer" }}>
                   <span style={{ fontSize: 24 }}>{icon}</span>
@@ -9731,6 +10329,7 @@ function Kapital() {
             </div>
             {subTab === "forsakring" && <ForsakringHub />}
             {subTab === "lan" && <SmartLanAnsokan />}
+            {subTab === "bedömning" && <AILaneBedömning />}
             {subTab === "profil" && <EkonomiskProfil />}
             {(subTab === "kalkyl" || subTab !== "maklare" && subTab !== "forsakring" && subTab !== "lan" && subTab !== "profil") && subTab === "kalkyl" && <KalkylatornTab t={t} />}
             {subTab === "maklare" && <MaklareTab t={t} />}
