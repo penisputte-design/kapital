@@ -2121,150 +2121,27 @@ function SparaTab({ currency, exchangeRates, currencies }) {
             </div>
           )}
 
-          {/* Category cards */}
+          {/* Category cards — 4 grupper för tydlig navigation */}
           {[
-            {
-              id: "budget",
-              icon: "💰",
-              color: "#10b981",
-              label: "Budget & Mål",
-              desc: inc > 0 ? `${Math.round(totalExpenses).toLocaleString("sv-SE")} kr/mån · ${goals.length} sparmål` : "Hantera inkomst, utgifter och sparmål",
-              items: [
-                { id: "overview", icon: "📊", label: "Översikt", desc: "Inkomst, utgifter och fördelning" },
-                { id: "expenses", icon: "💸", label: "Utgifter", desc: "Fyll i dina månadskostnader" },
-                { id: "goals", icon: "🎯", label: "Sparmål", desc: `${goals.length} aktiva mål` },
-              ]
-            },
-            {
-              id: "kalkylatorer",
-              icon: "📈",
-              color: "#3b82f6",
-              label: "Kalkylatorer",
-              desc: "FIRE, ränta-på-ränta, skuld & pension",
-              items: [
-                { id: "fire", icon: "🔥", label: "FIRE-kalkylator", desc: "När kan du sluta jobba?" },
-                { id: "rantan", icon: "📈", label: "Ränta-på-ränta", desc: "Se pengarna växa exponentiellt" },
-                { id: "skuld", icon: "💳", label: "Skuldfri", desc: "Snabbaste vägen ur skuld" },
-                { id: "pension", icon: "👴", label: "Pension", desc: "Vad får du när du pensioneras?" },
-              ]
-            },
-            {
-              id: "skatt",
-              icon: "🧾",
-              color: "#f59e0b",
-              label: "Skatt & Deklaration",
-              desc: "Lön, K4, ISK och ROT/RUT",
-              items: [
-                { id: "lon", icon: "💼", label: "Löneskatt", desc: "Beräkna din nettolön" },
-                { id: "k4", icon: "📋", label: "K4 — Aktier & Krypto", desc: "Kapitalvinstskatt & förlusthantering" },
-                { id: "isk", icon: "🏦", label: "ISK-skatt", desc: "Jämför ISK mot kapitalskatt" },
-                { id: "rot", icon: "🔨", label: "ROT & RUT-avdrag", desc: "Beräkna ditt avdrag" },
-              ]
-            },
-            {
-              id: "kredit",
-              icon: "💳",
-              color: "#8b5cf6",
-              label: "Kreditvärdering",
-              desc: "Se din uppskattade kreditscore och hur du förbättrar den",
-              items: [
-                { id: "kreditscore", icon: "⭐", label: "Min kreditscore", desc: "Beräkna din uppskattade score 300-850" },
-              ]
-            },
-            {
-              id: "lon",
-              icon: "💼",
-              color: "#06b6d4",
-              label: "Lön & Yrke",
-              desc: "Lönespecifikation, snittlöner och löneutveckling",
-              items: [
-                { id: "lonespec", icon: "🧾", label: "Min lönespecifikation", desc: "Se hur din lön fördelas på skatt och avgifter" },
-                { id: "snittlon", icon: "📊", label: "Snittlön per yrke", desc: "Jämför din lön med branschsnittet" },
-                { id: "lonekalkyl", icon: "📈", label: "Löneutveckling", desc: "Vad är din lön värd om 5-10 år?" },
-              ]
-            },
-            {
-              id: "juridisk",
-              icon: "⚖️",
-              color: "#8b5cf6",
-              label: "Juridisk AI-assistent",
-              desc: "Hjälp med avtal, försäkring, lån och dina rättigheter",
-              items: [
-                { id: "juridiskAI", icon: "⚖️", label: "Juridisk AI", desc: "Fråga om avtal, hyra, arbete och mer" },
-              ]
-            },
-            {
-              id: "aicoach",
-              icon: "🤖",
-              color: "#10b981",
-              label: "AI-ekonomicoach",
-              desc: "Ställ frågor om skatt, deklaration och ekonomi",
-              items: [
-                { id: "aicoach", icon: "💬", label: "Fråga AI-coachen", desc: "Få personliga svar om din ekonomi" },
-              ]
-            },
-            {
-              id: "lan",
-              icon: "🏦",
-              color: "#f59e0b",
-              label: "Låneansökan",
-              desc: "Jämför och ansök om lån hos flera banker",
-              items: [
-                { id: "lanansokan", icon: "📋", label: "Ansök om lån", desc: "Blankolån, billån och bolån" },
-              ]
-            },
-            {
-              id: "forsakring",
-              icon: "🛡️",
-              color: "#06b6d4",
-              label: "Försäkringar",
-              desc: "Jämför, skaffa och håll koll på dina försäkringar",
-              items: [
-                { id: "minaforsakringar", icon: "📋", label: "Mina försäkringar", desc: "Håll koll på vad du har och vad det kostar" },
-                { id: "forsakringsguide", icon: "🔍", label: "Vad behöver jag?", desc: "Få en personlig försäkringsanalys" },
-                { id: "jamforforsakring", icon: "⚖️", label: "Jämför & skaffa", desc: "Hitta bästa priset hos svenska bolag" },
-              ]
-            },
-            {
-              id: "abonnemang",
-              icon: "📱",
-              color: "#8b5cf6",
-              label: "Abonnemang & Prenumerationer",
-              desc: "Se vad du betalar för prenumerationer varje månad",
-              items: [
-                { id: "abonnemang", icon: "📱", label: "Mina abonnemang", desc: "Streaming, gym, mobil och mer" },
-              ]
-            },
-            {
-              id: "boende",
-              icon: "🏠",
-              color: "#10b981",
-              label: "Boendekostnader",
-              desc: "El, bredband, avgift och allt som hör till boendet",
-              items: [
-                { id: "boendekostnad", icon: "🏠", label: "Mitt boende", desc: "Samlad vy av alla boendekostnader" },
-              ]
-            },
-            {
-              id: "fordon",
-              icon: "🚗",
-              color: "#f97316",
-              label: "Fordonskostnader",
-              desc: "Billån, försäkring, drivmedel och service",
-              items: [
-                { id: "fordonskostnad", icon: "🚗", label: "Min bil", desc: "Vad kostar bilen dig per månad?" },
-              ]
-            },
-            {
-              id: "valuta",
-              icon: "💱",
-              color: "#06b6d4",
-              label: "Valuta & Omvandlare",
-              desc: "Dagens live-kurser och valutaomvandlare",
-              items: [
-                { id: "valutaomvandlare", icon: "💱", label: "Valutaomvandlare", desc: "Live-kurser och omvandlare" },
-              ]
-            },
+            // GRUPP 1: Min ekonomi
+            { id: "budget", icon: "💰", color: "#10b981", label: "Budget & Utgifter", desc: inc > 0 ? `${Math.round(totalExpenses).toLocaleString("sv-SE")} kr/mån · ${goals.length} mål` : "Inkomst, utgifter och sparmål", items: [{ id: "overview", icon: "📊", label: "Översikt" }, { id: "expenses", icon: "💸", label: "Utgifter" }, { id: "goals", icon: "🎯", label: "Sparmål" }] },
+            { id: "boende", icon: "🏠", color: "#3b82f6", label: "Boende & Fordon", desc: "Hyra, el, bil och alla fasta kostnader", items: [{ id: "boendekostnad", icon: "🏠", label: "Boende" }, { id: "fordonskostnad", icon: "🚗", label: "Fordon" }, { id: "abonnemang", icon: "📱", label: "Abonnemang" }] },
+            { id: "lon", icon: "💼", color: "#06b6d4", label: "Lön & Yrke", desc: "Lönespec, snittlöner och löneutveckling", items: [{ id: "lonespec", icon: "🧾", label: "Min lönespec" }, { id: "snittlon", icon: "📊", label: "Snittlöner" }, { id: "lonekalkyl", icon: "📈", label: "Löneutveckling" }] },
+            { id: "kredit", icon: "⭐", color: "#8b5cf6", label: "Kreditscore", desc: "Beräkna och förbättra din kreditscore", items: [{ id: "kreditscore", icon: "⭐", label: "Min kreditscore" }] },
+
+            // GRUPP 2: Planering & Kalkylatorer
+            { id: "kalkylatorer", icon: "📈", color: "#f59e0b", label: "Kalkylatorer", desc: "FIRE, ränta-på-ränta, skuld & pension", items: [{ id: "fire", icon: "🔥", label: "FIRE" }, { id: "rantan", icon: "📈", label: "Ränta-på-ränta" }, { id: "skuld", icon: "💳", label: "Skuldfri" }, { id: "pension", icon: "👴", label: "Pension" }] },
+            { id: "skatt", icon: "🧾", color: "#f97316", label: "Skatt & Deklaration", desc: "Lön, K4, ISK och ROT/RUT", items: [{ id: "lon", icon: "💼", label: "Löneskatt" }, { id: "k4", icon: "📋", label: "K4" }, { id: "isk", icon: "🏦", label: "ISK-skatt" }, { id: "rot", icon: "🔨", label: "ROT & RUT" }] },
+
+            // GRUPP 3: Investeringar & Handel
+            { id: "fonder", icon: "📊", color: "#10b981", label: "Fondguide", desc: "Populära fonder och framtidsutsikter", items: [{ id: "fondguide", icon: "📊", label: "Fondguide 2026" }] },
+            { id: "utland", icon: "🌍", color: "#3b82f6", label: "Utländska värdepapper", desc: "Aktier, ETF:er och handel utomlands", items: [{ id: "utlandguide", icon: "🌍", label: "Handla utomlands" }] },
+            { id: "krypto", icon: "₿", color: "#f59e0b", label: "Krypto", desc: "Guide, skatt och håll koll på dina krypton", items: [{ id: "kryptokuide", icon: "₿", label: "Kryptoguide" }, { id: "kryptoskatt", icon: "🧾", label: "Kryptoskatt" }] },
+            { id: "valuta", icon: "💱", color: "#06b6d4", label: "Valuta & Omvandlare", desc: "Live-kurser och valutaomvandlare", items: [{ id: "valutaomvandlare", icon: "💱", label: "Valutaomvandlare" }] },
+
+            // GRUPP 4: AI & Hjälp
+            { id: "aicoach", icon: "🤖", color: "#10b981", label: "AI-ekonomicoach", desc: "Fråga om allt inom ekonomi och skatt", items: [{ id: "aicoach", icon: "💬", label: "AI-coachen" }] },
+            { id: "juridisk", icon: "⚖️", color: "#8b5cf6", label: "Juridisk AI", desc: "Avtal, hyresrätt, arbetsrätt och mer", items: [{ id: "juridiskAI", icon: "⚖️", label: "Juridisk AI" }] },
           ].map(cat => (
             <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "16px", background: "#0f172a", border: `1px solid ${cat.color}22`, borderRadius: 16, cursor: "pointer", textAlign: "left", marginBottom: 10 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
@@ -2318,8 +2195,17 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "boendekostnad", icon: "🏠", label: "Mitt boende", desc: "Samlad vy av boendekostnader" },
             ] : activeSection === "fordon" ? [
               { id: "fordonskostnad", icon: "🚗", label: "Min bil", desc: "Vad kostar bilen dig per månad?" },
-            ] : activeSection === "valuta" ? [
-              { id: "valutaomvandlare", icon: "💱", label: "Valutaomvandlare", desc: "Live-kurser och omvandlare" },
+            ] : activeSection === "utland" ? [
+              { id: "utlandguide", icon: "🌍", label: "Handla utomlands", desc: "Guide för utländsk handel" },
+            ] : activeSection === "boende" ? [
+              { id: "boendekostnad", icon: "🏠", label: "Boendekostnader", desc: "El, hyra, bredband och mer" },
+              { id: "fordonskostnad", icon: "🚗", label: "Fordonskostnader", desc: "Vad kostar bilen per månad?" },
+              { id: "abonnemang", icon: "📱", label: "Abonnemang", desc: "Streaming, gym och prenumerationer" },
+            ] : activeSection === "krypto" ? [
+              { id: "kryptokuide", icon: "₿", label: "Kryptoguide", desc: "Kom igång med krypto" },
+              { id: "kryptoskatt", icon: "🧾", label: "Kryptoskatt", desc: "K4 och deklaration av krypton" },
+            ] : activeSection === "fonder" ? [
+              { id: "fondguide", icon: "📊", label: "Fondguide 2026", desc: "Bästa fonder för framtiden" },
             ] : [
               { id: "lon", icon: "💼", label: "Löneskatt", desc: "Beräkna din nettolön" },
               { id: "k4", icon: "📋", label: "K4 — Aktier & Krypto", desc: "Kapitalvinstskatt & förlusthantering" },
@@ -2605,6 +2491,10 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "snittlon" && <SnittLon />}
       {activeSubSection === "lonekalkyl" && <LoneKalkyl inc={inc} />}
       {activeSubSection === "juridiskAI" && <JuridiskAI />}
+      {activeSubSection === "kryptokuide" && <KryptoGuide />}
+      {activeSubSection === "kryptoskatt" && <KryptoSkatt />}
+      {activeSubSection === "utlandguide" && <UtlandGuide />}
+      {activeSubSection === "fondguide" && <FondGuide />}
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
       {activeSubSection === "aicoach" && <AICoach inc={inc} expenses={expenses} goals={goals} />}
       {activeSubSection === "lanansokan" && <LanAnsokan />}
@@ -5119,6 +5009,8 @@ function EkonomiskProfil() {
   const boende = JSON.parse(localStorage.getItem("kapital_boende") || "[]");
   const fordon = JSON.parse(localStorage.getItem("kapital_fordon") || "[]");
   const tillgangar = JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]");
+  const kryptoInnehav = JSON.parse(localStorage.getItem("kapital_krypto") || "[]");
+  const kryptoVarde = kryptoInnehav.reduce((s, k) => s + (parseFloat(k.kostnad) || 0), 0);
   const skulder = JSON.parse(localStorage.getItem("kapital_skulder") || "[]");
   const kredit = JSON.parse(localStorage.getItem("kapital_kredit") || "{}");
 
@@ -5905,6 +5797,8 @@ function HealthScore() {
   const boende = JSON.parse(localStorage.getItem("kapital_boende") || "[]");
   const fordon = JSON.parse(localStorage.getItem("kapital_fordon") || "[]");
   const tillgangar = JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]");
+  const kryptoInnehav = JSON.parse(localStorage.getItem("kapital_krypto") || "[]");
+  const kryptoVarde = kryptoInnehav.reduce((s, k) => s + (parseFloat(k.kostnad) || 0), 0);
   const skulder = JSON.parse(localStorage.getItem("kapital_skulder") || "[]");
 
   const totalExp = Object.values(expenses).reduce((s, v) => s + (parseFloat(v) || 0), 0);
@@ -6641,12 +6535,12 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
   ];
 
   const QUICK_ACTIONS = [
-    { icon: "🔍", label: "Analysera aktie", color: "#10b981", action: () => { setTab(1); setSubTab("analys"); } },
-    { icon: "💰", label: "Min ekonomi", color: "#3b82f6", action: () => setTab(2) },
+    { icon: "🔍", label: "Aktieanalys", color: "#10b981", action: () => { setTab(1); setSubTab("analys"); } },
+    { icon: "💰", label: "Min budget", color: "#3b82f6", action: () => { setTab(2); } },
+    { icon: "📊", label: "Fonder", color: "#f59e0b", action: () => { setTab(2); } },
     { icon: "🤖", label: "AI-coach", color: "#8b5cf6", action: () => { setTab(2); } },
-    { icon: "⚖️", label: "Juridisk AI", color: "#06b6d4", action: () => { setTab(2); } },
-    { icon: "🛡️", label: "Försäkringar", color: "#f59e0b", action: () => { setTab(3); setSubTab("forsakring"); } },
-    { icon: "🏦", label: "Ansök om lån", color: "#f97316", action: () => { setTab(3); setSubTab("lan"); } },
+    { icon: "🛡️", label: "Trygghet", color: "#06b6d4", action: () => { setTab(3); setSubTab("forsakring"); } },
+    { icon: "📊", label: "Min profil", color: "#f97316", action: () => { setTab(3); setSubTab("profil"); } },
   ];
 
   // Get health score for display
@@ -6698,10 +6592,13 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
       <AchievementToast achievement={newAchievement} />
 
       {/* Greeting */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 16 }}>
         <div style={{ fontSize: 13, color: "#64748b" }}>{greeting}{name ? `, ${name}` : ""}! 👋</div>
         <div style={{ fontSize: 24, fontWeight: 800, color: "#e2e8f0", marginTop: 2 }}>Din ekonomiska översikt</div>
       </div>
+
+      {/* Level meter — överst */}
+      <GamificationCard unlocked={unlocked} points={points} level={level} levelProgress={levelProgress} nextLevelPoints={nextLevelPoints} />
 
       {/* Health score card */}
       <div onClick={() => setTab(2)} style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 18, border: "1px solid #10b98133", padding: 20, marginBottom: 16, cursor: "pointer", position: "relative", overflow: "hidden" }}>
@@ -6767,9 +6664,6 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
       {/* Ekonomisk tidslinje */}
       <EkonomiskTidslinje />
 
-      {/* Gamification */}
-      <GamificationCard unlocked={unlocked} points={points} level={level} levelProgress={levelProgress} nextLevelPoints={nextLevelPoints} />
-
       {/* Guide button */}
       <button onClick={() => setShowGuide(true)}
         style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: "14px 16px", cursor: "pointer", marginBottom: 10 }}>
@@ -6828,7 +6722,760 @@ function ForsakringHub() {
 }
 
 // ── Profil Tab ────────────────────────────────────────────────────────────
-// ── Valuta Widget ─────────────────────────────────────────────────────────
+// ── Kryptoguide ───────────────────────────────────────────────────────────
+function KryptoGuide() {
+  const [section, setSection] = useState("intro");
+  const [innehav, setInnehav] = useState(() => { try { return JSON.parse(localStorage.getItem("kapital_krypto") || "[]"); } catch { return []; } });
+  const [adding, setAdding] = useState(false);
+  const [newK, setNewK] = useState({ namn: "Bitcoin", symbol: "BTC", antal: "", kostnad: "" });
+
+  const save = (k) => { setInnehav(k); try { localStorage.setItem("kapital_krypto", JSON.stringify(k)); } catch {} };
+
+  const KRYPTON = [
+    { namn: "Bitcoin", symbol: "BTC", emoji: "₿", color: "#f59e0b", mcap: "#1", desc: "Digitalt guld — den ursprungliga kryptovalutan", risk: "Hög", potential: 5 },
+    { namn: "Ethereum", symbol: "ETH", emoji: "⟠", color: "#8b5cf6", mcap: "#2", desc: "Plattform för smarta kontrakt och DeFi", risk: "Hög", potential: 5 },
+    { namn: "Solana", symbol: "SOL", emoji: "◎", color: "#10b981", mcap: "#5", desc: "Snabb och billig blockchain — stark konkurrent till ETH", risk: "Mycket hög", potential: 4 },
+    { namn: "BNB", symbol: "BNB", emoji: "🟡", color: "#f59e0b", mcap: "#4", desc: "Binance-kedjan — stark likviditet", risk: "Hög", potential: 3 },
+    { namn: "XRP", symbol: "XRP", emoji: "✕", color: "#3b82f6", mcap: "#6", desc: "Bankbetalningar — Ripple Labs", risk: "Hög", potential: 3 },
+    { namn: "Cardano", symbol: "ADA", emoji: "🔵", color: "#3b82f6", mcap: "#8", desc: "Akademiskt fokus och smart kontrakts-plattform", risk: "Mycket hög", potential: 3 },
+    { namn: "Avalanche", symbol: "AVAX", emoji: "🔺", color: "#ef4444", mcap: "#10", desc: "Snabb och skalbar blockchain", risk: "Mycket hög", potential: 4 },
+    { namn: "Polkadot", symbol: "DOT", emoji: "⬤", color: "#e879f9", mcap: "#12", desc: "Kopplar samman olika blockchains", risk: "Mycket hög", potential: 3 },
+  ];
+
+  const BÖRSER = [
+    { namn: "Coinbase", flag: "🇺🇸", desc: "Störst och mest reglerad i USA/EU. Bra för nybörjare.", safe: 5, url: "coinbase.com" },
+    { namn: "Safello", flag: "🇸🇪", desc: "Svensk kryptomäklare — enkelt med BankID och Swish", safe: 5, url: "safello.com" },
+    { namn: "Kraken", flag: "🇺🇸", desc: "Låga avgifter och stort utbud. Bra för erfarna.", safe: 4, url: "kraken.com" },
+    { namn: "Bitstamp", flag: "🇪🇺", desc: "EU-reglerad och säker. Populär i Europa.", safe: 4, url: "bitstamp.net" },
+    { namn: "Binance", flag: "🌍", desc: "Störst globalt men mer komplex. Inte i Sverige.", safe: 3, url: "binance.com" },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
+        {[["intro","🚀 Intro"],["krypton","₿ Krypton"],["kopa","🏦 Köpa"],["portfölj","💼 Portfölj"]].map(([id, label]) => (
+          <button key={id} onClick={() => setSection(id)}
+            style={{ flexShrink: 0, padding: "8px 14px", background: section === id ? "linear-gradient(135deg,#f59e0b,#f97316)" : "#0f172a", border: `1px solid ${section === id ? "transparent" : "#1e293b"}`, borderRadius: 99, color: section === id ? "#fff" : "#64748b", fontSize: 12, fontWeight: section === id ? 700 : 400, cursor: "pointer" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {section === "intro" && (
+        <div>
+          <div style={{ background: "linear-gradient(135deg,#1a1000,#0f172a)", borderRadius: 16, border: "1px solid #f59e0b33", padding: 18, marginBottom: 16 }}>
+            <div style={{ fontSize: 32, textAlign: "center", marginBottom: 10 }}>₿</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#f59e0b", textAlign: "center", marginBottom: 8 }}>Vad är krypto?</div>
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
+              Kryptovalutor är digitala valutor som fungerar utan banker. De drivs av blockchain-teknologi — en säker databas utan central kontroll. Bitcoin är den mest kända, men det finns tusentals andra.
+            </div>
+          </div>
+
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 14, marginBottom: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>✅ Fördelar</div>
+            {["Potentiellt hög avkastning", "Decentraliserat — ingen bank styr", "Handlas dygnet runt, 7 dagar i veckan", "Möjlighet till passiv inkomst via staking"].map((t, i) => (
+              <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4, display: "flex", gap: 8 }}><span style={{ color: "#10b981" }}>→</span>{t}</div>
+            ))}
+          </div>
+
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #ef444433", padding: 14, marginBottom: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>⚠️ Risker</div>
+            {["Extremt volatilt — kan falla 80%+ på kort tid", "Oreglerat i många länder", "Bedrägerier och scams är vanliga", "Teknisk komplexitet — om du tappar nyckeln förlorar du allt", "Skattepliktig tillgång — måste deklareras på K4"].map((t, i) => (
+              <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4, display: "flex", gap: 8 }}><span style={{ color: "#ef4444" }}>!</span>{t}</div>
+            ))}
+          </div>
+
+          <div style={{ background: "#f59e0b11", borderRadius: 12, border: "1px solid #f59e0b33", padding: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 6 }}>💡 Grundregel</div>
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
+              Investera aldrig mer i krypto än du har råd att förlora helt. De flesta experter rekommenderar max <b style={{ color: "#e2e8f0" }}>5-10% av portföljen</b> i krypto.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {section === "krypton" && (
+        <div>
+          {KRYPTON.map((k, i) => (
+            <div key={k.symbol} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${k.color}33`, padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: "50%", background: k.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: `1px solid ${k.color}44` }}>{k.emoji}</div>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{k.namn}</div>
+                    <div style={{ fontSize: 11, color: "#475569" }}>{k.symbol} · Marknadsvärde {k.mcap}</div>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 10, background: k.risk === "Hög" ? "#f59e0b22" : "#ef444422", color: k.risk === "Hög" ? "#f59e0b" : "#ef4444", padding: "2px 8px", borderRadius: 99 }}>{k.risk} risk</div>
+                  <div style={{ fontSize: 12, marginTop: 4 }}>{"⭐".repeat(k.potential)}</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>{k.desc}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {section === "kopa" && (
+        <div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 10 }}>Steg för steg — köp din första krypto</div>
+            {[
+              { num: 1, text: "Välj en reglerad börs — se listan nedan. Safello är enklast för svenska användare." },
+              { num: 2, text: "Skapa konto och verifiera din identitet (BankID eller pass)." },
+              { num: 3, text: "Sätt in pengar via bankgiro eller Swish." },
+              { num: 4, text: "Sök på den krypto du vill köpa (t.ex. Bitcoin = BTC)." },
+              { num: 5, text: "Välj belopp och bekräfta köpet." },
+              { num: 6, text: "Spara dina inloggningsuppgifter säkert — utan dem förlorar du tillgången till dina krypton!", tip: "Skriv ALDRIG upp seed phrase digitalt. Använd papper och förvara säkert." },
+            ].map((s, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f59e0b22", border: "1px solid #f59e0b44", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: "#f59e0b", flexShrink: 0 }}>{s.num}</div>
+                <div>
+                  <div style={{ fontSize: 13, color: "#e2e8f0", lineHeight: 1.6 }}>{s.text}</div>
+                  {s.tip && <div style={{ fontSize: 12, color: "#f59e0b", marginTop: 6, padding: "6px 10px", background: "#f59e0b11", borderRadius: 8 }}>⚠️ {s.tip}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {BÖRSER.map(b => (
+            <div key={b.namn} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${b.safe === 5 ? "#10b98133" : "#1e293b"}`, padding: 14, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 24 }}>{b.flag}</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{b.namn}</div>
+                    <div style={{ fontSize: 11, color: "#475569" }}>{b.url}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 14 }}>{"🔒".repeat(b.safe)}</div>
+              </div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>{b.desc}</div>
+              {b.safe === 5 && <div style={{ fontSize: 11, color: "#10b981", marginTop: 6 }}>✓ Rekommenderas för svenska användare</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {section === "portfölj" && (
+        <div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, marginBottom: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 10 }}>₿ Mina krypton</div>
+            {innehav.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "20px 0", color: "#334155", fontSize: 13 }}>Inga krypton tillagda ännu</div>
+            ) : (
+              innehav.map((k, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1e293b" }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{k.namn} ({k.symbol})</div>
+                    <div style={{ fontSize: 12, color: "#475569" }}>{k.antal} st · Köpt för {parseFloat(k.kostnad).toLocaleString("sv-SE")} kr</div>
+                  </div>
+                  <button onClick={() => save(innehav.filter((_, j) => j !== i))} style={{ fontSize: 12, color: "#ef4444", background: "none", border: "none", cursor: "pointer" }}>Ta bort</button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {adding ? (
+            <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+              <select value={newK.namn} onChange={e => { const k = KRYPTON.find(k => k.namn === e.target.value); setNewK(n => ({ ...n, namn: e.target.value, symbol: k?.symbol || "" })); }}
+                style={{ width: "100%", padding: "10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
+                {KRYPTON.map(k => <option key={k.symbol} value={k.namn} style={{ background: "#0f172a" }}>{k.emoji} {k.namn} ({k.symbol})</option>)}
+              </select>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+                {[["antal", "Antal", "0.5"], ["kostnad", "Köpt för (kr)", "10000"]].map(([key, label, ph]) => (
+                  <div key={key}>
+                    <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{label}</div>
+                    <input value={newK[key]} onChange={e => setNewK(n => ({ ...n, [key]: e.target.value }))} placeholder={ph} inputMode="decimal"
+                      style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => { if (newK.antal && newK.kostnad) { save([...innehav, newK]); setAdding(false); setNewK({ namn: "Bitcoin", symbol: "BTC", antal: "", kostnad: "" }); } }}
+                  style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#f59e0b,#f97316)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
+                <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+              + Lägg till krypto
+            </button>
+          )}
+          <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 10 }}>
+            ⚠ Priser uppdateras ej automatiskt. Lägg in aktuellt värde för korrekt nettovärde.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function KryptoSkatt() {
+  const [trades, setTrades] = useState(() => { try { return JSON.parse(localStorage.getItem("kapital_krypto_k4") || "[]"); } catch { return []; } });
+  const [adding, setAdding] = useState(false);
+  const [newT, setNewT] = useState({ krypto: "BTC", kopDatum: "", kopPris: "", saljDatum: "", saljPris: "", antal: "" });
+
+  const save = (t) => { setTrades(t); try { localStorage.setItem("kapital_krypto_k4", JSON.stringify(t)); } catch {} };
+
+  const totalVinst = trades.reduce((s, t) => {
+    const vinst = (parseFloat(t.saljPris) - parseFloat(t.kopPris)) * parseFloat(t.antal || 1);
+    return s + (isNaN(vinst) ? 0 : vinst);
+  }, 0);
+  const skatt = totalVinst > 0 ? totalVinst * 0.30 : totalVinst * 0.30 * 0.7;
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#1a0800,#0f172a)", borderRadius: 16, border: "1px solid #f59e0b33", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 6 }}>🧾 Kryptoskatt — K4</div>
+        <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>
+          All handel med kryptovalutor är skattepliktig i Sverige. Varje köp och försäljning ska redovisas på <b style={{ color: "#e2e8f0" }}>K4-blankett</b> i deklarationen. Skatten är 30% på vinst och 21% avdrag på förlust.
+        </div>
+      </div>
+
+      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>💡 Viktiga regler</div>
+        {[
+          "Varje försäljning är en skattepliktig händelse — även byte mellan krypton",
+          "Genomsnittsmetoden används — snittpris på alla köp av samma krypto",
+          "Förluster kan kvittas mot vinster (70% avdragsgillt mot kapital)",
+          "Staking-intäkter beskattas som inkomst (inte kapital)",
+          "Utländska börser behöver inte skicka kontrolluppgifter — du måste deklarera själv",
+          "Skatteverket har börjat granska kryptohandel aktivt",
+        ].map((t, i) => (
+          <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}>
+            <span style={{ color: "#f59e0b" }}>→</span>{t}
+          </div>
+        ))}
+      </div>
+
+      {/* Summary */}
+      {trades.length > 0 && (
+        <div style={{ background: `linear-gradient(135deg,${totalVinst >= 0 ? "#0a1f0a" : "#1a0000"},#0f172a)`, borderRadius: 14, border: `1px solid ${totalVinst >= 0 ? "#10b98133" : "#ef444433"}`, padding: 16, marginBottom: 14, textAlign: "center" }}>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Total vinst/förlust</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: totalVinst >= 0 ? "#10b981" : "#ef4444" }}>
+            {totalVinst >= 0 ? "+" : ""}{Math.round(totalVinst).toLocaleString("sv-SE")} kr
+          </div>
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>
+            Skatt att betala: <b style={{ color: totalVinst >= 0 ? "#ef4444" : "#10b981" }}>{Math.round(Math.abs(skatt)).toLocaleString("sv-SE")} kr</b>
+            {totalVinst < 0 && " (avdrag)"}
+          </div>
+        </div>
+      )}
+
+      {/* Trades */}
+      {trades.map((t, i) => {
+        const vinst = (parseFloat(t.saljPris) - parseFloat(t.kopPris)) * parseFloat(t.antal || 1);
+        return (
+          <div key={i} style={{ background: "#0f172a", borderRadius: 10, border: `1px solid ${vinst >= 0 ? "#10b98122" : "#ef444422"}`, padding: 12, marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{t.krypto} · {t.antal} st</div>
+                <div style={{ fontSize: 11, color: "#475569" }}>Köpt {t.kopDatum} för {parseFloat(t.kopPris).toLocaleString("sv-SE")} kr</div>
+                <div style={{ fontSize: 11, color: "#475569" }}>Sålt {t.saljDatum} för {parseFloat(t.saljPris).toLocaleString("sv-SE")} kr</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: vinst >= 0 ? "#10b981" : "#ef4444" }}>
+                  {vinst >= 0 ? "+" : ""}{Math.round(vinst).toLocaleString("sv-SE")} kr
+                </div>
+                <button onClick={() => save(trades.filter((_, j) => j !== i))} style={{ fontSize: 11, color: "#ef4444", background: "none", border: "none", cursor: "pointer" }}>Ta bort</button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {adding ? (
+        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 10 }}>Lägg till affär</div>
+          <input value={newT.krypto} onChange={e => setNewT(n => ({ ...n, krypto: e.target.value }))} placeholder="BTC, ETH..."
+            style={{ width: "100%", padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+            {[["kopPris", "Köppris/st (SEK)", "300000"], ["saljPris", "Säljpris/st (SEK)", "450000"], ["antal", "Antal", "0.5"], ["kopDatum", "Köpdatum", "2024-01-01"]].map(([key, label, ph]) => (
+              <div key={key}>
+                <div style={{ fontSize: 10, color: "#64748b", marginBottom: 3 }}>{label}</div>
+                <input value={newT[key]} onChange={e => setNewT(n => ({ ...n, [key]: e.target.value }))} placeholder={ph}
+                  style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { if (newT.kopPris && newT.saljPris) { save([...trades, newT]); setAdding(false); setNewT({ krypto: "BTC", kopDatum: "", kopPris: "", saljDatum: "", saljPris: "", antal: "" }); } }}
+              style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#f59e0b,#f97316)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+          + Lägg till kryptoaffär för K4
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Utländska Värdepapper Guide ───────────────────────────────────────────
+function UtlandGuide() {
+  const [section, setSection] = useState("intro");
+
+  const SBtn = ({ id, label, icon }) => (
+    <button onClick={() => setSection(id)}
+      style={{ flex: 1, padding: "10px 6px", background: section === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${section === id ? "transparent" : "#1e293b"}`, borderRadius: 10, color: section === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: section === id ? 700 : 400, cursor: "pointer", textAlign: "center" }}>
+      <div style={{ fontSize: 16, marginBottom: 2 }}>{icon}</div>
+      {label}
+    </button>
+  );
+
+  const INFO_BOX = ({ title, items, color = "#10b981" }) => (
+    <div style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${color}33`, padding: 14, marginBottom: 12 }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color, marginBottom: 10 }}>{title}</div>
+      {items.map((item, i) => (
+        <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
+          <span style={{ color, flexShrink: 0, fontSize: 14 }}>→</span>
+          <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{item}</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const BROKERS = [
+    { name: "Avanza", flag: "🇸🇪", courtage: "0 kr (USA/Europa under 50k)", valuta: "Automatisk", marknader: "USA, Europa, Norden", etf: true, isk: true, url: "avanza.se", betyg: 5, desc: "Bäst för svenska sparare — störst utbud och lägst courtage" },
+    { name: "Nordnet", flag: "🇸🇪", courtage: "0 kr (USA/Europa under 50k)", valuta: "Automatisk", marknader: "USA, Europa, Norden, Asien", etf: true, isk: true, url: "nordnet.se", betyg: 5, desc: "Lika bra som Avanza — bra för Nordiska aktier" },
+    { name: "DEGIRO", flag: "🇳🇱", courtage: "1-2 EUR/affär", valuta: "Automatisk", marknader: "50+ börser globalt", etf: true, isk: false, url: "degiro.se", betyg: 4, desc: "Lägst courtage globalt — men ingen ISK-möjlighet" },
+    { name: "Interactive Brokers", flag: "🇺🇸", courtage: "0.005 USD/aktie", valuta: "Manuell/automatisk", marknader: "135+ börser globalt", etf: true, isk: false, url: "interactivebrokers.com", betyg: 4, desc: "För aktiva handlare — störst utbud men mer komplex" },
+  ];
+
+  const BÖRSER = [
+    { name: "NYSE / NASDAQ", flag: "🇺🇸", land: "USA", valutor: "USD", öppet: "15:30-22:00 CET", kanda: "Apple, Tesla, Amazon, Google, Meta, Nvidia, Microsoft", tickers: "Bokstäver (AAPL, TSLA)" },
+    { name: "London Stock Exchange", flag: "🇬🇧", land: "UK", valutor: "GBP/USD", öppet: "09:00-17:30 CET", kanda: "Shell, HSBC, AstraZeneca, BP", tickers: "Bokstäver (AZN, SHEL)" },
+    { name: "Euronext Paris", flag: "🇫🇷", land: "Frankrike", valutor: "EUR", öppet: "09:00-17:30 CET", kanda: "LVMH, L'Oréal, TotalEnergies", tickers: "MC, OR, TTE" },
+    { name: "XETRA Frankfurt", flag: "🇩🇪", land: "Tyskland", valutor: "EUR", öppet: "09:00-17:30 CET", kanda: "SAP, Siemens, BMW, Volkswagen", tickers: "SAP, SIE, BMW" },
+    { name: "Tokyo Stock Exchange", flag: "🇯🇵", land: "Japan", valutor: "JPY", öppet: "02:00-08:30 CET", kanda: "Toyota, Sony, Nintendo, SoftBank", tickers: "Siffror (7203, 6758)" },
+    { name: "Hong Kong Exchange", flag: "🇭🇰", land: "Hong Kong", valutor: "HKD", öppet: "03:30-10:00 CET", kanda: "Alibaba, Tencent, HSBC", tickers: "Siffror (0700, 0005)" },
+  ];
+
+  const ETF_GUIDE = [
+    { namn: "VUAA (Vanguard S&P500)", börs: "London", valuta: "USD", avgift: 0.07, desc: "Följer S&P 500 — de 500 största USA-bolagen", typ: "Indexfond ETF" },
+    { namn: "IWDA (iShares MSCI World)", börs: "London/Amsterdam", valuta: "USD", avgift: 0.20, desc: "1 600 bolag i 23 länder — bred global exponering", typ: "Global ETF" },
+    { namn: "QQQ (Invesco Nasdaq 100)", börs: "NASDAQ", valuta: "USD", avgift: 0.20, desc: "De 100 största tech-bolagen på Nasdaq", typ: "Teknik ETF" },
+    { namn: "IEMG (iShares Emerging Markets)", börs: "NYSE", valuta: "USD", avgift: 0.09, desc: "Tillväxtmarknader — Kina, Indien, Brasilien", typ: "Tillväxt ETF" },
+    { namn: "VWRL (Vanguard FTSE All-World)", börs: "London", valuta: "USD", avgift: 0.22, desc: "3 700 bolag i hela världen — ultimat diversifiering", typ: "Global ETF" },
+    { namn: "SOXX (iShares Semiconductor)", börs: "NASDAQ", valuta: "USD", avgift: 0.35, desc: "Halvledarbolag — Nvidia, TSMC, Intel, AMD", typ: "Sektor ETF" },
+  ];
+
+  return (
+    <div>
+      {/* Nav */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
+        <SBtn id="intro" label="Kom igång" icon="🚀" />
+        <SBtn id="borser" label="Börser" icon="🌍" />
+        <SBtn id="etf" label="ETF:er" icon="📊" />
+        <SBtn id="skatt" label="Skatt" icon="🧾" />
+        <SBtn id="maklare" label="Mäklare" icon="🏦" />
+      </div>
+
+      {/* INTRO */}
+      {section === "intro" && (
+        <div>
+          <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1020)", borderRadius: 16, border: "1px solid #3b82f633", padding: 18, marginBottom: 16 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#3b82f6", marginBottom: 6 }}>🌍 Handla utländska värdepapper</div>
+            <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.7 }}>
+              Svenska börsen är bara 1% av världens aktiemarknad. Genom att investera globalt får du tillgång till Apple, Tesla, Nvidia och tusentals andra bolag — direkt från din telefon.
+            </div>
+          </div>
+
+          <INFO_BOX title="✅ Vad kan du köpa?" color="#10b981" items={[
+            "Aktier på börser i USA, Europa, Asien och mer",
+            "ETF:er (börshandlade fonder) — billigaste sättet att diversifiera globalt",
+            "ADR:er — utländska aktier listade på amerikanska börser",
+            "Obligationer och råvaror via ETF:er",
+          ]} />
+
+          <INFO_BOX title="📋 Steg för steg — kom igång" color="#3b82f6" items={[
+            "1. Öppna ett konto hos Avanza eller Nordnet (gratis, tar 10 minuter med BankID)",
+            "2. Välj kontotyp — ISK för aktier och fonder, AF för utdelningsaktier",
+            "3. Sätt in pengar via bankgiro eller Swish",
+            "4. Sök på bolagsnamnet eller ticker-symbolen (t.ex. AAPL för Apple)",
+            "5. Välj antal aktier och tryck Köp",
+            "6. Valutaväxling sker automatiskt — du betalar i SEK",
+          ]} />
+
+          <INFO_BOX title="⚠️ Viktigt att veta" color="#f59e0b" items={[
+            "Valutarisk — om kronan stärks minskar värdet på utländska innehav",
+            "Courtage — ofta 0 kr på Avanza/Nordnet för USA upp till 50 000 kr/år",
+            "Valutaväxlingsavgift — ca 0.25% vid köp och försäljning",
+            "Handelstider — USA-börsen öppnar 15:30 svensk tid",
+            "Skatt — vinster och utdelningar ska deklareras (K4 eller automatiskt via ISK)",
+          ]} />
+        </div>
+      )}
+
+      {/* BÖRSER */}
+      {section === "borser" && (
+        <div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 4 }}>Världens börser</div>
+            <div style={{ fontSize: 12, color: "#64748b" }}>Tider är CET (svensk tid). Avanza och Nordnet ger tillgång till de flesta av dessa.</div>
+          </div>
+          {BÖRSER.map((b, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 28 }}>{b.flag}</span>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{b.name}</div>
+                    <div style={{ fontSize: 11, color: "#475569" }}>{b.land} · {b.valutor}</div>
+                  </div>
+                </div>
+                <div style={{ background: "#1e293b", borderRadius: 8, padding: "4px 10px", fontSize: 11, color: "#10b981" }}>
+                  🕐 {b.öppet}
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>
+                <b style={{ color: "#94a3b8" }}>Kända bolag:</b> {b.kanda}
+              </div>
+              <div style={{ fontSize: 11, color: "#475569" }}>
+                <b>Ticker-format:</b> {b.tickers}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ETF */}
+      {section === "etf" && (
+        <div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #3b82f633", padding: 14, marginBottom: 14 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#3b82f6", marginBottom: 4 }}>Vad är en ETF?</div>
+            <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
+              ETF (Exchange Traded Fund) är en fond som handlas på börsen som en aktie. En ETF kan innehålla hundratals bolag och ger dig automatisk diversifiering till minimal kostnad. <b style={{ color: "#e2e8f0" }}>En VUAA-aktie till ~500 SEK ger dig exponering mot 500 amerikanska bolag!</b>
+            </div>
+          </div>
+
+          <INFO_BOX title="✅ Fördelar med ETF:er" color="#10b981" items={[
+            "Låg avgift — ofta 0.07-0.25% per år",
+            "Automatisk diversifiering — hundratals bolag i ett köp",
+            "Handlas som aktier — köp och sälj när börsen är öppen",
+            "Passar ISK — ingen kapitalvinstskatt vid köp/sälj",
+            "Tillgängliga hos Avanza och Nordnet",
+          ]} />
+
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Populära ETF:er</div>
+          {ETF_GUIDE.map((e, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{e.namn}</div>
+                  <div style={{ fontSize: 11, color: "#475569" }}>{e.typ} · {e.börs} · {e.valuta}</div>
+                </div>
+                <div style={{ background: "#10b98122", borderRadius: 8, padding: "4px 10px", fontSize: 12, color: "#10b981", fontWeight: 700 }}>
+                  {e.avgift}%/år
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: "#94a3b8" }}>{e.desc}</div>
+            </div>
+          ))}
+
+          <INFO_BOX title="💡 Tips för nybörjare" color="#f59e0b" items={[
+            "Börja med VUAA eller IWDA — de är de mest populära globala ETF:erna",
+            "Spara månadsvis — ta bort känslan av att tajma marknaden",
+            "Håll kvar länge — ETF:er är för långsiktigt sparande (5+ år)",
+            "Avanza och Nordnet har egna ETF-guides på sina hemsidor",
+          ]} />
+        </div>
+      )}
+
+      {/* SKATT */}
+      {section === "skatt" && (
+        <div>
+          <INFO_BOX title="🧾 Skatt på utländska värdepapper" color="#f59e0b" items={[
+            "ISK (Investeringssparkonto) — betalar schablonsskatt (~0.888% av värdet/år). Inga K4-blanketter!",
+            "AF (Aktie & Fondkonto) — betalar 30% kapitalvinstskatt vid försäljning. K4-blankett krävs.",
+            "Utdelningar från utländska bolag beskattas 30% (USA tar 15% källskatt, resterande 15% betalar du i Sverige)",
+            "Valutavinst/-förlust ingår i kapitalvinsten — om kronan försvagats är din vinst större",
+          ]} />
+
+          <INFO_BOX title="🇺🇸 USA-specifikt — W-8BEN" color="#3b82f6" items={[
+            "Du behöver fylla i formuläret W-8BEN hos din mäklare för att slippa dubbelbeskattning",
+            "Avanza och Nordnet hanterar detta automatiskt vid kontoöppning",
+            "USA tar 15% källskatt på utdelningar för svenska skattebetalare (tack vare skatteavtal)",
+            "Utan W-8BEN tar USA 30% källskatt — du kan söka återbetalning men det är krångligt",
+          ]} />
+
+          <INFO_BOX title="🇪🇺 Europa — PRIIPS-regelverket" color="#8b5cf6" items={[
+            "EU kräver att du läser ett KID-dokument (Key Information Document) innan du köper europeiska ETF:er",
+            "Avanza och Nordnet visar detta automatiskt",
+            "Vissa amerikanska ETF:er (t.ex. SPY, VOO) får INTE säljas till EU-kunder — köp VUAA istället",
+            "UCITS-ETF:er är godkända för EU-kunder — leta efter UCITS i fondnamnet",
+          ]} />
+
+          <INFO_BOX title="💡 Bästa skattupplägget" color="#10b981" items={[
+            "Använd ISK för allt långsiktigt sparande — enklast och ofta billigast",
+            "ISK passar bäst när börsen går upp — schablonsskatten är fast oavsett avkastning",
+            "AF-konto kan vara bättre om du har förluster att kvitta mot vinster",
+            "Deklarera K4 via Avanzas eller Nordnets exportfunktion — de genererar blanketterna åt dig",
+          ]} />
+        </div>
+      )}
+
+      {/* MÄKLARE */}
+      {section === "maklare" && (
+        <div>
+          {BROKERS.map((b, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${b.betyg === 5 ? "#10b98133" : "#1e293b"}`, padding: 16, marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 28 }}>{b.flag}</span>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{b.name}</span>
+                      {b.betyg === 5 && <span style={{ fontSize: 10, background: "#10b98122", color: "#10b981", padding: "1px 7px", borderRadius: 99, fontWeight: 700 }}>REKOMMENDERAS</span>}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#475569" }}>{b.url}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 18 }}>{"⭐".repeat(b.betyg)}</div>
+              </div>
+
+              <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12, lineHeight: 1.5 }}>{b.desc}</div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                {[
+                  ["Courtage", b.courtage],
+                  ["Marknader", b.marknader],
+                  ["Valutaväxling", b.valuta],
+                  ["ISK", b.isk ? "✓ Ja" : "✗ Nej"],
+                  ["ETF:er", b.etf ? "✓ Ja" : "✗ Nej"],
+                ].map(([label, value]) => (
+                  <div key={label} style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ fontSize: 10, color: "#475569" }}>{label}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: value.includes("✓") ? "#10b981" : value.includes("✗") ? "#ef4444" : "#e2e8f0" }}>{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>💡 Vilket ska jag välja?</div>
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
+              För de flesta svenska sparare är <b style={{ color: "#10b981" }}>Avanza eller Nordnet</b> bäst — gratis handel, ISK-konto, och enkelt gränssnitt på svenska. DEGIRO är bra om du handlar ofta på exotiska marknader. Interactive Brokers passar proffs.
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+const ALLA_FONDER = [
+  // Indexfonder — Bäst för de flesta
+  { namn: "Avanza Zero", kategori: "Indexfond Sverige", risk: "Medel", avgift: 0.00, avk1ar: 8.2, avk5ar: 11.3, avk10ar: 12.1, betyg: 5, framtid: 5, hallbar: true, desc: "Avgiftsfri Sverigefond — perfekt för nybörjare", rekommenderas: true, fargen: "#22c55e" },
+  { namn: "Länsförsäkringar Global Indexnära", kategori: "Indexfond Global", risk: "Hög", avgift: 0.20, avk1ar: 14.1, avk5ar: 15.2, avk10ar: 12.1, betyg: 5, framtid: 5, hallbar: false, desc: "Bred global exponering till låg kostnad", rekommenderas: true, fargen: "#10b981" },
+  { namn: "AMF Aktiefond Global", kategori: "Indexfond Global", risk: "Hög", avgift: 0.18, avk1ar: 13.8, avk5ar: 14.9, avk10ar: 11.8, betyg: 5, framtid: 5, hallbar: false, desc: "Låg avgift och stark historik", rekommenderas: true, fargen: "#10b981" },
+  { namn: "AP7 Såfa", kategori: "PPM Statsfond", risk: "Hög", avgift: 0.07, avk1ar: 16.2, avk5ar: 17.1, avk10ar: 14.2, betyg: 5, framtid: 5, hallbar: false, desc: "Bäst för PPM — lägsta avgift, bäst avkastning", rekommenderas: true, fargen: "#22c55e" },
+  { namn: "Swedbank Robur Access Global", kategori: "Indexfond Global", risk: "Hög", avgift: 0.19, avk1ar: 13.5, avk5ar: 14.6, avk10ar: 11.5, betyg: 4, framtid: 4, hallbar: false, desc: "Stabil global indexfond", rekommenderas: true, fargen: "#10b981" },
+
+  // Teknik — Hög potential
+  { namn: "Swedbank Robur Technology", kategori: "Teknikfond", risk: "Hög", avgift: 1.40, avk1ar: 22.4, avk5ar: 21.3, avk10ar: 18.5, betyg: 4, framtid: 5, hallbar: false, desc: "AI, halvledare och tech — hög risk men hög potential", rekommenderas: false, fargen: "#3b82f6" },
+  { namn: "DNB Teknologi", kategori: "Teknikfond", risk: "Hög", avgift: 1.50, avk1ar: 19.8, avk5ar: 20.1, avk10ar: 17.2, betyg: 4, framtid: 5, hallbar: false, desc: "Nordens bästa teknikfond", rekommenderas: false, fargen: "#3b82f6" },
+  { namn: "Handelsbanken Artificiell Intelligens", kategori: "AI-fond", risk: "Hög", avgift: 1.35, avk1ar: 24.1, avk5ar: 22.8, avk10ar: null, betyg: 4, framtid: 5, hallbar: false, desc: "Fokus på AI-bolag — ny men stark start", rekommenderas: false, fargen: "#8b5cf6" },
+
+  // Hållbara fonder
+  { namn: "SPP Global Solutions", kategori: "Hållbar global", risk: "Hög", avgift: 0.87, avk1ar: 11.2, avk5ar: 13.4, avk10ar: 10.9, betyg: 4, framtid: 4, hallbar: true, desc: "Grön fond med fokus på klimatlösningar", rekommenderas: false, fargen: "#10b981" },
+  { namn: "Swedbank Robur Hållbar Global", kategori: "Hållbar global", risk: "Hög", avgift: 0.30, avk1ar: 12.8, avk5ar: 13.9, avk10ar: 11.2, betyg: 4, framtid: 4, hallbar: true, desc: "Hållbar global med låg avgift", rekommenderas: false, fargen: "#10b981" },
+  { namn: "Öhman Global Hållbar", kategori: "Hållbar global", risk: "Hög", avgift: 0.55, avk1ar: 11.5, avk5ar: 12.8, avk10ar: 10.5, betyg: 4, framtid: 4, hallbar: true, desc: "Ledande inom hållbarhet", rekommenderas: false, fargen: "#10b981" },
+
+  // Blandfonder — Lägre risk
+  { namn: "AMF Blandfond", kategori: "Blandfond", risk: "Medel", avgift: 0.25, avk1ar: 7.8, avk5ar: 9.2, avk10ar: 8.1, betyg: 4, framtid: 3, hallbar: false, desc: "50% aktier, 50% räntor — bra balans", rekommenderas: false, fargen: "#f59e0b" },
+  { namn: "Handelsbanken Multi Asset 50", kategori: "Blandfond", risk: "Medel", avgift: 0.52, avk1ar: 7.2, avk5ar: 8.8, avk10ar: 7.8, betyg: 3, framtid: 3, hallbar: false, desc: "Stabil blandfond", rekommenderas: false, fargen: "#f59e0b" },
+
+  // Räntefonder — Lägst risk
+  { namn: "Spiltan Räntefond Sverige", kategori: "Räntefond", risk: "Låg", avgift: 0.10, avk1ar: 3.8, avk5ar: 2.1, avk10ar: 1.8, betyg: 4, framtid: 2, hallbar: false, desc: "Perfekt för kort sparhorisont", rekommenderas: false, fargen: "#64748b" },
+  { namn: "AMF Räntefond Lång", kategori: "Räntefond", risk: "Låg", avgift: 0.15, avk1ar: 4.2, avk5ar: 2.4, avk10ar: 2.1, betyg: 3, framtid: 2, hallbar: false, desc: "Lång ränta — passar när räntan faller", rekommenderas: false, fargen: "#64748b" },
+];
+
+function FondGuide() {
+  const [filter, setFilter] = useState("alla");
+  const [sort, setSort] = useState("framtid");
+  const [selected, setSelected] = useState(null);
+  const [showOnlyRek, setShowOnlyRek] = useState(false);
+
+  const KATEGORIER = ["alla", "Indexfond Global", "Indexfond Sverige", "Teknikfond", "AI-fond", "Hållbar global", "Blandfond", "Räntefond", "PPM Statsfond"];
+
+  const riskFarg = r => r === "Hög" ? "#ef4444" : r === "Medel" ? "#f59e0b" : "#10b981";
+  const framtidStjarnor = n => "⭐".repeat(n) + "☆".repeat(5 - n);
+
+  const filtered = ALLA_FONDER
+    .filter(f => filter === "alla" || f.kategori === filter)
+    .filter(f => !showOnlyRek || f.rekommenderas)
+    .sort((a, b) => {
+      if (sort === "framtid") return b.framtid - a.framtid;
+      if (sort === "avk10") return (b.avk10ar || 0) - (a.avk10ar || 0);
+      if (sort === "avgift") return a.avgift - b.avgift;
+      if (sort === "avk1") return b.avk1ar - a.avk1ar;
+      return 0;
+    });
+
+  if (selected) {
+    return (
+      <div>
+        <button onClick={() => setSelected(null)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: "8px 16px", marginBottom: 16 }}>
+          ← Tillbaka
+        </button>
+
+        <div style={{ background: `linear-gradient(135deg,#0f172a,${selected.fargen}11)`, borderRadius: 16, border: `1px solid ${selected.fargen}44`, padding: 20, marginBottom: 14 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0", marginBottom: 4 }}>{selected.namn}</div>
+              <div style={{ fontSize: 12, color: "#64748b" }}>{selected.kategori}</div>
+            </div>
+            {selected.rekommenderas && <span style={{ fontSize: 11, background: "#10b98122", color: "#10b981", padding: "3px 10px", borderRadius: 99, fontWeight: 700 }}>REKOMMENDERAS</span>}
+          </div>
+          <div style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.6, marginBottom: 14 }}>{selected.desc}</div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+            {[
+              ["Avgift/år", selected.avgift + "%", selected.avgift < 0.3 ? "#10b981" : selected.avgift < 0.8 ? "#f59e0b" : "#ef4444"],
+              ["1 år", "+" + selected.avk1ar + "%", "#10b981"],
+              ["5 år/år", "+" + selected.avk5ar + "%", "#10b981"],
+              ["10 år/år", selected.avk10ar ? "+" + selected.avk10ar + "%" : "—", "#10b981"],
+              ["Risk", selected.risk, riskFarg(selected.risk)],
+              ["Hållbar", selected.hallbar ? "✓ Ja" : "Nej", selected.hallbar ? "#10b981" : "#475569"],
+            ].map(([l, v, c]) => (
+              <div key={l} style={{ background: "#0a0f1e", borderRadius: 10, padding: "10px 10px" }}>
+                <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>{l}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 10 }}>📈 Framtidsutsikter</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <div style={{ fontSize: 22 }}>{framtidStjarnor(selected.framtid)}</div>
+            <div style={{ fontSize: 14, color: selected.framtid >= 4 ? "#10b981" : selected.framtid >= 3 ? "#f59e0b" : "#64748b", fontWeight: 600 }}>
+              {selected.framtid === 5 ? "Mycket stark potential" : selected.framtid === 4 ? "God potential" : selected.framtid === 3 ? "Stabil" : "Begränsad potential"}
+            </div>
+          </div>
+          {selected.kategori.includes("Teknik") || selected.kategori.includes("AI") ? (
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>AI-revolutionen driver stark tillväxt i teknikbolag. Hög risk men stor potential de närmaste 5-10 åren.</div>
+          ) : selected.kategori.includes("Index") ? (
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>Indexfonder följer marknaden och slår aktivt förvaltade fonder på lång sikt. Låg avgift är nyckeln.</div>
+          ) : selected.kategori.includes("Hållbar") ? (
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>Hållbara fonder gynnas av EU:s gröna omställning och ökande kapitalflöden till ESG-bolag.</div>
+          ) : selected.kategori.includes("Blandfond") ? (
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>Bra för sparare som vill ha lägre risk. Passar när räntorna är höga.</div>
+          ) : (
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>Räntefonder passar när du sparar kort eller vill skydda kapitalet.</div>
+          )}
+        </div>
+
+        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>💡 Var kan jag köpa denna fond?</div>
+          {["Avanza", "Nordnet", "Din bank (Swedbank, SEB, Nordea, Handelsbanken)"].map((p, i) => (
+            <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4, display: "flex", gap: 8 }}>
+              <span style={{ color: "#10b981" }}>→</span>{p}
+            </div>
+          ))}
+          <div style={{ fontSize: 11, color: "#334155", marginTop: 10 }}>
+            ⚠ Historisk avkastning är ingen garanti för framtida resultat. Fondinvesteringar innebär alltid risk.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 16, border: "1px solid #10b98133", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>📊 Fondguide 2026</div>
+        <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>
+          Jämför populära fonder baserat på avgift, historisk avkastning och framtidspotential. Tryck på en fond för mer info.
+        </div>
+      </div>
+
+      {/* Top picks */}
+      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>⭐ Kapital rekommenderar</div>
+      {ALLA_FONDER.filter(f => f.rekommenderas).map(f => (
+        <button key={f.namn} onClick={() => setSelected(f)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#0f172a", border: `1px solid ${f.fargen}44`, borderRadius: 14, padding: "14px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+              <span style={{ fontSize: 10, background: "#10b98122", color: "#10b981", padding: "1px 7px", borderRadius: 99, fontWeight: 700 }}>REKOMMENDERAS</span>
+              {f.hallbar && <span style={{ fontSize: 10, background: "#22c55e22", color: "#22c55e", padding: "1px 7px", borderRadius: 99 }}>🌱 Hållbar</span>}
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{f.namn}</div>
+            <div style={{ fontSize: 11, color: "#475569" }}>{f.kategori} · Avgift: {f.avgift}%</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#10b981" }}>+{f.avk10ar || f.avk5ar}%</div>
+            <div style={{ fontSize: 10, color: "#475569" }}>10 år/år</div>
+          </div>
+        </button>
+      ))}
+
+      {/* Filter */}
+      <div style={{ fontSize: 12, color: "#64748b", margin: "16px 0 10px", textTransform: "uppercase", letterSpacing: 1 }}>Alla fonder</div>
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 10, scrollbarWidth: "none" }}>
+        {["alla", "Index", "Teknik", "Hållbar", "Bland", "Ränta"].map(f => {
+          const active = f === "alla" ? filter === "alla" : filter.toLowerCase().includes(f.toLowerCase());
+          return (
+            <button key={f} onClick={() => setFilter(f === "alla" ? "alla" : KATEGORIER.find(k => k.toLowerCase().includes(f.toLowerCase())) || f)}
+              style={{ flexShrink: 0, padding: "6px 14px", background: active ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${active ? "transparent" : "#1e293b"}`, borderRadius: 99, color: active ? "#fff" : "#64748b", fontSize: 12, fontWeight: active ? 700 : 400, cursor: "pointer" }}>
+              {f}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Sort */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        {[["framtid","🔮 Framtid"],["avk10","📈 10-årig"],["avk1","🚀 1-årig"],["avgift","💸 Avgift"]].map(([s, label]) => (
+          <button key={s} onClick={() => setSort(s)}
+            style={{ flex: 1, padding: "7px 4px", background: sort === s ? "#1e293b" : "none", border: `1px solid ${sort === s ? "#334155" : "#1e293b"}`, borderRadius: 8, color: sort === s ? "#e2e8f0" : "#475569", fontSize: 11, cursor: "pointer" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Fund list */}
+      {filtered.map(f => (
+        <button key={f.namn} onClick={() => setSelected(f)}
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, padding: "12px 14px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", marginBottom: 3 }}>{f.namn}</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 10, background: riskFarg(f.risk) + "22", color: riskFarg(f.risk), padding: "1px 7px", borderRadius: 99 }}>{f.risk} risk</span>
+              <span style={{ fontSize: 10, color: "#475569" }}>Avgift: {f.avgift}%</span>
+              {f.hallbar && <span style={{ fontSize: 10, color: "#22c55e" }}>🌱</span>}
+            </div>
+          </div>
+          <div style={{ textAlign: "right", marginLeft: 10 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: sort === "avgift" ? (f.avgift < 0.3 ? "#10b981" : f.avgift < 0.8 ? "#f59e0b" : "#ef4444") : "#10b981" }}>
+              {sort === "avgift" ? f.avgift + "%" : sort === "avk1" ? "+" + f.avk1ar + "%" : "+" + (f.avk10ar || f.avk5ar) + "%"}
+            </div>
+            <div style={{ fontSize: 10, color: "#475569" }}>
+              {sort === "avgift" ? "per år" : sort === "avk1" ? "1 år" : "10 år/år"}
+            </div>
+            <div style={{ fontSize: 13 }}>{framtidStjarnor(f.framtid)}</div>
+          </div>
+        </button>
+      ))}
+
+      <div style={{ fontSize: 10, color: "#334155", textAlign: "center", marginTop: 10, lineHeight: 1.7 }}>
+        ⚠ Historisk avkastning är ingen garanti för framtida resultat. Alla investeringar innebär risk. Detta är inte finansiell rådgivning.
+      </div>
+    </div>
+  );
+}
+
+
 function ValutaWidget({ exchangeRates, currency, currencies }) {
   const [fromAmount, setFromAmount] = useState("1000");
   const [fromCurr, setFromCurr] = useState("SEK");
@@ -6959,7 +7606,298 @@ function ValutaWidget({ exchangeRates, currency, currencies }) {
   );
 }
 
-function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurrency, exchangeRates, currencies }) {
+// ── Senior-vänligt läge ───────────────────────────────────────────────────
+function SeniorTab({ setSeniorMode }) {
+  const [section, setSection] = useState("hem");
+  const [guideKey, setGuideKey] = useState(null);
+
+  // Reusable big button
+  const BIG_BTN = ({ icon, label, color, desc, onClick }) => (
+    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", padding: "20px 18px", background: "#0f172a", border: `2px solid ${color}44`, borderRadius: 20, cursor: "pointer", marginBottom: 12, textAlign: "left" }}>
+      <div style={{ fontSize: 44, flexShrink: 0 }}>{icon}</div>
+      <div>
+        <div style={{ fontSize: 19, fontWeight: 700, color: "#e2e8f0" }}>{label}</div>
+        {desc && <div style={{ fontSize: 13, color: "#64748b", marginTop: 3 }}>{desc}</div>}
+      </div>
+      <div style={{ marginLeft: "auto", fontSize: 24, color: color }}>›</div>
+    </button>
+  );
+
+  const GUIDE_STEP = ({ num, text, tip }) => (
+    <div style={{ display: "flex", gap: 16, marginBottom: 22, alignItems: "flex-start" }}>
+      <div style={{ width: 48, height: 48, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{num}</div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 16, color: "#e2e8f0", lineHeight: 1.7 }}>{text}</div>
+        {tip && <div style={{ fontSize: 13, color: "#10b981", marginTop: 8, padding: "8px 14px", background: "#10b98111", borderRadius: 10, lineHeight: 1.5 }}>💡 {tip}</div>}
+      </div>
+    </div>
+  );
+
+  const GUIDES = {
+    bankid: {
+      title: "Hur använder jag BankID?",
+      icon: "🔐",
+      color: "#3b82f6",
+      steps: [
+        { num: 1, text: "Öppna BankID-appen på din telefon. Den har en orange ikon.", tip: "Har du inte BankID? Ring din bank så hjälper de dig att aktivera det." },
+        { num: 2, text: "En hemsida eller app ber dig logga in. Tryck på 'Logga in med BankID'." },
+        { num: 3, text: "BankID-appen öppnas automatiskt. Ange din 6-siffriga PIN-kod.", tip: "Glömt PIN? Ring din bank — de kan hjälpa dig återställa den." },
+        { num: 4, text: "Du kan också använda fingeravtrycket om du har ställt in det." },
+        { num: 5, text: "Klart! Du är nu inloggad. Det tar bara några sekunder." },
+      ]
+    },
+    swish: {
+      title: "Skicka pengar med Swish",
+      icon: "💸",
+      color: "#10b981",
+      steps: [
+        { num: 1, text: "Öppna Swish-appen på din telefon. Den har en rosa/lila ikon.", tip: "Swish finns på App Store (iPhone) och Google Play (Android)" },
+        { num: 2, text: "Tryck på den stora knappen 'Skicka pengar'." },
+        { num: 3, text: "Ange mottagarens mobilnummer. Dubbelkolla att det är rätt!" },
+        { num: 4, text: "Skriv in beloppet i kronor." },
+        { num: 5, text: "Tryck 'Skicka'. Kontrollera att rätt namn visas.", tip: "Skickar du till fel person kan pengarna vara svåra att få tillbaka. Kolla alltid namnet!" },
+        { num: 6, text: "Godkänn med BankID. Pengarna är framme direkt!" },
+      ]
+    },
+    deklaration: {
+      title: "Deklarera digitalt",
+      icon: "🧾",
+      color: "#f59e0b",
+      steps: [
+        { num: 1, text: "Gå till skatteverket.se på din telefon eller dator." },
+        { num: 2, text: "Tryck 'Logga in' och välj 'BankID på den här enheten'." },
+        { num: 3, text: "Logga in med BankID som vanligt." },
+        { num: 4, text: "Tryck 'Inkomstdeklaration 1' för din privata deklaration.", tip: "De flesta uppgifter är redan ifyllda av Skatteverket!" },
+        { num: 5, text: "Kontrollera att allt stämmer. Om något är fel kan du ändra det." },
+        { num: 6, text: "Tryck 'Skicka in' och signera med BankID." },
+        { num: 7, text: "Klart! Du får ett kvitto direkt och beskedet kommer senare.", tip: "Bäst att deklarera i maj — då slipper du straffavgift." },
+      ]
+    },
+    pension: {
+      title: "Kolla din pension",
+      icon: "👴",
+      color: "#8b5cf6",
+      steps: [
+        { num: 1, text: "Gå till minpension.se på din telefon.", tip: "minpension.se är gratis och visar all din pension samlat." },
+        { num: 2, text: "Tryck 'Logga in' och välj BankID." },
+        { num: 3, text: "Nu ser du din totala pension — allmän pension, tjänstepension och privat sparande." },
+        { num: 4, text: "Tryck på 'Min pension' för att se hur mycket du beräknas få per månad." },
+        { num: 5, text: "Skriv upp dina belopp! Gå sedan till Kapital → Ekonomi → Pension och fyll i dem där." },
+        { num: 6, text: "Ring Pensionsmyndigheten på 0771-776 776 om du har frågor.", tip: "De är mycket hjälpsamma och kan förklara allt på ett enkelt sätt." },
+      ]
+    },
+    budget: {
+      title: "Sätt upp din budget",
+      icon: "💰",
+      color: "#06b6d4",
+      steps: [
+        { num: 1, text: "Tryck på 'Ekonomi' i menyn längst ner på skärmen." },
+        { num: 2, text: "Tryck på kortet 'Budget & Mål'." },
+        { num: 3, text: "Tryck på 'Översikt'." },
+        { num: 4, text: "Fyll i vad du tjänar per månad efter skatt.", tip: "Osäker? Kolla ditt senaste löne- eller pensionsbesked." },
+        { num: 5, text: "Fyll i dina fasta kostnader — hyra, el, mat, telefon." },
+        { num: 6, text: "Appen visar automatiskt hur mycket du har kvar varje månad!" },
+      ]
+    },
+    forsak: {
+      title: "Kolla dina försäkringar",
+      icon: "🛡️",
+      color: "#ef4444",
+      steps: [
+        { num: 1, text: "Tryck på 'Trygghet' i menyn längst ner." },
+        { num: 2, text: "Tryck på 'Försäkring'." },
+        { num: 3, text: "Tryck 'Mina försäkringar' och lägg in dina försäkringar." },
+        { num: 4, text: "Tryck 'Vad behöver jag?' för att se vilka försäkringar du bör ha.", tip: "Hemförsäkring är viktigast — den täcker brand, stöld och vattenskador." },
+        { num: 5, text: "Tryck 'Jämför & skaffa' för att hitta billigare alternativ." },
+      ]
+    },
+    lan: {
+      title: "Ansök om lån",
+      icon: "🏦",
+      color: "#f97316",
+      steps: [
+        { num: 1, text: "Tryck på 'Trygghet' i menyn längst ner." },
+        { num: 2, text: "Tryck på 'Lån'." },
+        { num: 3, text: "Välj vilken typ av lån du behöver — blankolån, billån eller bolån." },
+        { num: 4, text: "Fyll i hur mycket du vill låna och på hur lång tid.", tip: "Kortare löptid = lägre total kostnad men högre månadsbetalning." },
+        { num: 5, text: "Appen visar månadskostnaden hos flera banker." },
+        { num: 6, text: "Tryck 'Ansök' hos den bank som passar bäst. Du skickas till bankens sida.", tip: "Jämför alltid minst 2-3 banker — räntan kan skilja sig mycket!" },
+      ]
+    },
+    skatt: {
+      title: "Beräkna din skatt",
+      icon: "🧮",
+      color: "#e879f9",
+      steps: [
+        { num: 1, text: "Tryck på 'Ekonomi' i menyn längst ner." },
+        { num: 2, text: "Tryck på 'Skatt'." },
+        { num: 3, text: "Välj 'Löneskatt' för att se hur mycket skatt du betalar på din lön." },
+        { num: 4, text: "Fyll i din bruttolön (lönen före skatt)." },
+        { num: 5, text: "Appen visar exakt hur mycket som går till skatt och vad du får ut." },
+        { num: 6, text: "Välj 'ROT/RUT' om du haft hantverkare hemma — du kan ha rätt till avdrag!", tip: "ROT-avdrag kan ge dig tillbaka upp till 50 000 kr på renoveringsarbeten!" },
+      ]
+    },
+  };
+
+  // Show guide
+  if (guideKey && GUIDES[guideKey]) {
+    const guide = GUIDES[guideKey];
+    return (
+      <div>
+        <button onClick={() => setGuideKey(null)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#1e293b", border: "1px solid #334155", borderRadius: 12, color: "#e2e8f0", fontSize: 16, fontWeight: 600, cursor: "pointer", padding: "12px 20px", marginBottom: 20 }}>
+          ← Tillbaka
+        </button>
+
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 56, marginBottom: 10 }}>{guide.icon}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: "#e2e8f0" }}>{guide.title}</div>
+        </div>
+
+        <div style={{ background: "#0f172a", borderRadius: 18, border: `1px solid ${guide.color}33`, padding: 20, marginBottom: 16 }}>
+          {guide.steps.map(step => <GUIDE_STEP key={step.num} {...step} />)}
+        </div>
+
+        <div style={{ background: "#10b98111", borderRadius: 14, border: "1px solid #10b98133", padding: 16, textAlign: "center" }}>
+          <div style={{ fontSize: 16, color: "#10b981", fontWeight: 700 }}>✓ Bra jobbat!</div>
+          <div style={{ fontSize: 14, color: "#64748b", marginTop: 4 }}>Tryck på tillbaka för att välja en annan guide</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Section: hem, guider, ekonomi, kontakt
+  const sections = [
+    { id: "hem", icon: "🏠", label: "Start" },
+    { id: "guider", icon: "📚", label: "Guider" },
+    { id: "ekonomi", icon: "💰", label: "Ekonomi" },
+    { id: "kontakt", icon: "📞", label: "Kontakt" },
+  ];
+
+  return (
+    <div>
+      {/* Sub navigation */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+        {sections.map(s => (
+          <button key={s.id} onClick={() => setSection(s.id)}
+            style={{ flex: 1, padding: "10px 4px", background: section === s.id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${section === s.id ? "transparent" : "#1e293b"}`, borderRadius: 12, color: section === s.id ? "#fff" : "#64748b", fontSize: 12, fontWeight: section === s.id ? 700 : 400, cursor: "pointer" }}>
+            {s.icon}<br />{s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* START */}
+      {section === "hem" && (
+        <div>
+          <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 20, border: "1px solid #10b98144", padding: 22, marginBottom: 20, textAlign: "center" }}>
+            <div style={{ fontSize: 56, marginBottom: 10 }}>👋</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: "#e2e8f0", marginBottom: 8 }}>Välkommen till Senior-guiden</div>
+            <div style={{ fontSize: 16, color: "#64748b", lineHeight: 1.7 }}>Här hittar du enkla guider för att sköta din ekonomi digitalt. Välj en guide nedan eller navigera med flikarna ovan.</div>
+          </div>
+
+          <div style={{ fontSize: 15, color: "#64748b", marginBottom: 12, fontWeight: 600 }}>Snabbval</div>
+          <BIG_BTN icon="🔐" label="BankID — kom igång" desc="Lär dig använda BankID steg för steg" color="#3b82f6" onClick={() => setGuideKey("bankid")} />
+          <BIG_BTN icon="💸" label="Skicka pengar med Swish" desc="Enkelt och säkert" color="#10b981" onClick={() => setGuideKey("swish")} />
+          <BIG_BTN icon="👴" label="Kolla min pension" desc="Se vad du får på minpension.se" color="#8b5cf6" onClick={() => setGuideKey("pension")} />
+        </div>
+      )}
+
+      {/* GUIDER */}
+      {section === "guider" && (
+        <div>
+          <div style={{ fontSize: 15, color: "#64748b", marginBottom: 12, fontWeight: 600 }}>Alla guider</div>
+          <BIG_BTN icon="🔐" label="BankID" desc="Logga in och signera digitalt" color="#3b82f6" onClick={() => setGuideKey("bankid")} />
+          <BIG_BTN icon="💸" label="Swish" desc="Skicka och ta emot pengar" color="#10b981" onClick={() => setGuideKey("swish")} />
+          <BIG_BTN icon="🧾" label="Deklarera" desc="Skicka in din deklaration digitalt" color="#f59e0b" onClick={() => setGuideKey("deklaration")} />
+          <BIG_BTN icon="👴" label="Min pension" desc="Kolla pensionen på minpension.se" color="#8b5cf6" onClick={() => setGuideKey("pension")} />
+          <BIG_BTN icon="💰" label="Sätt upp budget" desc="Håll koll på inkomst och utgifter" color="#06b6d4" onClick={() => setGuideKey("budget")} />
+          <BIG_BTN icon="🛡️" label="Mina försäkringar" desc="Kolla och jämför försäkringar" color="#ef4444" onClick={() => setGuideKey("forsak")} />
+          <BIG_BTN icon="🏦" label="Ansök om lån" desc="Jämför och ansök hos banker" color="#f97316" onClick={() => setGuideKey("lan")} />
+          <BIG_BTN icon="🧮" label="Beräkna skatt" desc="Se hur mycket skatt du betalar" color="#e879f9" onClick={() => setGuideKey("skatt")} />
+        </div>
+      )}
+
+      {/* EKONOMI */}
+      {section === "ekonomi" && (
+        <div>
+          <div style={{ fontSize: 15, color: "#64748b", marginBottom: 12, fontWeight: 600 }}>Din ekonomi i Kapital</div>
+
+          {[
+            { icon: "💰", label: "Budget & Utgifter", desc: "Fyll i din inkomst och dina kostnader", tip: "Gå till Ekonomi → Budget & Mål → Översikt" },
+            { icon: "👴", label: "Pension", desc: "Beräkna och planera din pension", tip: "Gå till Ekonomi → Kalkylatorer → Pension" },
+            { icon: "🛡️", label: "Försäkringar", desc: "Håll koll på dina försäkringar", tip: "Gå till Trygghet → Försäkring → Mina försäkringar" },
+            { icon: "🏦", label: "Lån", desc: "Jämför räntor hos svenska banker", tip: "Gå till Trygghet → Lån" },
+            { icon: "🧾", label: "Skatt", desc: "Beräkna din skatt och avdrag", tip: "Gå till Ekonomi → Skatt" },
+            { icon: "📊", label: "Min ekonomiska profil", desc: "En samlad bild av din ekonomi", tip: "Gå till Trygghet → Min Profil" },
+          ].map((item, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+                <span style={{ fontSize: 32 }}>{item.icon}</span>
+                <div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: "#e2e8f0" }}>{item.label}</div>
+                  <div style={{ fontSize: 13, color: "#64748b" }}>{item.desc}</div>
+                </div>
+              </div>
+              <div style={{ background: "#1e293b", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#10b981" }}>
+                📍 {item.tip}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* KONTAKT */}
+      {section === "kontakt" && (
+        <div>
+          <div style={{ fontSize: 15, color: "#64748b", marginBottom: 12, fontWeight: 600 }}>Viktiga telefonnummer</div>
+          {[
+            { icon: "🏦", label: "Swedbank", num: "0771-22 11 22", desc: "BankID och internetbank" },
+            { icon: "🏦", label: "Nordea", num: "0771-22 44 88", desc: "BankID och internetbank" },
+            { icon: "🏦", label: "Handelsbanken", num: "0771-77 88 99", desc: "BankID och internetbank" },
+            { icon: "🏦", label: "SEB", num: "0771-62 10 00", desc: "BankID och internetbank" },
+            { icon: "💸", label: "Swish kundtjänst", num: "020-12 44 88", desc: "Hjälp med Swish" },
+            { icon: "🧾", label: "Skatteverket", num: "0771-567 567", desc: "Deklaration och skatter" },
+            { icon: "👴", label: "Pensionsmyndigheten", num: "0771-776 776", desc: "Frågor om pension" },
+            { icon: "🆘", label: "Bankbedrägeri", num: "020-10 60 00", desc: "Polisens bedrägerijouren — ring direkt om du blivit lurad!" },
+          ].map((item, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: item.label === "Bankbedrägeri" ? "2px solid #ef444444" : "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 28 }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: item.label === "Bankbedrägeri" ? "#ef4444" : "#e2e8f0" }}>{item.label}</div>
+                    <div style={{ fontSize: 12, color: "#64748b" }}>{item.desc}</div>
+                  </div>
+                </div>
+                <a href={`tel:${item.num.replace(/-/g, "")}`}
+                  style={{ padding: "10px 16px", background: item.label === "Bankbedrägeri" ? "#ef444422" : "#10b98122", border: `1px solid ${item.label === "Bankbedrägeri" ? "#ef4444" : "#10b981"}`, borderRadius: 10, color: item.label === "Bankbedrägeri" ? "#ef4444" : "#10b981", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>
+                  📞 Ring
+                </a>
+              </div>
+              <div style={{ fontSize: 15, color: "#94a3b8", marginTop: 8, fontWeight: 600 }}>{item.num}</div>
+            </div>
+          ))}
+
+          <div style={{ background: "#ef444411", borderRadius: 14, border: "1px solid #ef444433", padding: 16, marginTop: 8 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>⚠️ Varning för bedrägerier!</div>
+            <div style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.7 }}>
+              Din bank ringer <b style={{ color: "#e2e8f0" }}>aldrig</b> och ber dig uppge PIN, BankID-kod eller flytta pengar. Lägg på direkt och ring din bank på det officiella numret ovan om du är osäker.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stäng av senior-läge */}
+      <button onClick={() => { setSeniorMode(false); try { localStorage.setItem("kapital_senior", "false"); } catch {} }}
+        style={{ width: "100%", padding: "14px", background: "none", border: "1px solid #334155", borderRadius: 14, color: "#64748b", fontSize: 14, cursor: "pointer", marginTop: 16 }}>
+        Stäng av senior-läge
+      </button>
+    </div>
+  );
+}
+
+
+function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurrency, exchangeRates, currencies, seniorMode, setSeniorMode }) {
   const [name, setName] = useState(() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } });
   const [showLangs, setShowLangs] = useState(false);
   const [showCurrencies, setShowCurrencies] = useState(false);
@@ -7002,6 +7940,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
 
       {/* Settings */}
       {[
+        { icon: "👴", label: "Senior-läge", desc: seniorMode ? "På — enkla guider aktiva" : "Av — aktivera för enklare guider", action: () => { const next = !seniorMode; setSeniorMode(next); try { localStorage.setItem("kapital_senior", String(next)); } catch {} } },
         { icon: "🌍", label: t.language, desc: LANGUAGES.find(l => l.code === lang)?.name, action: () => setShowLangs(!showLangs) },
         { icon: "💱", label: "Valuta", desc: currencyObj.flag + " " + currencyObj.name, action: () => setShowCurrencies(!showCurrencies) },
         { icon: "🔔", label: "Kurslarm", desc: "Hantera aktiva larm", action: () => {} },
@@ -7299,14 +8238,34 @@ function Kapital() {
   };
 
   const [tab, setTab] = useState(0);
-  const [subTab, setSubTab] = useState("watchlist");
+  const [subTab, setSubTab] = useState("analys");
   const [showMore, setShowMore] = useState(false);
+  const [seniorMode, setSeniorMode] = useState(() => {
+    try { return localStorage.getItem("kapital_senior") === "true"; } catch { return false; }
+  });
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try { return !localStorage.getItem("kapital_onboarded"); } catch { return true; }
   });
   const [showCompare, setShowCompare] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { unlock, newAchievement } = useGamification();
+
+  // Browser history navigation — back button support
+  useEffect(() => {
+    window.history.replaceState({ tab: 0 }, "");
+    const handlePop = () => {
+      setTab(prev => prev > 0 ? 0 : 0);
+      setSubTab("analys");
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, []);
+
+  const goToTab = useCallback((newTab, newSubTab) => {
+    window.history.pushState({ tab: newTab }, "");
+    setTab(newTab);
+    if (newSubTab) setSubTab(newSubTab);
+  }, []);
 
   // Voice control
   const income = parseFloat(localStorage.getItem("kapital_income") || "0");
@@ -7365,15 +8324,15 @@ function Kapital() {
     const STEPS = ["Hämtar bolagsdata...", "Analyserar nyhetsflöde...", "Beräknar riskprofil...", "Sammanställer analys..."];
     const stepInterval = setInterval(() => {
       setLoadStep(s => s < STEPS.length - 1 ? s + 1 : s);
-    }, 900);
+    }, 600);
 
     try {
       if (!KEY) throw new Error("API-nyckel saknas — lägg till REACT_APP_ANTHROPIC_KEY i miljövariabler");
       const resp = await fetch(API, {
         method: "POST", headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
         body: JSON.stringify({
-          model: MODEL, max_tokens: 2000,
-          messages: [{ role: "user", content: "Analysera aktien \"" + name + "\" och svara ENDAST med ett JSON-objekt. Inga förklaringar, ingen text utanför JSON.\n\n{\"company\":\"" + name + "\",\"sector\":\"Teknik\",\"summary\":\"Kort sammanfattning av bolagets nulage.\",\"score\":60,\"scoreReason\":\"Motivering till poanget\",\"recommendation\":\"Avvakta\",\"keyRisks\":[\"Risk 1\",\"Risk 2\",\"Risk 3\"],\"keyStrengths\":[\"Styrka 1\",\"Styrka 2\",\"Styrka 3\"],\"catalysts\":[\"Katalysator 1\",\"Katalysator 2\"],\"nyckeltal\":{\"pe\":20,\"ps\":2.5,\"ey\":5.0,\"direktavkastning\":2.5,\"borsvarde\":\"100 mdkr\",\"ebitdaMarginal\":20,\"skuldsattning\":\"Lag\",\"betavarde\":1.0},\"utdelning\":{\"belopp\":\"3 kr\",\"datum\":\"2026-04-01\",\"frekvens\":\"Arsvis\",\"historik\":[2.0,2.5,2.8,3.0]},\"insider\":[{\"namn\":\"VD\",\"typ\":\"Kop\",\"antal\":10000,\"kurs\":100,\"datum\":\"2026-05-01\"}],\"grafData\":[95,98,102,99,105,103,108,106,110,107,112,109],\"news\":[{\"headline\":\"Nyhet om " + name + "\",\"date\":\"2026\",\"source\":\"DI\",\"sentiment\":\"positiv\"},{\"headline\":\"Analytiker kommenterar " + name + "\",\"date\":\"2026\",\"source\":\"Reuters\",\"sentiment\":\"neutral\"}],\"timeHorizon\":\"Medel (6-18 man)\",\"lastUpdated\":\"Juni 2026\"}\n\nAnpassa alla värden efter verkligheten för " + name + ". Score: 0-30=salj, 31-60=avvakta, 61-100=kop." }]
+          model: MODEL, max_tokens: 1200,
+          messages: [{ role: "user", content: "Analysera " + name + ". Svara ENDAST med JSON (inga förklaringar):\n{\"company\":\"" + name + "\",\"sector\":\"\",\"summary\":\"2-3 meningar om bolaget\",\"score\":60,\"scoreReason\":\"\",\"recommendation\":\"Köp/Avvakta/Sälj\",\"keyRisks\":[\"\",\"\",\"\"],\"keyStrengths\":[\"\",\"\",\"\"],\"catalysts\":[\"\",\"\"],\"nyckeltal\":{\"pe\":0,\"ps\":0,\"ey\":0,\"direktavkastning\":0,\"borsvarde\":\"\",\"ebitdaMarginal\":0,\"skuldsattning\":\"\",\"betavarde\":0},\"utdelning\":{\"belopp\":\"\",\"datum\":\"\",\"frekvens\":\"\",\"historik\":[0,0,0,0]},\"insider\":[{\"namn\":\"\",\"typ\":\"\",\"antal\":0,\"kurs\":0,\"datum\":\"\"}],\"grafData\":[95,98,102,99,105,103,108,106,110,107,112,109],\"news\":[{\"headline\":\"\",\"date\":\"2026\",\"source\":\"\",\"sentiment\":\"positiv\"}],\"timeHorizon\":\"Medel\",\"lastUpdated\":\"Juni 2026\"}\nAnpassa ALLA värden för " + name + ". Score: 0-30=sälj, 31-60=avvakta, 61-100=köp." }]
         })
       });
 
@@ -7591,7 +8550,8 @@ function Kapital() {
         )}
 
         {/* PROFIL */}
-        {tab === 4 && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} />}
+        {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} />}
+        {tab === 4 && seniorMode && <SeniorTab setSeniorMode={setSeniorMode} />}
 
         {/* Legal footer */}
         <div style={{ borderTop: "1px solid #1e293b", marginTop: 28, paddingTop: 16, paddingBottom: 20, fontSize: 11, color: "#334155", lineHeight: 1.8, textAlign: "center" }}>
@@ -7609,9 +8569,10 @@ function Kapital() {
             { icon: "📈", label: "Aktier", idx: 1 },
             { icon: "💰", label: "Ekonomi", idx: 2 },
             { icon: "🛡️", label: "Trygghet", idx: 3 },
-            { icon: "👤", label: "Profil", idx: 4 },
+            { icon: seniorMode ? "👴" : "👤", label: seniorMode ? "Senior" : "Profil", idx: 4 },
           ].map(({ icon, label, idx }) => (
             <button key={idx} onClick={() => {
+              window.history.pushState({ tab: idx }, "");
               setTab(idx);
               if (idx === 1) setSubTab("analys");
               if (idx === 3) setSubTab("forsakring");
@@ -7619,8 +8580,8 @@ function Kapital() {
               flex: 1, padding: "10px 4px 12px", background: "none", border: "none",
               display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer"
             }}>
-              <div style={{ fontSize: 22, lineHeight: 1, filter: tab === idx ? "none" : "grayscale(100%) opacity(0.4)" }}>{icon}</div>
-              <div style={{ fontSize: 10, fontWeight: tab === idx ? 700 : 400, color: tab === idx ? "#10b981" : "#475569" }}>{label}</div>
+              <div style={{ fontSize: seniorMode ? 26 : 22, lineHeight: 1, filter: tab === idx ? "none" : "grayscale(100%) opacity(0.4)" }}>{icon}</div>
+              <div style={{ fontSize: seniorMode ? 12 : 10, fontWeight: tab === idx ? 700 : 400, color: tab === idx ? "#10b981" : "#475569" }}>{label}</div>
               {tab === idx && <div style={{ width: 20, height: 2, borderRadius: 99, background: "#10b981" }} />}
             </button>
           ))}
