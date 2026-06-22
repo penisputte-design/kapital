@@ -2336,6 +2336,10 @@ function SparaTab({ currency, exchangeRates, currencies }) {
             { id: "skatt", icon: "🧾", color: "#f97316", label: "Skatt & Deklaration", desc: "Lön, K4, ISK och ROT/RUT", items: [{ id: "lon", icon: "💼", label: "Löneskatt" }, { id: "k4", icon: "📋", label: "K4" }, { id: "isk", icon: "🏦", label: "ISK-skatt" }, { id: "rot", icon: "🔨", label: "ROT & RUT" }] },
 
             // GRUPP 3: Investeringar & Handel
+            { id: "investerarguide", icon: "🎓", color: "#10b981", label: "Bli en bra investerare", desc: "AI-guide från nybörjare till expert", items: [
+                { id: "investerarstart", icon: "🚀", label: "Kom igång" },
+                { id: "investerarai", icon: "🤖", label: "AI-coach för investerare" },
+              ] },
             { id: "fonder", icon: "📊", color: "#10b981", label: "Fondguide", desc: "Populära fonder och framtidsutsikter", items: [{ id: "fondguide", icon: "📊", label: "Fondguide 2026" }] },
             { id: "utland", icon: "🌍", color: "#3b82f6", label: "Utländska värdepapper", desc: "Aktier, ETF:er och handel utomlands", items: [{ id: "utlandguide", icon: "🌍", label: "Handla utomlands" }] },
             { id: "krypto", icon: "₿", color: "#f59e0b", label: "Krypto", desc: "Guide, skatt och håll koll på dina krypton", items: [{ id: "kryptokuide", icon: "₿", label: "Kryptoguide" }, { id: "kryptoskatt", icon: "🧾", label: "Kryptoskatt" }] },
@@ -2416,6 +2420,9 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "boendekostnad", icon: "🏠", label: "Mitt boende", desc: "Samlad vy av boendekostnader" },
             ] : activeSection === "fordon" ? [
               { id: "fordonskostnad", icon: "🚗", label: "Min bil", desc: "Vad kostar bilen dig per månad?" },
+            ] : activeSection === "investerarguide" ? [
+              { id: "investerarstart", icon: "🚀", label: "Kom igång som investerare" },
+              { id: "investerarai", icon: "🤖", label: "AI-coach för investerare" },
             ] : activeSection === "utland" ? [
               { id: "utlandguide", icon: "🌍", label: "Handla utomlands", desc: "Guide för utländsk handel" },
             ] : activeSection === "budget" ? [
@@ -2727,6 +2734,8 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "billigboende" && <BilligtBoende />}
       {activeSubSection === "resebiljett" && <ResaSmart />}
       {activeSubSection === "affiliates" && <ErbjudandenHub />}
+      {activeSubSection === "investerarstart" && <InvesterarGuide />}
+      {activeSubSection === "investerarai" && <InvesterarAI />}
       {activeSubSection === "fondguide" && <FondGuide />}
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
       {activeSubSection === "aicoach" && <AICoach inc={inc} expenses={expenses} goals={goals} />}
@@ -7946,7 +7955,353 @@ function Topp10Tab({ analyze, setSubTab }) {
   );
 }
 
-// ── Bygg Hus Guide ────────────────────────────────────────────────────────
+// ── Investerarguide ───────────────────────────────────────────────────────
+function InvesterarGuide() {
+  const [niva, setNiva] = useState(null);
+  const [kapitel, setKapitel] = useState(null);
+
+  const NIVAER = [
+    { id: "nybörjare", label: "Nybörjare", emoji: "🌱", desc: "Har aldrig investerat", color: "#10b981" },
+    { id: "medel", label: "Medelnivå", emoji: "📈", desc: "Har lite erfarenhet", color: "#3b82f6" },
+    { id: "avancerad", label: "Avancerad", emoji: "🏆", desc: "Vill fördjupa kunskapen", color: "#f59e0b" },
+  ];
+
+  const KAPITEL = {
+    nybörjare: [
+      {
+        id: "varfor", titel: "Varför ska jag investera?", emoji: "💡", color: "#10b981",
+        innehall: [
+          { rubrik: "Inflation äter dina pengar", text: "Om du har 100 000 kr på sparkontot med 0% ränta, och inflationen är 3%, är dina pengar värda 97 000 kr nästa år. Investering är det enda sättet att slå inflationen." },
+          { rubrik: "Ränta-på-ränta — världens 8:e underverk", text: "Einstein kallade det 'världens 8:e underverk'. Om du investerar 1 000 kr/mån med 8% avkastning i 30 år har du 1 500 000 kr. Börjar du 10 år senare? Bara 540 000 kr. Tid är din viktigaste tillgång." },
+          { rubrik: "Pensionen räcker inte", text: "Allmän pension ersätter bara 55-65% av din lön. Du behöver eget sparande. Börjar du med 500 kr/mån vid 25 har du 800 000 kr vid 65 (8% avkastning)." },
+        ]
+      },
+      {
+        id: "grunder", titel: "Grunderna — aktier, fonder & räntor", emoji: "📚", color: "#3b82f6",
+        innehall: [
+          { rubrik: "Aktier = äga del av bolag", text: "När du köper en aktie i Ericsson äger du en liten del av bolaget. Om Ericsson tjänar mer pengar och växer, stiger aktiekursen. Du tjänar pengar på kursuppgång och utdelningar." },
+          { rubrik: "Fonder = paket med aktier", text: "En globalfond kan innehålla 1 000 aktier från 50 länder. Du köper en fondandel och får automatisk diversifiering. Indexfonder följer marknaden och slår aktivt förvaltade fonder 90% av gångerna på 10+ år." },
+          { rubrik: "Räntefonder = säkrare men lägre avkastning", text: "Investerar i obligationer och statsskuld. Lägre risk men också lägre avkastning (1-3% per år). Passar när börsen är volatil eller om du sparar kort sikt." },
+        ]
+      },
+      {
+        id: "konto", titel: "Välj rätt konto — ISK vs AF", emoji: "🏦", color: "#f59e0b",
+        innehall: [
+          { rubrik: "ISK — Investeringssparkonto", text: "Betalar schablonsskatt (~0.9% av värdet per år) istället för 30% kapitalvinstskatt. INGEN deklaration av enskilda affärer. Perfekt för de flesta. Öppna hos Avanza eller Nordnet gratis." },
+          { rubrik: "AF — Aktie & Fondkonto", text: "Betalar 30% skatt på varje vinst, men kan kvitta förluster mot vinster. Bättre om du har stora förluster att kvitta eller handlar utländska aktier med källskatt." },
+          { rubrik: "Tumregel", text: "Börja med ISK. Det är enklare, billigare och kräver ingen deklaration av enskilda affärer. Du kan alltid öppna AF senare." },
+        ]
+      },
+      {
+        id: "börja", titel: "Så börjar du — steg för steg", emoji: "🚀", color: "#8b5cf6",
+        innehall: [
+          { rubrik: "Steg 1: Öppna konto (gratis, 5 min)", text: "Gå till Avanza.se eller Nordnet.se. Logga in med BankID. Öppna ett ISK-konto. Det är helt gratis — ingen avgift för kontot." },
+          { rubrik: "Steg 2: Sätt in pengar", text: "Bankgiro eller Swish. Börja med vad du är bekväm med — även 100 kr fungerar. Sätt upp ett autogiro på löningsdagen så du sparar automatiskt." },
+          { rubrik: "Steg 3: Köp din första fond", text: "Sök på 'Avanza Global' eller 'Länsförsäkringar Global Indexnära'. Tryck Köp. Välj belopp. Bekräfta. Klart! Du är nu investerare." },
+          { rubrik: "Steg 4: Automatisera", text: "Sätt upp ett månadsvis autosparande. Välj datum = dagen efter lönedagen. Beloppet dras automatiskt och köper fonder. Du behöver inte tänka på det mer." },
+        ]
+      },
+      {
+        id: "misstag", titel: "5 misstag nybörjare gör", emoji: "⚠️", color: "#ef4444",
+        innehall: [
+          { rubrik: "1. Väntar på 'rätt tillfälle'", text: "Det finns inget perfekt läge att köpa. Börja nu. 'Time in the market beats timing the market' — forskning visar att den som investerar direkt slår den som väntar på rätt tillfälle 80% av gångerna." },
+          { rubrik: "2. Säljer vid kraschar", text: "Börsen faller i genomsnitt 10% varje år och 30%+ vart 7:e år. Det är normalt. De som säljer vid kraschar realiserar förluster och missar återhämtningen. Köp mer istället." },
+          { rubrik: "3. För lite diversifiering", text: "Att satsa allt på ett bolag är gambling, inte investering. En globalfond ger dig exponering mot 1 600+ bolag automatiskt." },
+          { rubrik: "4. Kollar portföljen varje dag", text: "Dagliga svängningar skapar oro och dåliga beslut. Kolla portföljen max en gång i månaden. Lång sikt är nyckeln." },
+          { rubrik: "5. Betalar för hög avgift", text: "0.1% vs 1.5% i avgift låter litet men kostar dig 40% av avkastningen på 30 år. Välj alltid indexfonder med låg avgift." },
+        ]
+      },
+    ],
+    medel: [
+      {
+        id: "strategi", titel: "Bygga en investeringsstrategi", emoji: "🗺️", color: "#3b82f6",
+        innehall: [
+          { rubrik: "Core-Satellite-metoden", text: "80% i en bred globalfond (core) + 20% i utvalda aktier/sektorfonder (satellite). Ger trygghet och möjlighet till överavkastning." },
+          { rubrik: "Geografisk fördelning", text: "USA 50-60%, Europa 20%, Asien 15%, Tillväxtmarknader 10-15%. Undvik att övervikta Sverige — det är bara 0.4% av världsekonomin." },
+          { rubrik: "Rebalansering", text: "En gång per år — om aktier vuxit till 75% av portföljen och du vill ha 70%, sälj 5% aktier och köp räntor. Disciplinerad rebalansering ökar avkastningen med ~0.5% per år." },
+        ]
+      },
+      {
+        id: "analys", titel: "Analysera aktier som ett proffs", emoji: "🔬", color: "#f59e0b",
+        innehall: [
+          { rubrik: "P/E-tal (Price/Earnings)", text: "Aktiekurs / Vinst per aktie. P/E 20 innebär att du betalar 20 kr för varje kr i vinst. S&P 500-snittet är ca 18-22. Högt P/E = marknaden förväntar sig hög tillväxt. Lågt P/E = konservativ värdering." },
+          { rubrik: "Direktavkastning", text: "Utdelning / Aktiekurs. 3-5% anses bra. Hög direktavkastning (7%+) kan vara varningssignal — kontrollera att bolaget inte minskar utdelningen." },
+          { rubrik: "Fri kassaflöde", text: "Det enda som inte ljuger. Ett bolag kan visa vinst men ha negativt kassaflöde. Kassaflöde är verkliga pengar in och ut ur bolaget." },
+          { rubrik: "Vallgrav (economic moat)", text: "Warren Buffetts term för konkurrensfördelar som skyddar bolaget i 10-20 år. Varumärke (Apple), Nätverkseffekter (Facebook), Låga kostnader (Walmart), Switching costs (Microsoft)." },
+        ]
+      },
+      {
+        id: "psykologi", titel: "Investerarpsykologi", emoji: "🧠", color: "#8b5cf6",
+        innehall: [
+          { rubrik: "Loss aversion — förlusträdsla", text: "Vi känner förluster 2x så starkt som vinster. Det leder till att vi säljer vinnare för tidigt och håller förlorare för länge. Lösning: sätt förutbestämda regler för när du säljer." },
+          { rubrik: "Confirmation bias", text: "Vi söker information som bekräftar vad vi redan tror. Läs alltid bear-case (negativt scenario) för varje investering du gillar." },
+          { rubrik: "FOMO (Fear Of Missing Out)", text: "Köper du för att alla pratar om en aktie? Det är ofta toppen. Bästa investeringarna är tråkiga och ingen pratar om dem." },
+          { rubrik: "Regeln om 10 år", text: "Köp bara aktier som du är bekväm med att äga i 10 år om börsen stängde imorgon. Kortare perspektiv är spekulation." },
+        ]
+      },
+    ],
+    avancerad: [
+      {
+        id: "faktorer", titel: "Faktorinvestering (Factor Investing)", emoji: "🔭", color: "#f59e0b",
+        innehall: [
+          { rubrik: "Value Factor", text: "Köp undervärdered aktier (lågt P/B, P/E). Historiskt +2-3% överavkastning mot index på lång sikt. Känd av Benjamin Graham och Warren Buffett." },
+          { rubrik: "Momentum Factor", text: "Aktier som gått bra senaste 12 månader tenderar att fortsätta. +4-5% överavkastning men hög volatilitet. Kräver disciplin att följa." },
+          { rubrik: "Quality Factor", text: "Bolag med hög ROE, låg skuldsättning och stabil vinsttillväxt. Bästa risk/reward-faktor långsiktigt." },
+          { rubrik: "Small Cap Premium", text: "Mindre bolag har historiskt avkastat ~2% mer än stora. Men volatiliteten är högre. Lämplig andel: 10-15% av portföljen." },
+        ]
+      },
+      {
+        id: "alternativ", titel: "Alternativa investeringar", emoji: "🌐", color: "#ef4444",
+        innehall: [
+          { rubrik: "REITs — Fastigheter via börsen", text: "Real Estate Investment Trusts ger exponering mot fastigheter utan att äga dem. Obligatorisk utdelning 90%+ av vinst. Exempel: Realty Income (O), EPRA index." },
+          { rubrik: "Råvaror (Commodities)", text: "Guld som säkring mot inflation (5-10% av portföljen). Olja, koppar och silver via ETF:er. Låg korrelation med aktier = bra diversifiering." },
+          { rubrik: "Private Equity via crowdfunding", text: "FundedByMe, Crowdcube — investera i onoterade startups. Hög risk men potentiellt 10-50x avkastning. Maxbegränsa till 5% av portföljen." },
+          { rubrik: "Obligationer i räntemiljö", text: "När räntan faller stiger obligationspriserna. Långa obligationer (10-30 år) rör sig mest. ETF: iShares 20+ Year Treasury (TLT) för USA-obligationer." },
+        ]
+      },
+      {
+        id: "optioner", titel: "Options & Derivat — grunder", emoji: "⚡", color: "#8b5cf6",
+        innehall: [
+          { rubrik: "Covered Calls — tjäna på dina aktier", text: "Sälj köpoptioner på aktier du äger. Får premie direkt. Om aktien inte når lösenpriset behåller du premien + aktierna. Kan öka avkastningen med 2-4% per år." },
+          { rubrik: "Put Options — försäkring mot fall", text: "Köp säljoptioner som skydd. Om aktien faller 20% kompenseras du. Kostar 1-3% per år som 'försäkringspremie'." },
+          { rubrik: "VARNING", text: "Derivat är komplexa instrument med hög risk. Naked options (utan underliggande) kan ge obegränsade förluster. Lär dig grunderna noggrant innan du handlar." },
+        ]
+      },
+    ],
+  };
+
+  if (kapitel) {
+    return (
+      <div>
+        <button onClick={() => setKapitel(null)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "10px 20px", marginBottom: 16, boxShadow: "0 4px 15px #10b98144" }}>
+          ← Tillbaka
+        </button>
+
+        <div style={{ background: `linear-gradient(135deg,#0f172a,${kapitel.color}11)`, borderRadius: 18, border: `1px solid ${kapitel.color}33`, padding: 20, marginBottom: 16, textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 8 }}>{kapitel.emoji}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "#e2e8f0" }}>{kapitel.titel}</div>
+        </div>
+
+        {kapitel.innehall.map((s, i) => (
+          <div key={i} style={{ background: "#0f172a", borderRadius: 16, border: `1px solid ${kapitel.color}22`, padding: 18, marginBottom: 12 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: kapitel.color, marginBottom: 8 }}>{s.rubrik}</div>
+            <div style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.8 }}>{s.text}</div>
+          </div>
+        ))}
+
+        <div style={{ background: "#10b98111", borderRadius: 14, border: "1px solid #10b98133", padding: 14, textAlign: "center", marginTop: 8 }}>
+          <div style={{ fontSize: 14, color: "#10b981", fontWeight: 700 }}>✓ Kapitel genomfört!</div>
+          <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Gå tillbaka och välj nästa kapitel</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (niva) {
+    const kapitellista = KAPITEL[niva] || [];
+    const nivaInfo = NIVAER.find(n => n.id === niva);
+    return (
+      <div>
+        <button onClick={() => setNiva(null)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", padding: "10px 20px", marginBottom: 16, boxShadow: "0 4px 15px #10b98144" }}>
+          ← Tillbaka
+        </button>
+
+        <div style={{ background: `linear-gradient(135deg,#0f172a,${nivaInfo.color}11)`, borderRadius: 16, border: `1px solid ${nivaInfo.color}33`, padding: 16, marginBottom: 16, textAlign: "center" }}>
+          <div style={{ fontSize: 40 }}>{nivaInfo.emoji}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0", marginTop: 6 }}>{nivaInfo.label}</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>{kapitellista.length} kapitel</div>
+        </div>
+
+        {kapitellista.map((k, i) => (
+          <button key={k.id} onClick={() => setKapitel(k)}
+            style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "#0f172a", border: `1px solid ${k.color}33`, borderRadius: 16, padding: "16px 18px", marginBottom: 10, cursor: "pointer", textAlign: "left" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: k.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>{k.emoji}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{i + 1}. {k.titel}</div>
+              <div style={{ fontSize: 12, color: "#475569", marginTop: 3 }}>{k.innehall.length} avsnitt</div>
+            </div>
+            <span style={{ color: k.color, fontSize: 20 }}>›</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f14)", borderRadius: 18, border: "1px solid #10b98133", padding: 20, marginBottom: 20, textAlign: "center" }}>
+        <div style={{ fontSize: 52, marginBottom: 10 }}>🎓</div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: "#e2e8f0", marginBottom: 6 }}>Bli en bra investerare</div>
+        <div style={{ fontSize: 14, color: "#64748b", lineHeight: 1.6 }}>
+          En komplett guide från noll till kunnig investerare. Välj din nivå och börja lära dig.
+        </div>
+      </div>
+
+      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, fontWeight: 600 }}>Välj din nivå:</div>
+
+      {NIVAER.map(n => (
+        <button key={n.id} onClick={() => setNiva(n.id)}
+          style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", background: "#0f172a", border: `2px solid ${n.color}33`, borderRadius: 18, padding: "20px 18px", marginBottom: 12, cursor: "pointer", textAlign: "left" }}>
+          <div style={{ fontSize: 42 }}>{n.emoji}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0" }}>{n.label}</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginTop: 3 }}>{n.desc}</div>
+            <div style={{ fontSize: 12, color: n.color, marginTop: 6 }}>{KAPITEL[n.id]?.length} kapitel →</div>
+          </div>
+        </button>
+      ))}
+
+      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, marginTop: 4 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 10 }}>📊 Snabbfakta för investerare</div>
+        {[
+          ["Historisk årsavkastning S&P 500", "~10% nominellt (~7% realt)"],
+          ["Tid för pengar att dubblas (7%)", "~10 år (72-regeln)"],
+          ["Rekommenderad buffert before investering", "3-6 månaders utgifter"],
+          ["Optimal sparhorisont för aktier", "5+ år"],
+          ["Andel aktier vs räntor (tumregel)", "110 minus din ålder = % aktier"],
+        ].map(([l, v]) => (
+          <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #1e293b", gap: 10 }}>
+            <span style={{ fontSize: 12, color: "#64748b" }}>{l}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", textAlign: "right" }}>{v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── AI-Coach för investerare ──────────────────────────────────────────────
+function InvesterarAI() {
+  const [messages, setMessages] = useState([
+    { role: "assistant", content: "Hej! Jag är din personliga investerarcoach. Jag kan hjälpa dig med allt från grunderna till avancerade strategier. Vad vill du lära dig idag? 🎓\n\nDu kan fråga mig om:\n• Hur du väljer aktier och fonder\n• Hur du bygger en balanserad portfölj\n• Vad P/E-tal, direktavkastning och beta betyder\n• Hur du tänker kring risk och diversifiering\n• Skatter på investeringar (ISK, K4, 3:12)" }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const SNABBFRAGOR = [
+    "Hur börjar jag investera med 1 000 kr/mån?",
+    "Vad är skillnaden på ISK och AF?",
+    "Hur diversifierar jag min portfölj?",
+    "Vad betyder P/E-tal?",
+    "Är det bra att köpa nu eller vänta?",
+    "Hur fungerar utdelningsstrategin?",
+    "Vad är Warren Buffetts investeringsstrategi?",
+    "Hur räknar jag ut om en aktie är billig?",
+  ];
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const send = async (text) => {
+    const q = text || input;
+    if (!q.trim() || loading) return;
+    setInput("");
+    const newMessages = [...messages, { role: "user", content: q }];
+    setMessages(newMessages);
+    setLoading(true);
+
+    try {
+      const resp = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": KEY, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({
+          model: FAST_MODEL,
+          max_tokens: 600,
+          system: `Du är en erfaren svensk investerarcoach med djup kunskap om aktier, fonder, skatter och investeringsstrategier. Du svarar på svenska, pedagogiskt och med konkreta exempel. Du ger alltid praktiska råd anpassade för svenska investerare (Avanza, Nordnet, ISK, K4, etc). Du är inte en finansiell rådgivare men kan ge allmän utbildning. Håll svaren koncisa men informativa — max 200 ord. Använd emoji sparsamt för att strukturera svaret.`,
+          messages: newMessages.map(m => ({ role: m.role, content: m.content }))
+        })
+      });
+      const data = await resp.json();
+      const text2 = data.content?.map(b => b.text || "").join("") || "Kunde inte svara. Försök igen.";
+      setMessages([...newMessages, { role: "assistant", content: text2 }]);
+    } catch {
+      setMessages([...newMessages, { role: "assistant", content: "Något gick fel. Kontrollera din internetanslutning och försök igen." }]);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 200px)", minHeight: 500 }}>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f14)", borderRadius: 14, border: "1px solid #10b98133", padding: 14, marginBottom: 12, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎓</div>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>AI Investerarcoach</div>
+          <div style={{ fontSize: 11, color: "#475569" }}>Ställ frågor om investeringar, aktier och strategier</div>
+        </div>
+      </div>
+
+      {/* Snabbfrågor */}
+      {messages.length <= 1 && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: "#475569", marginBottom: 8 }}>Populära frågor:</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {SNABBFRAGOR.map((q, i) => (
+              <button key={i} onClick={() => send(q)}
+                style={{ padding: "6px 12px", background: "#0f172a", border: "1px solid #10b98133", borderRadius: 99, color: "#10b981", fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: "auto", marginBottom: 12, scrollbarWidth: "thin" }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ display: "flex", gap: 10, marginBottom: 14, justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+            {m.role === "assistant" && (
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>🎓</div>
+            )}
+            <div style={{
+              maxWidth: "82%",
+              background: m.role === "user" ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a",
+              borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+              border: m.role === "user" ? "none" : "1px solid #1e293b",
+              padding: "12px 16px",
+            }}>
+              <div style={{ fontSize: 14, color: m.role === "user" ? "#fff" : "#e2e8f0", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{m.content}</div>
+            </div>
+          </div>
+        ))}
+        {loading && (
+          <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🎓</div>
+            <div style={{ background: "#0f172a", borderRadius: "18px 18px 18px 4px", border: "1px solid #1e293b", padding: "12px 16px" }}>
+              <div style={{ display: "flex", gap: 4 }}>
+                {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", opacity: 0.5, animation: `pulse ${0.8 + i * 0.2}s infinite` }} />)}
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div style={{ display: "flex", gap: 8, background: "#0f172a", borderRadius: 16, border: "1px solid #10b98133", padding: 8 }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
+          placeholder="Fråga om investeringar..."
+          style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 14, color: "#e2e8f0", padding: "6px 8px" }}
+        />
+        <button onClick={() => send()} disabled={loading || !input.trim()}
+          style={{ width: 44, height: 44, borderRadius: 12, background: loading || !input.trim() ? "#1e293b" : "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 20, cursor: loading || !input.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          ↑
+        </button>
+      </div>
+      <div style={{ fontSize: 10, color: "#334155", textAlign: "center", marginTop: 6 }}>
+        Allmän utbildning — inte personlig finansiell rådgivning
+      </div>
+    </div>
+  );
+}
+
+
 function ByggHusGuide() {
   const [tab, setTab] = useState("plan");
   const [form, setForm] = useState({ yta: "150", standard: "medel", tomt: "ja", region: "mitt" });
@@ -8853,8 +9208,9 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
           const changeSign = change24h >= 0 ? "+" : "";
 
           return (
-            <button key={k.symbol} onClick={() => setSelectedKrypto(selectedKrypto === k.geckoId ? null : k.geckoId)}
-              style={{ display: "flex", alignItems: "center", gap: 12, background: "#0f172a", border: `1px solid ${selectedKrypto === k.geckoId ? k.color + "66" : k.color + "22"}`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", textAlign: "left" }}>
+            <div key={k.symbol}>
+            <button onClick={() => setSelectedKrypto(selectedKrypto === k.geckoId ? null : k.geckoId)}
+              style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "#0f172a", border: `1px solid ${selectedKrypto === k.geckoId ? k.color + "66" : k.color + "22"}`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", textAlign: "left" }}>
               {/* Icon */}
               <div style={{ width: 44, height: 44, borderRadius: "50%", background: k.color + "22", border: `1px solid ${k.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
                 {k.emoji}
@@ -8890,13 +9246,17 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
                 <div style={{ width: 4, height: 40, borderRadius: 99, background: changeColor, opacity: 0.7, flexShrink: 0 }} />
               )}
             </button>
-          {selectedKrypto === k.geckoId && (
+            {selectedKrypto === k.geckoId && (
               <div style={{ marginTop: 6 }}>
                 <PrisGraf geckoId={k.geckoId} symbol={k.symbol} color={k.color} height={130} />
+                <button onClick={() => { setQuery(k.namn); analyze(k.namn); setSelectedKrypto(null); }}
+                  style={{ width: "100%", padding: "10px", background: `linear-gradient(135deg,${k.color},${k.color}aa)`, border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", marginTop: 6 }}>
+                  🤖 Analysera {k.namn} →
+                </button>
               </div>
             )}
-          </div>
-        );
+            </div>
+          );
         })}
       </div>
 
