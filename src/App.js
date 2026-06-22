@@ -6228,7 +6228,7 @@ function EkonomiskTidslinje() {
 }
 
 // ── Svenska Ekonominyheter ────────────────────────────────────────────────
-function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery }) {
+function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery, onNewsLoaded }) {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -6264,6 +6264,7 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery }) {
         if (match) {
           const parsed = JSON.parse(match[0]);
           setNews(parsed);
+          if (onNewsLoaded) onNewsLoaded(parsed);
           try { localStorage.setItem("kapital_news_cache", JSON.stringify({ data: parsed, timestamp: Date.now() })); } catch {}
         } else {
           throw new Error("Parse error");
@@ -6534,7 +6535,125 @@ function VoiceButton({ voiceControl }) {
 }
 
 
-function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, onUpgrade, setTab, setSubTab, onCompare, t }) {
+// ── Daglig Splash / Välkomstskärm ────────────────────────────────────────
+function DagligSplash({ onClose, news }) {
+  const name = (() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } })();
+  const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
+  const income = parseFloat(localStorage.getItem("kapital_income") || "0");
+  const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+  const totalExp = Object.values(expenses).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+  const leftover = income - totalExp;
+  const savingsRate = income > 0 ? (leftover / income * 100) : 0;
+  const unlocked = JSON.parse(localStorage.getItem("kapital_achievements") || "[]");
+  const points = parseInt(localStorage.getItem("kapital_points") || "0");
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "God morgon" : hour < 18 ? "God dag" : "God kväll";
+  const today = new Date().toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" });
+  const levelNames = ["Nybörjare", "Spararen", "Investeraren", "Analytikern", "Experten", "Mästaren", "Legenden"];
+  const level = Math.min(Math.floor(points / 500), levelNames.length - 1);
+  const levelName = levelNames[level];
+  const levelProgress = (points % 500) / 500 * 100;
+  const activeGoals = goals.filter(g => g.saved < g.target).slice(0, 2);
+  const topNews = news?.[0];
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 2000, display: "flex", flexDirection: "column", padding: "0 20px 40px", overflowY: "auto" }}>
+      <div style={{ paddingTop: "env(safe-area-inset-top, 20px)", paddingBottom: 20, marginTop: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 13, color: "#475569", marginBottom: 4 }}>{today}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: "#e2e8f0" }}>{greeting}{name ? `, ${name.split(" ")[0]}` : ""}! 👋</div>
+          </div>
+          <button onClick={onClose} style={{ background: "#1e293b", border: "none", borderRadius: 10, color: "#64748b", fontSize: 13, padding: "8px 14px", cursor: "pointer", marginTop: 4 }}>
+            Hoppa över →
+          </button>
+        </div>
+      </div>
+
+      {/* Level */}
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#1a0a2e)", borderRadius: 18, border: "1px solid #8b5cf633", padding: 18, marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "#8b5cf6", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>🏆 Nivå {level + 1} — {levelName}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#e2e8f0", marginTop: 2 }}>{points} poäng</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 11, color: "#64748b" }}>{unlocked.length} achievements</div>
+            <div style={{ fontSize: 11, color: "#8b5cf6", marginTop: 2 }}>{500 - (points % 500)} p till nästa</div>
+          </div>
+        </div>
+        <div style={{ background: "#1e293b", borderRadius: 99, height: 8, overflow: "hidden" }}>
+          <div style={{ width: `${levelProgress}%`, height: "100%", background: "linear-gradient(90deg,#8b5cf6,#06b6d4)", borderRadius: 99 }} />
+        </div>
+      </div>
+
+      {/* Economy */}
+      {income > 0 && (
+        <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 18, border: "1px solid #10b98133", padding: 18, marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "#10b981", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>💚 Din ekonomi idag</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+              <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>Kvar denna månad</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: leftover >= 0 ? "#10b981" : "#ef4444" }}>{Math.round(leftover).toLocaleString("sv-SE")} kr</div>
+            </div>
+            <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+              <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>Sparkvot</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: savingsRate >= 20 ? "#10b981" : savingsRate >= 10 ? "#f59e0b" : "#ef4444" }}>{savingsRate.toFixed(0)}%</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Goals */}
+      {activeGoals.length > 0 && (
+        <div style={{ background: "#0f172a", borderRadius: 18, border: "1px solid #1e293b", padding: 18, marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "#f59e0b", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginBottom: 12 }}>🎯 Dina sparmål</div>
+          {activeGoals.map((g, i) => {
+            const pct = Math.min(100, (g.saved / g.target) * 100);
+            return (
+              <div key={i} style={{ marginBottom: i < activeGoals.length - 1 ? 12 : 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
+                  <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{g.emoji} {g.name}</span>
+                  <span style={{ color: g.color || "#10b981" }}>{pct.toFixed(0)}%</span>
+                </div>
+                <div style={{ background: "#1e293b", borderRadius: 99, height: 8, overflow: "hidden" }}>
+                  <div style={{ width: `${pct}%`, height: "100%", background: g.color || "#10b981", borderRadius: 99 }} />
+                </div>
+                <div style={{ fontSize: 11, color: "#475569", marginTop: 3 }}>
+                  {Math.round(g.saved).toLocaleString("sv-SE")} / {Math.round(g.target).toLocaleString("sv-SE")} kr
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Top news */}
+      {topNews && (
+        <div style={{ background: "#0f172a", borderRadius: 18, border: "1px solid #3b82f633", padding: 18, marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: "#3b82f6", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>📰 Senaste nytt</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 6, lineHeight: 1.4 }}>{topNews.titel}</div>
+          <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5, marginBottom: 8 }}>{topNews.sammanfattning}</div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 11, background: topNews.sentiment === "positiv" ? "#22c55e22" : topNews.sentiment === "negativ" ? "#ef444422" : "#f59e0b22", color: topNews.sentiment === "positiv" ? "#22c55e" : topNews.sentiment === "negativ" ? "#ef4444" : "#f59e0b", padding: "2px 10px", borderRadius: 99, fontWeight: 700 }}>{topNews.kategori}</span>
+            <span style={{ fontSize: 11, color: "#334155" }}>{topNews.tid}</span>
+          </div>
+        </div>
+      )}
+
+      <button onClick={onClose} style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 16, color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 20px #10b98144" }}>
+        Öppna Kapital →
+      </button>
+      <button onClick={() => { onDisable(); onClose(); }}
+        style={{ width: "100%", padding: "10px", background: "none", border: "none", color: "#334155", fontSize: 12, cursor: "pointer", marginTop: 10 }}>
+        Visa inte daglig sammanfattning igen
+      </button>
+    </div>
+  );
+}
+
+function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, onUpgrade, setTab, setSubTab, onCompare, t, onNewsLoaded }) {
   const [showGuide, setShowGuide] = useState(false);
   const { unlocked, points, level, levelProgress, nextLevelPoints, unlock, newAchievement } = useGamification();
   const name = (() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } })();
@@ -6675,7 +6794,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
       </div>
 
       {/* Ekonominyheter */}
-      <EkonomiNyheter analyze={analyze} setTab={setTab} setSubTab={setSubTab} setQuery={setQuery} />
+      <EkonomiNyheter analyze={analyze} setTab={setTab} setSubTab={setSubTab} setQuery={setQuery} onNewsLoaded={onNewsLoaded} />
 
       {/* Ekonomisk tidslinje */}
       <EkonomiskTidslinje />
@@ -8196,7 +8315,7 @@ function SeniorTab({ setSeniorMode }) {
 }
 
 
-function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurrency, exchangeRates, currencies, seniorMode, setSeniorMode, theme, setTheme }) {
+function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurrency, exchangeRates, currencies, seniorMode, setSeniorMode, theme, setTheme, splashEnabled, toggleSplash }) {
   const [name, setName] = useState(() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } });
   const [email, setEmail] = useState(() => { try { return localStorage.getItem("kapital_email") || ""; } catch { return ""; } });
   const [showLangs, setShowLangs] = useState(false);
@@ -8209,12 +8328,12 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
   const currencyObj = (currencies || []).find(c => c.code === currency) || { flag: "🇸🇪", name: "Svensk krona" };
 
   const THEMES = [
-    { id: "dark", label: "Mörkt", emoji: "🌙", desc: "Standard mörkt tema", bg: "#0a0f1e", accent: "#10b981" },
-    { id: "darker", label: "Svart", emoji: "⬛", desc: "Rent svart", bg: "#000000", accent: "#10b981" },
-    { id: "green", label: "Grönt", emoji: "🟢", desc: "Grön accent", bg: "#0a0f1e", accent: "#22c55e" },
-    { id: "blue", label: "Blått", emoji: "🔵", desc: "Blå accent", bg: "#0a0f1e", accent: "#3b82f6" },
-    { id: "purple", label: "Lila", emoji: "🟣", desc: "Lila accent", bg: "#0d0a1e", accent: "#8b5cf6" },
-    { id: "orange", label: "Orange", emoji: "🟠", desc: "Orange accent", bg: "#0f0a00", accent: "#f97316" },
+    { id: "dark", label: "Marinblå", emoji: "🌙", desc: "Rogivande mörkt standard", bg: "#0a0f1e", accent: "#10b981" },
+    { id: "darker", label: "Kolsvart", emoji: "⬛", desc: "Maximalt mörkt", bg: "#050508", accent: "#10b981" },
+    { id: "slate", label: "Skiffergrå", emoji: "🩶", desc: "Neutral och proffsig", bg: "#0a0d14", accent: "#94a3b8" },
+    { id: "green", label: "Skogsgrön", emoji: "🌿", desc: "Lugnande naturgrön", bg: "#060f0a", accent: "#34d399" },
+    { id: "blue", label: "Djupblå", emoji: "🔵", desc: "Klassisk och trygg", bg: "#060a14", accent: "#60a5fa" },
+    { id: "purple", label: "Midnattslila", emoji: "🌌", desc: "Elegant och modern", bg: "#08060f", accent: "#a78bfa" },
   ];
 
   const resetData = (key, label) => {
@@ -8283,6 +8402,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
           {/* Settings */}
           {[
             { icon: "👴", label: "Senior-läge", desc: seniorMode ? "På" : "Av", action: () => { const n = !seniorMode; setSeniorMode(n); try { localStorage.setItem("kapital_senior", String(n)); } catch {} } },
+            { icon: "📋", label: "Daglig sammanfattning", desc: splashEnabled ? "På — visas vid start" : "Av", action: () => toggleSplash && toggleSplash(!splashEnabled) },
             { icon: "🌍", label: t.language, desc: LANGUAGES.find(l => l.code === lang)?.name, action: () => setShowLangs(!showLangs) },
             { icon: "💱", label: "Valuta", desc: currencyObj.flag + " " + currencyObj.name, action: () => setShowCurrencies(!showCurrencies) },
             { icon: "📤", label: "Dela Kapital", desc: "Bjud in vänner", action: () => { if (navigator.share) navigator.share({ title: "Kapital", text: "Testa Sveriges smartaste ekonomiapp!", url: window.location.href }); } },
@@ -8356,16 +8476,24 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
               { label: "Kompakt vy", desc: "Visa mer info på skärmen", key: "kompakt" },
               { label: "Animationer", desc: "Aktivera övergångseffekter", key: "animationer" },
               { label: "Stora siffror", desc: "Större text för belopp", key: "storText" },
+              { label: "Smart guide-knapp", desc: "Visa hjälpknappen (?) i appen", key: "guide_off", invert: true },
+              { label: "Daglig sammanfattning", desc: "Visa ekonomiöversikt vid start", key: "splash_off", invert: true },
             ].map(s => {
-              const val = (() => { try { return localStorage.getItem("kapital_" + s.key) !== "false"; } catch { return true; } })();
+              const raw = (() => { try { return localStorage.getItem("kapital_" + s.key); } catch { return null; } })();
+              const val = s.invert ? raw !== "true" : raw !== "false";
               return (
                 <div key={s.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid #1e293b" }}>
                   <div>
                     <div style={{ fontSize: 14, color: "#e2e8f0" }}>{s.label}</div>
                     <div style={{ fontSize: 12, color: "#475569" }}>{s.desc}</div>
                   </div>
-                  <button onClick={() => { try { localStorage.setItem("kapital_" + s.key, String(!val)); } catch {} }}
-                    style={{ width: 48, height: 28, borderRadius: 99, background: val ? "#10b981" : "#1e293b", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s" }}>
+                  <button onClick={() => {
+                    const newVal = !val;
+                    try { localStorage.setItem("kapital_" + s.key, String(s.invert ? !newVal : !newVal)); } catch {}
+                    if (s.key === "splash_off" && toggleSplash) toggleSplash(newVal);
+                    window.dispatchEvent(new Event("storage"));
+                  }}
+                    style={{ width: 48, height: 28, borderRadius: 99, background: val ? "#10b981" : "#1e293b", border: "none", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
                     <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", position: "absolute", top: 4, left: val ? 24 : 4, transition: "left 0.2s" }} />
                   </button>
                 </div>
@@ -8668,276 +8796,6 @@ function ProfilNotiser() {
   );
 }
 
-  const [name, setName] = useState(() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } });
-  const [showLangs, setShowLangs] = useState(false);
-  const [showCurrencies, setShowCurrencies] = useState(false);
-  const currencyObj = (currencies || []).find(c => c.code === currency) || { flag: "🇸🇪", name: "Svensk krona" };
-
-  const saveName = (v) => { setName(v); try { localStorage.setItem("kapital_name", v); } catch {} };
-
-  const resetData = (key, label) => {
-    if (window.confirm(`Radera all data för ${label}?`)) {
-      try { localStorage.removeItem(key); } catch {}
-    }
-  };
-
-  return (
-    <div>
-      <div style={{ textAlign: "center", padding: "20px 0 24px" }}>
-        <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 12px" }}>
-          {name ? name[0].toUpperCase() : "👤"}
-        </div>
-        <input value={name} onChange={e => saveName(e.target.value)} placeholder="Ditt namn"
-          style={{ background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 700, color: "#e2e8f0", textAlign: "center", width: "100%" }} />
-        {isPro && <div style={{ fontSize: 12, color: "#10b981", marginTop: 4 }}>✓ Kapital Pro</div>}
-      </div>
-
-      {/* Pro status */}
-      {!isPro ? (
-        <button onClick={onUpgrade} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "linear-gradient(135deg,#0f1a2e,#0f172a)", border: "1px solid #10b98133", borderRadius: 14, padding: 16, cursor: "pointer", marginBottom: 10, textAlign: "left" }}>
-          <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🚀</div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>Uppgradera till Pro</div>
-            <div style={{ fontSize: 12, color: "#475569" }}>49 kr/mån · Obegränsade analyser & mer</div>
-          </div>
-        </button>
-      ) : (
-        <div style={{ background: "#10b98111", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10, textAlign: "center" }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#10b981" }}>⭐ Kapital Pro aktiv</div>
-          <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Alla funktioner upplåsta</div>
-        </div>
-      )}
-
-      {/* Settings */}
-      {[
-        { icon: "👴", label: "Senior-läge", desc: seniorMode ? "På — enkla guider aktiva" : "Av — aktivera för enklare guider", action: () => { const next = !seniorMode; setSeniorMode(next); try { localStorage.setItem("kapital_senior", String(next)); } catch {} } },
-        { icon: "🌍", label: t.language, desc: LANGUAGES.find(l => l.code === lang)?.name, action: () => setShowLangs(!showLangs) },
-        { icon: "💱", label: "Valuta", desc: currencyObj.flag + " " + currencyObj.name, action: () => setShowCurrencies(!showCurrencies) },
-        { icon: "🔔", label: "Kurslarm", desc: "Hantera aktiva larm", action: () => {} },
-        { icon: "📤", label: "Dela Kapital", desc: "Bjud in vänner", action: () => { if (navigator.share) navigator.share({ title: "Kapital", text: "Testa Sveriges smartaste ekonomiapp!", url: window.location.href }); } },
-      ].map(({ icon, label, desc, action }) => (
-        <button key={label} onClick={action}
-          style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: 16, cursor: "pointer", marginBottom: 10, textAlign: "left" }}>
-          <div style={{ width: 40, height: 40, borderRadius: 10, background: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{icon}</div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{label}</div>
-            <div style={{ fontSize: 12, color: "#475569" }}>{desc}</div>
-          </div>
-          <span style={{ color: "#334155", fontSize: 18 }}>›</span>
-        </button>
-      ))}
-
-      {/* Currency picker */}
-      {showCurrencies && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
-          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Välj visningsvaluta</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-            {(currencies || []).map(c => (
-              <button key={c.code} onClick={() => { changeCurrency(c.code); setShowCurrencies(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: currency === c.code ? "#10b98122" : "#1e293b", border: `1px solid ${currency === c.code ? "#10b981" : "#334155"}`, borderRadius: 10, cursor: "pointer" }}>
-                <span style={{ fontSize: 18 }}>{c.flag}</span>
-                <div style={{ textAlign: "left" }}>
-                  <div style={{ fontSize: 12, color: currency === c.code ? "#10b981" : "#94a3b8", fontWeight: currency === c.code ? 700 : 400 }}>{c.code}</div>
-                  <div style={{ fontSize: 10, color: "#475569" }}>{c.symbol}</div>
-                </div>
-                {currency === c.code && <span style={{ marginLeft: "auto", color: "#10b981", fontSize: 12 }}>✓</span>}
-              </button>
-            ))}
-          </div>
-          <div style={{ fontSize: 11, color: "#475569", marginTop: 10, textAlign: "center" }}>
-            Kurser hämtas live — belopp omvandlas automatiskt i hela appen
-          </div>
-        </div>
-      )}
-
-      {/* Language picker */}
-      {showLangs && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-            {LANGUAGES.map(l => (
-              <button key={l.code} onClick={() => { changeLang(l.code); setShowLangs(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: lang === l.code ? "#10b98122" : "#1e293b", border: `1px solid ${lang === l.code ? "#10b981" : "#334155"}`, borderRadius: 10, cursor: "pointer" }}>
-                <span style={{ fontSize: 18 }}>{l.flag}</span>
-                <span style={{ fontSize: 12, color: lang === l.code ? "#10b981" : "#94a3b8" }}>{l.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Data management */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginTop: 8 }}>
-        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Datahantering</div>
-        {[
-          ["kapital_expenses", "Utgifter"],
-          ["kapital_goals", "Sparmål"],
-          ["kapital_forsakringar", "Försäkringar"],
-          ["kapital_abonnemang", "Abonnemang"],
-          ["kapital_cache", "Analyshistorik"],
-        ].map(([key, label]) => (
-          <button key={key} onClick={() => resetData(key, label)}
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "8px 0", background: "none", border: "none", borderBottom: "1px solid #1e293b", cursor: "pointer" }}>
-            <span style={{ fontSize: 13, color: "#94a3b8" }}>Rensa {label}</span>
-            <span style={{ fontSize: 12, color: "#ef4444" }}>Radera</span>
-          </button>
-        ))}
-      </div>
-
-      <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 16, lineHeight: 1.7 }}>
-        © 2026 Kapital · Version 1.0<br />
-        <span style={{ color: "#10b981" }}>Användarvillkor</span> · <span style={{ color: "#10b981" }}>Integritetspolicy</span>
-      </div>
-    </div>
-  );
-}
-
-
-// ── Min Ekonomi — Samlad balansräkning ───────────────────────────────────
-function MinEkonomi({ isPro, onUpgrade }) {
-  const [tillgangar, setTillgangar] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("kapital_tillgangar") || JSON.stringify([
-      { id: "aktier", label: "Aktier & Fonder", emoji: "📈", varde: "", color: "#10b981" },
-      { id: "sparande", label: "Sparkonto", emoji: "🏦", varde: "", color: "#3b82f6" },
-      { id: "bostad", label: "Bostad/Fastighet", emoji: "🏠", varde: "", color: "#8b5cf6" },
-      { id: "pension", label: "Pensionskapital", emoji: "👴", varde: "", color: "#f59e0b" },
-      { id: "ovrigt", label: "Övrigt", emoji: "💎", varde: "", color: "#06b6d4" },
-    ])); } catch { return []; }
-  });
-
-  const [skulder, setSkulder] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("kapital_skulder") || JSON.stringify([
-      { id: "bolan", label: "Bolån", emoji: "🏠", varde: "", color: "#ef4444" },
-      { id: "billan", label: "Billån", emoji: "🚗", varde: "", color: "#f97316" },
-      { id: "blanko", label: "Blankolån", emoji: "💳", varde: "", color: "#f59e0b" },
-      { id: "kredit", label: "Kreditkort", emoji: "💳", varde: "", color: "#ef4444" },
-      { id: "ovrigt", label: "Övrigt", emoji: "📋", varde: "", color: "#64748b" },
-    ])); } catch { return []; }
-  });
-
-  const saveTillgangar = (t) => { setTillgangar(t); try { localStorage.setItem("kapital_tillgangar", JSON.stringify(t)); } catch {} };
-  const saveSkulder = (s) => { setSkulder(s); try { localStorage.setItem("kapital_skulder", JSON.stringify(s)); } catch {} };
-
-  const totalTillgangar = tillgangar.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
-  const totalSkulder = skulder.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
-  const nettovarde = totalTillgangar - totalSkulder;
-  const skuldgrad = totalTillgangar > 0 ? (totalSkulder / totalTillgangar * 100) : 0;
-
-  // Also pull in monthly costs
-  const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
-  const forsakringar = JSON.parse(localStorage.getItem("kapital_forsakringar") || "[]");
-  const abonnemang = JSON.parse(localStorage.getItem("kapital_abonnemang") || "[]");
-  const boende = JSON.parse(localStorage.getItem("kapital_boende") || "[]");
-  const fordon = JSON.parse(localStorage.getItem("kapital_fordon") || "[]");
-  const income = parseFloat(localStorage.getItem("kapital_income") || "0");
-  const k4Trades = JSON.parse(localStorage.getItem("kapital_k4") || "[]");
-
-  const totalForsakring = forsakringar.reduce((s, f) => s + (parseFloat(f.kostnad) || 0), 0);
-  const totalAbonnemang = abonnemang.reduce((s, a) => {
-    const k = parseFloat(a.kostnad) || 0;
-    return s + (a.fakturering === "ar" ? k / 12 : k);
-  }, 0);
-  const totalBoende = boende.reduce((s, b) => s + (parseFloat(b.kostnad) || 0), 0);
-  const totalFordon = fordon.reduce((s, f) => s + (parseFloat(f.kostnad) || 0), 0);
-  const totalUtgifter = Object.values(expenses).reduce((s, v) => s + (parseFloat(v) || 0), 0);
-
-  const InputRow = ({ item, items, save }) => (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1e293b" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 20 }}>{item.emoji}</span>
-        <span style={{ fontSize: 13, color: "#e2e8f0" }}>{item.label}</span>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <input
-          value={item.varde}
-          onChange={e => save(items.map(i => i.id === item.id ? { ...i, varde: e.target.value } : i))}
-          placeholder="0"
-          inputMode="decimal"
-          style={{ width: 110, padding: "6px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", textAlign: "right" }}
-        />
-        <span style={{ fontSize: 11, color: "#475569" }}>kr</span>
-      </div>
-    </div>
-  );
-
-  return (
-    <div>
-      {/* Nettovärde — det viktigaste */}
-      <div style={{ background: `linear-gradient(135deg,${nettovarde >= 0 ? "#0a1f0a" : "#1a0000"},#0f172a)`, borderRadius: 18, border: `1px solid ${nettovarde >= 0 ? "#10b98144" : "#ef444444"}`, padding: 22, marginBottom: 16, textAlign: "center" }}>
-        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>💎 Ditt nettovärde</div>
-        <div style={{ fontSize: 44, fontWeight: 900, color: nettovarde >= 0 ? "#10b981" : "#ef4444" }}>
-          {nettovarde >= 0 ? "" : "-"}{Math.abs(nettovarde).toLocaleString("sv-SE", { maximumFractionDigits: 0 })} kr
-        </div>
-        <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>Tillgångar − Skulder</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 16 }}>
-          {[
-            ["Tillgångar", totalTillgangar, "#10b981"],
-            ["Skulder", totalSkulder, "#ef4444"],
-            ["Skuldsättning", `${skuldgrad.toFixed(0)}%`, skuldgrad > 70 ? "#ef4444" : skuldgrad > 40 ? "#f59e0b" : "#10b981"],
-          ].map(([l, v, c]) => (
-            <div key={l} style={{ background: "#0a0f1e", borderRadius: 10, padding: "10px 8px" }}>
-              <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>{l}</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: c }}>
-                {typeof v === "string" ? v : v.toLocaleString("sv-SE", { maximumFractionDigits: 0 }) + " kr"}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Tillgångar */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>📈 Tillgångar</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>{totalTillgangar.toLocaleString("sv-SE", { maximumFractionDigits: 0 })} kr</div>
-        </div>
-        {tillgangar.map(t => <InputRow key={t.id} item={t} items={tillgangar} save={saveTillgangar} />)}
-      </div>
-
-      {/* Skulder */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #ef444433", padding: 16, marginBottom: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444" }}>💳 Skulder</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#ef4444" }}>{totalSkulder.toLocaleString("sv-SE", { maximumFractionDigits: 0 })} kr</div>
-        </div>
-        {skulder.map(s => <InputRow key={s.id} item={s} items={skulder} save={saveSkulder} />)}
-      </div>
-
-      {/* Månadsöversikt */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>💸 Månatliga utgifter — samlad vy</div>
-        {[
-          ["💰 Inkomst", income, "#10b981"],
-          ["🏠 Boende & Levnad", totalUtgifter + totalBoende, "#ef4444"],
-          ["🛡️ Försäkringar", totalForsakring, "#06b6d4"],
-          ["📱 Abonnemang", totalAbonnemang, "#8b5cf6"],
-          ["🚗 Fordon", totalFordon, "#f97316"],
-        ].map(([label, value, color]) => value > 0 && (
-          <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
-            <span style={{ fontSize: 13, color: "#64748b" }}>{label}</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color }}>{value.toLocaleString("sv-SE", { maximumFractionDigits: 0 })} kr</span>
-          </div>
-        ))}
-        <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", marginTop: 4 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>Kvar att spara</span>
-          <span style={{ fontSize: 16, fontWeight: 800, color: income - totalUtgifter - totalBoende - totalForsakring - totalAbonnemang - totalFordon >= 0 ? "#10b981" : "#ef4444" }}>
-            {(income - totalUtgifter - totalBoende - totalForsakring - totalAbonnemang - totalFordon).toLocaleString("sv-SE", { maximumFractionDigits: 0 })} kr
-          </span>
-        </div>
-      </div>
-
-      {/* Skatt-sammanfattning */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 10 }}>🧾 Skatteöversikt 2026</div>
-        <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.7 }}>
-          Gå till <b style={{ color: "#e2e8f0" }}>Ekonomi → Skatt → K4</b> för att beräkna kapitalvinstskatt på dina aktieaffärer.<br />
-          Gå till <b style={{ color: "#e2e8f0" }}>Ekonomi → Skatt → ISK</b> för att se din ISK-skatt.<br />
-          Gå till <b style={{ color: "#e2e8f0" }}>Ekonomi → Skatt → Lön</b> för att se din nettolön och marginalskatt.
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Kapital() {
   const [lang, setLang] = useState(() => {
     try { return localStorage.getItem("kapital_lang") || "sv"; } catch { return "sv"; }
@@ -9022,6 +8880,37 @@ function Kapital() {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try { return !localStorage.getItem("kapital_onboarded"); } catch { return true; }
   });
+
+  // Show splash once per day — respects user preference
+  const [splashEnabled, setSplashEnabled] = useState(() => {
+    try { return localStorage.getItem("kapital_splash_off") !== "true"; } catch { return true; }
+  });
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      if (localStorage.getItem("kapital_splash_off") === "true") return false;
+      const last = localStorage.getItem("kapital_splash_date");
+      const today = new Date().toDateString();
+      return last !== today && !!localStorage.getItem("kapital_onboarded");
+    } catch { return false; }
+  });
+
+  const [splashNews, setSplashNews] = useState(() => {
+    try {
+      const cached = localStorage.getItem("kapital_news_cache");
+      if (cached) return JSON.parse(cached).data || [];
+    } catch {}
+    return [];
+  });
+
+  const closeSplash = () => {
+    setShowSplash(false);
+    try { localStorage.setItem("kapital_splash_date", new Date().toDateString()); } catch {}
+  };
+
+  const toggleSplash = (val) => {
+    setSplashEnabled(val);
+    try { localStorage.setItem("kapital_splash_off", String(!val)); } catch {}
+  };
   const [showCompare, setShowCompare] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { unlock, newAchievement } = useGamification();
@@ -9196,6 +9085,7 @@ function Kapital() {
       <VoiceButton voiceControl={voiceControl} />
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} onUpgrade={() => { handleUpgrade(); unlock("pro_member"); }} t={t} />}
       {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
+      {showSplash && !showOnboarding && <DagligSplash onClose={closeSplash} news={splashNews} onDisable={() => toggleSplash(false)} />}
       {showCompare && <CompareView onClose={() => setShowCompare(false)} onAnalyze={(name) => { setQuery(name); analyze(name); }} />}
       {showNotifications && <NotificationCenter onClose={() => setShowNotifications(false)} />}
 
@@ -9283,6 +9173,7 @@ function Kapital() {
           setTab={setTab} setSubTab={setSubTab}
           onCompare={() => setShowCompare(true)}
           t={t}
+          onNewsLoaded={setSplashNews}
         />}
 
         {/* AKTIER */}
@@ -9338,7 +9229,7 @@ function Kapital() {
         )}
 
         {/* PROFIL */}
-        {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} />}
+        {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} splashEnabled={splashEnabled} toggleSplash={toggleSplash} />}
         {tab === 4 && seniorMode && <SeniorTab setSeniorMode={setSeniorMode} />}
 
         {/* Legal footer */}
@@ -9379,6 +9270,70 @@ function Kapital() {
   );
 }
 
+
+// ── Smart Guide Button ────────────────────────────────────────────────────
+function SmartGuide() {
+  const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(() => {
+    try { return localStorage.getItem("kapital_guide_off") !== "true"; } catch { return true; }
+  });
+
+  if (!visible) return null;
+
+  const tips = [
+    { icon: "🔍", text: "Tryck på en aktie i listan för snabbanalys" },
+    { icon: "💰", text: "Fyll i din inkomst under Ekonomi → Budget för att aktivera hälsoscoren" },
+    { icon: "📊", text: "Gå till Aktier → ₿ Krypto för AI-analys av kryptovalutor" },
+    { icon: "👴", text: "Aktivera Senior-läge under Profil för enklare navigation" },
+    { icon: "🎯", text: "Lägg till sparmål under Ekonomi → Budget → Sparmål" },
+    { icon: "🛡️", text: "Registrera dina försäkringar under Trygghet för en komplett profil" },
+    { icon: "📅", text: "Se din ekonomikalender under Profil → Kalender" },
+    { icon: "🌍", text: "Byt språk och valuta under Profil → Profil" },
+  ];
+
+  const tip = tips[Math.floor(Date.now() / (1000 * 60 * 60 * 4)) % tips.length];
+
+  return (
+    <>
+      {/* Floating button */}
+      {!open && (
+        <button onClick={() => setOpen(true)}
+          style={{ position: "fixed", bottom: 80, right: 16, width: 48, height: 48, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", zIndex: 500, boxShadow: "0 4px 20px #10b98166", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          ?
+        </button>
+      )}
+
+      {/* Guide panel */}
+      {open && (
+        <div style={{ position: "fixed", bottom: 80, right: 12, left: 12, background: "#0f172a", borderRadius: 18, border: "1px solid #10b98144", padding: 18, zIndex: 500, boxShadow: "0 8px 40px #00000088" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>💡 Smart guide</div>
+            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#64748b", fontSize: 20, cursor: "pointer" }}>✕</button>
+          </div>
+
+          <div style={{ background: "#1e293b", borderRadius: 12, padding: 14, marginBottom: 12 }}>
+            <div style={{ fontSize: 22, marginBottom: 6 }}>{tip.icon}</div>
+            <div style={{ fontSize: 14, color: "#e2e8f0", lineHeight: 1.6 }}>{tip.text}</div>
+          </div>
+
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12 }}>Alla tips:</div>
+          {tips.filter(t => t !== tip).slice(0, 3).map((t, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 16 }}>{t.icon}</span>
+              <span style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{t.text}</span>
+            </div>
+          ))}
+
+          <button onClick={() => { setVisible(false); setOpen(false); try { localStorage.setItem("kapital_guide_off", "true"); } catch {} }}
+            style={{ width: "100%", padding: "8px", background: "none", border: "none", color: "#334155", fontSize: 12, cursor: "pointer", marginTop: 8 }}>
+            Stäng av guide-knappen
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
 function CookieBanner() {
   const [accepted, setAccepted] = useState(() => {
     try { return localStorage.getItem("kapital_cookies") === "true"; } catch { return false; }
@@ -9412,6 +9367,7 @@ export default function KapitalApp() {
   return (
     <ErrorBoundary>
       <Kapital />
+      <SmartGuide />
       <CookieBanner />
     </ErrorBoundary>
   );
