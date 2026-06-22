@@ -8874,15 +8874,26 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
         <div style={{ fontSize: 13, color: "#64748b", marginTop: 6, lineHeight: 1.5 }}>Sparade pengar direkt i fickan. Kurerade partners — aldrig slumpmässig reklam.</div>
       </div>
 
-      {/* Category pills */}
-      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 16, scrollbarWidth: "none" }}>
-        {KATEGORIER.map(k => (
-          <button key={k.id} onClick={() => { setSubTab(k.id); setExpanded(null); }}
-            style={{ flexShrink: 0, padding: "8px 16px", background: subTab === k.id ? "linear-gradient(135deg,#f59e0b,#f97316)" : "#0f172a", border: `1px solid ${subTab === k.id ? "transparent" : "#1e293b"}`, borderRadius: 99, color: subTab === k.id ? "#fff" : "#64748b", fontSize: 12, fontWeight: subTab === k.id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
-            {k.icon} {k.label}
-          </button>
-        ))}
-      </div>
+      {/* Category grid — ikonkort, ingen sidomeny */}
+      {subTab === "deals_hem" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+          {KATEGORIER.filter(k => k.id !== "deals_hem").map(k => (
+            <button key={k.id} onClick={() => { setSubTab(k.id); setExpanded(null); }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, padding: "16px 14px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 16, cursor: "pointer", textAlign: "left" }}>
+              <span style={{ fontSize: 28 }}>{k.icon}</span>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0" }}>{k.label}</div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Back button when inside a category */}
+      {subTab !== "deals_hem" && (
+        <button onClick={() => { setSubTab("deals_hem"); setExpanded(null); }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", padding: "9px 18px", marginBottom: 16, boxShadow: "0 4px 15px #10b98144" }}>
+          ← Erbjudanden
+        </button>
+      )}
 
       {/* Jämför Lån */}
       {subTab === "deals_jamfor_lan" && <JamforLan />}
@@ -8894,7 +8905,7 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
       {subTab === "deals_trygghet" && <TrygghetsHub />}
 
       {/* Deals */}
-      {!["deals_trygghet","deals_jamfor_lan","deals_jamfor_forsakring"].includes(subTab) && (
+      {!["deals_hem","deals_trygghet","deals_jamfor_lan","deals_jamfor_forsakring"].includes(subTab) && (
         <div>
           {subTab === "deals_hem" && <div style={{ fontSize: 12, color: "#f59e0b", fontWeight: 700, marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>⭐ Bästa erbjudanden just nu</div>}
           {currentDeals.length === 0 ? (
