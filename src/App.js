@@ -2340,7 +2340,13 @@ function SparaTab({ currency, exchangeRates, currencies }) {
 
             // GRUPP 4: AI & Hjälp
             { id: "aicoach", icon: "🤖", color: "#10b981", label: "AI-ekonomicoach", desc: "Fråga om allt inom ekonomi och skatt", items: [{ id: "aicoach", icon: "💬", label: "AI-coachen" }] },
-            { id: "juridisk", icon: "⚖️", color: "#8b5cf6", label: "Juridisk AI", desc: "Avtal, hyresrätt, arbetsrätt och mer", items: [{ id: "juridiskAI", icon: "⚖️", label: "Juridisk AI" }] },
+            { id: "juridisk", icon: "⚖️", color: "#8b5cf6", label: "Juridisk AI", desc: "Avtal, hyresrätt, arbetsrätt och mer", items: [
+                { id: "juridiskAI", icon: "⚖️", label: "Juridisk AI" },
+                { id: "agarstruktur", icon: "🏢", label: "Ägarstruktur & Delägarskap" },
+                { id: "tolvtrea", icon: "📊", label: "3:12-reglerna" },
+                { id: "exitkalkyl", icon: "🚀", label: "Exit-kalkylator" },
+                { id: "formansvarde", icon: "🚗", label: "Förmånsvärde & Traktamente" },
+              ] },
 
             // GRUPP 5: Hem & Liv
             { id: "bygghus", icon: "🏗️", color: "#f97316", label: "Bygg & Renovera", desc: "Kostnadsplan för hus, renovering och VVS", items: [{ id: "bygghusguide", icon: "🏗️", label: "Bygg ditt hem" }, { id: "renoveringskalkyl", icon: "🔨", label: "Renovering" }] },
@@ -2706,6 +2712,10 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "snittlon" && <SnittLon />}
       {activeSubSection === "lonekalkyl" && <LoneKalkyl inc={inc} />}
       {activeSubSection === "juridiskAI" && <JuridiskAI />}
+      {activeSubSection === "agarstruktur" && <AgarstrukturKalkyl />}
+      {activeSubSection === "tolvtrea" && <TolvtreaKalkyl />}
+      {activeSubSection === "exitkalkyl" && <ExitKalkyl />}
+      {activeSubSection === "formansvarde" && <FormansvardeTraktamente />}
       {activeSubSection === "kryptokuide" && <KryptoGuide />}
       {activeSubSection === "kryptoskatt" && <KryptoSkatt />}
       {activeSubSection === "utlandguide" && <UtlandGuide />}
@@ -5030,7 +5040,499 @@ const JURIDISK_SNABBFRAGOR = {
   skatt: ["När ska jag deklarera?", "Vad är avdragsgillt?", "Hur deklarerar jag kryptovaluta?"],
 };
 
-function JuridiskAI() {
+// ── Ägarstruktur & Delägarskap ────────────────────────────────────────────
+function AgarstrukturKalkyl() {
+  const [agare, setAgare] = useState([
+    { namn: "Du (Grundare)", andel: 50, roll: "Grundare & VD", aAktier: true },
+    { namn: "Familjemedlem 1", andel: 25, roll: "Partner", aAktier: false },
+    { namn: "Familjemedlem 2", andel: 25, roll: "Partner", aAktier: false },
+  ]);
+  const [varde, setVarde] = useState("10000000");
+  const [tab, setTab] = useState("agare");
+
+  const totalAndel = agare.reduce((s, a) => s + (parseFloat(a.andel) || 0), 0);
+  const vardeNum = parseFloat(varde) || 0;
+
+  const addAgare = () => setAgare([...agare, { namn: "Ny delägare", andel: 0, roll: "Partner", aAktier: false }]);
+  const updateAgare = (i, k, v) => {
+    const next = [...agare];
+    next[i] = { ...next[i], [k]: v };
+    setAgare(next);
+  };
+  const removeAgare = (i) => setAgare(agare.filter((_, j) => j !== i));
+
+  const rostandel = (a) => {
+    const aRoster = agare.filter(ag => ag.aAktier).reduce((s, ag) => s + (parseFloat(ag.andel) || 0), 0);
+    const bRoster = agare.filter(ag => !ag.aAktier).reduce((s, ag) => s + (parseFloat(ag.andel) || 0), 0);
+    const totalRoster = aRoster * 10 + bRoster;
+    return a.aAktier
+      ? ((parseFloat(a.andel) || 0) * 10 / totalRoster * 100).toFixed(1)
+      : ((parseFloat(a.andel) || 0) / totalRoster * 100).toFixed(1);
+  };
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a0a1e)", borderRadius: 16, border: "1px solid #8b5cf633", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#8b5cf6", marginBottom: 4 }}>🏢 Ägarstruktur & Delägarskap</div>
+        <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>Räkna ut ägarandelar, röstvärde och exit-belopp. Normalt kostar denna rådgivning 2 000-5 000 kr/timme hos bolagsjurist.</div>
+      </div>
+
+      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+        {[["agare","👥 Delägare"],["analys","📊 Analys"],["tips","💡 Råd"]].map(([id, label]) => (
+          <button key={id} onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", background: tab === id ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "none", border: "none", borderRadius: 9, color: tab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: tab === id ? 700 : 400, cursor: "pointer" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "agare" && (
+        <div>
+          {/* Bolagsvärde */}
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #8b5cf633", padding: 14, marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>💎 Bolagets värdering (kr)</div>
+            <input value={varde} onChange={e => setVarde(e.target.value)} inputMode="decimal"
+              style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 28, fontWeight: 900, color: "#8b5cf6", boxSizing: "border-box" }} />
+          </div>
+
+          {/* Delägare */}
+          {agare.map((a, i) => (
+            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 10 }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <input value={a.namn} onChange={e => updateAgare(i, "namn", e.target.value)}
+                  style={{ flex: 1, padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+                <button onClick={() => removeAgare(i)} style={{ padding: "8px 12px", background: "#ef444422", border: "1px solid #ef444433", borderRadius: 8, color: "#ef4444", fontSize: 13, cursor: "pointer" }}>✕</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                <div>
+                  <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4 }}>Ägarandel (%)</div>
+                  <input value={a.andel} onChange={e => updateAgare(i, "andel", e.target.value)} inputMode="decimal"
+                    style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 16, fontWeight: 700, outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4 }}>Roll</div>
+                  <input value={a.roll} onChange={e => updateAgare(i, "roll", e.target.value)}
+                    style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+                </div>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <button onClick={() => updateAgare(i, "aAktier", !a.aAktier)}
+                  style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                  <div style={{ width: 36, height: 20, borderRadius: 99, background: a.aAktier ? "#8b5cf6" : "#1e293b", position: "relative", transition: "background 0.2s" }}>
+                    <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: a.aAktier ? 19 : 3, transition: "left 0.2s" }} />
+                  </div>
+                  <span style={{ fontSize: 12, color: a.aAktier ? "#8b5cf6" : "#475569" }}>A-aktier (10× röstvärde)</span>
+                </button>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#8b5cf6" }}>{((parseFloat(a.andel) || 0) / 100 * vardeNum).toLocaleString("sv-SE")} kr</div>
+                  <div style={{ fontSize: 10, color: "#475569" }}>Röststyrka: {rostandel(a)}%</div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button onClick={addAgare} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginBottom: 10 }}>
+            + Lägg till delägare
+          </button>
+
+          {/* Total check */}
+          <div style={{ background: totalAndel === 100 ? "#10b98111" : "#ef444411", borderRadius: 12, border: `1px solid ${totalAndel === 100 ? "#10b98133" : "#ef444433"}`, padding: 12, textAlign: "center" }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: totalAndel === 100 ? "#10b981" : "#ef4444" }}>
+              {totalAndel === 100 ? "✓ 100% — Perfekt fördelning!" : `⚠ Totalt: ${totalAndel}% — ska vara 100%`}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {tab === "analys" && (
+        <div>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Ägaranalys</div>
+          {agare.map((a, i) => {
+            const exitBelopp = (parseFloat(a.andel) || 0) / 100 * vardeNum;
+            return (
+              <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{a.namn}</div>
+                    <div style={{ fontSize: 12, color: "#475569" }}>{a.roll} · {a.aAktier ? "A-aktier" : "B-aktier"}</div>
+                  </div>
+                  <div style={{ fontSize: 28, fontWeight: 900, color: "#8b5cf6" }}>{a.andel}%</div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+                  {[
+                    ["Vid exit", exitBelopp.toLocaleString("sv-SE") + " kr"],
+                    ["Röststyrka", rostandel(a) + "%"],
+                    ["Aktietyp", a.aAktier ? "A (10×)" : "B (1×)"],
+                  ].map(([l, v]) => (
+                    <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                      <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0" }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Pie visualization */}
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Ägarfördelning</div>
+            <div style={{ display: "flex", height: 20, borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
+              {agare.map((a, i) => {
+                const colors = ["#8b5cf6","#10b981","#3b82f6","#f59e0b","#ef4444","#06b6d4"];
+                return <div key={i} style={{ flex: parseFloat(a.andel) || 0, background: colors[i % colors.length] }} />;
+              })}
+            </div>
+            {agare.map((a, i) => {
+              const colors = ["#8b5cf6","#10b981","#3b82f6","#f59e0b","#ef4444","#06b6d4"];
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: colors[i % colors.length], flexShrink: 0 }} />
+                  <span style={{ fontSize: 13, color: "#94a3b8" }}>{a.namn}: {a.andel}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {tab === "tips" && (
+        <div>
+          {[
+            { icon: "📋", title: "Aktieägaravtal är ett MÅSTE", color: "#ef4444", text: "Utan aktieägaravtal gäller bara ABL (Aktiebolagslagen) — vilket sällan gynnar grundaren. Avtalet reglerar köprätt, dragningsrätt och vad som händer vid dödsfall eller skilsmässa. Kostar 5 000-15 000 kr hos jurist." },
+            { icon: "⏰", title: "Vesting skyddar dig", color: "#f59e0b", text: "Vesting innebär att andelar tjänas in över tid — typiskt 4 år med 1 år cliff. Om en delägare lämnar efter 6 månader har de bara 0% (inga aktier intjänade). Standard i alla seriösa bolag." },
+            { icon: "🗳️", title: "A/B-aktier ger röststyrka", color: "#8b5cf6", text: "Du som grundare bör ha A-aktier med 10× röstvärde. Det innebär att du med 50% ägande har ~91% av rösterna. Skyddar dig mot att bli utröstad på bolagsstämman." },
+            { icon: "🚪", title: "Drag-along & Tag-along", color: "#3b82f6", text: "Drag-along: du kan tvinga alla att sälja vid en exit (viktigt för investerare). Tag-along: minoritetsägare har rätt att följa med vid en försäljning till samma pris." },
+            { icon: "💰", title: "3:12-reglerna — lön vs utdelning", color: "#10b981", text: "Som delägare kan du ta ut vinst via utdelning med 20% skatt (upp till gränsbeloppet) istället för 57% i marginalskatt på lön. Beräkna ditt gränsbelopp varje år!" },
+            { icon: "🏛️", title: "Registrera AB på Bolagsverket", color: "#06b6d4", text: "Starta AB på verksamt.se — tar 1 vecka och kostar 2 200 kr (digital anmälan). Minsta aktiekapital: 25 000 kr. Du kan vara ensam styrelseledamot och VD." },
+          ].map(s => (
+            <div key={s.title} style={{ display: "flex", gap: 14, marginBottom: 16, background: "#0f172a", borderRadius: 14, border: `1px solid ${s.color}22`, padding: 16 }}>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: s.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{s.icon}</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: s.color, marginBottom: 6 }}>{s.title}</div>
+                <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{s.text}</div>
+              </div>
+            </div>
+          ))}
+          <div style={{ fontSize: 11, color: "#334155", textAlign: "center" }}>⚠ Konsultera en bolagsjurist och revisor för bindande råd anpassat till din situation.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── 3:12-Reglerna Kalkylator ──────────────────────────────────────────────
+function TolvtreaKalkyl() {
+  const [lon, setLon] = useState("50000");
+  const [utdelning, setUtdelning] = useState("200000");
+  const [andel, setAndel] = useState("50");
+  const [aktiekapital, setAktiekapital] = useState("25000");
+
+  const lonNum = parseFloat(lon) || 0;
+  const utdNum = parseFloat(utdelning) || 0;
+  const andelNum = parseFloat(andel) / 100 || 0.5;
+  const akNum = parseFloat(aktiekapital) || 25000;
+
+  // Förenklat gränsbelopp (schablonmetoden)
+  const IBB_2026 = 57300;
+  const schablonbelopp = 2.75 * IBB_2026 * andelNum;
+
+  // Lönebaserat gränsbelopp
+  const lonBas = lonNum * 12 * 0.5 * andelNum;
+  const gransBeloppLon = Math.max(schablonbelopp, lonBas);
+
+  // Skatt
+  const utdInomGrans = Math.min(utdNum, gransBeloppLon);
+  const utdOverGrans = Math.max(0, utdNum - gransBeloppLon);
+  const skattInomGrans = utdInomGrans * 0.20;
+  const skattOverGrans = utdOverGrans * 0.57;
+  const totalSkattUtd = skattInomGrans + skattOverGrans;
+  const nettoUtd = utdNum - totalSkattUtd;
+
+  // Jämförelse med bara lön
+  const lonSkatt = utdNum * 0.57;
+  const besparing = lonSkatt - totalSkattUtd;
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 16, border: "1px solid #10b98133", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>📊 3:12-Reglerna</div>
+        <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>Räkna ut hur mycket du kan ta ut i utdelning med lägre skatt (20%) som delägare i fåmansbolag. Sparar normalt 50 000-200 000 kr/år jämfört med lön.</div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+        {[
+          { label: "Din månadslön (kr)", val: lon, set: setLon },
+          { label: "Din ägarandel (%)", val: andel, set: setAndel },
+          { label: "Aktiekapital (kr)", val: aktiekapital, set: setAktiekapital },
+          { label: "Önskad utdelning (kr)", val: utdelning, set: setUtdelning },
+        ].map(({ label, val, set: setter }) => (
+          <div key={label} style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+            <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>{label}</div>
+            <input value={val} onChange={e => setter(e.target.value)} inputMode="decimal"
+              style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 18, fontWeight: 800, color: "#e2e8f0", boxSizing: "border-box" }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Results */}
+      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Beräkning</div>
+        {[
+          ["Gränsbelopp (schablonmetoden)", schablonbelopp.toLocaleString("sv-SE") + " kr", "#94a3b8"],
+          ["Gränsbelopp (lönebaserat)", gransBeloppLon.toLocaleString("sv-SE") + " kr", "#94a3b8"],
+          ["Utdelning inom gränsbeloppet", utdInomGrans.toLocaleString("sv-SE") + " kr → 20% skatt", "#10b981"],
+          ["Utdelning över gränsbeloppet", utdOverGrans > 0 ? utdOverGrans.toLocaleString("sv-SE") + " kr → 57% skatt" : "Ingen", utdOverGrans > 0 ? "#ef4444" : "#64748b"],
+          ["Total skatt på utdelning", totalSkattUtd.toLocaleString("sv-SE") + " kr", "#f59e0b"],
+          ["Netto till dig", nettoUtd.toLocaleString("sv-SE") + " kr", "#10b981"],
+        ].map(([l, v, c]) => (
+          <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b", alignItems: "center" }}>
+            <span style={{ fontSize: 12, color: "#64748b", flex: 1 }}>{l}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: c, textAlign: "right", marginLeft: 8 }}>{v}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: "linear-gradient(135deg,#0a1f0a,#0f172a)", borderRadius: 14, border: "1px solid #10b98144", padding: 16, textAlign: "center" }}>
+        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>💰 Du sparar jämfört med att ta ut som lön</div>
+        <div style={{ fontSize: 32, fontWeight: 900, color: "#10b981" }}>{Math.round(besparing).toLocaleString("sv-SE")} kr</div>
+        <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>per år i lägre skatt via utdelning</div>
+      </div>
+
+      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 12 }}>
+        <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 8 }}>💡 Tips</div>
+        {["Ta alltid ut lön upp till gränsbeloppet (IBB-regeln) för att maximera gränsbeloppet nästa år", "Lönebaserat gränsbelopp är ofta bättre om du har anställda eller hög lön", "Spara utdelningsutrymme — det kan sparas och användas kommande år", "Konsultera revisor — 3:12 är komplicerat och regler ändras ofta"].map((t, i) => (
+          <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}>
+            <span style={{ color: "#f59e0b" }}>→</span>{t}
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 10 }}>⚠ Förenklad beräkning. Konsultera revisor för exakt beräkning av ditt gränsbelopp.</div>
+    </div>
+  );
+}
+
+// ── Exit-Kalkylator ───────────────────────────────────────────────────────
+function ExitKalkyl() {
+  const [varde, setVarde] = useState("10000000");
+  const [agare, setAgare] = useState([
+    { namn: "Du", andel: 50, preferens: false },
+    { namn: "Familjemedlem 1", andel: 25, preferens: false },
+    { namn: "Familjemedlem 2", andel: 25, preferens: false },
+  ]);
+  const [skattSats, setSkattSats] = useState("20");
+
+  const vardeNum = parseFloat(varde) || 0;
+  const skatt = parseFloat(skattSats) / 100 || 0.20;
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#1a0a00)", borderRadius: 16, border: "1px solid #f9731633", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#f97316", marginBottom: 4 }}>🚀 Exit-kalkylator</div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Vad får var och en vid en försäljning? Beräkna netto efter skatt.</div>
+      </div>
+
+      <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>💎 Försäljningspris (kr)</div>
+        <input value={varde} onChange={e => setVarde(e.target.value)} inputMode="decimal"
+          style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 30, fontWeight: 900, color: "#f97316", boxSizing: "border-box" }} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+          <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Skattesats på vinst (%)</div>
+          <select value={skattSats} onChange={e => setSkattSats(e.target.value)}
+            style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 18, fontWeight: 800, color: "#e2e8f0", cursor: "pointer" }}>
+            <option value="20" style={{ background: "#0f172a" }}>20% (3:12 inom gräns)</option>
+            <option value="30" style={{ background: "#0f172a" }}>30% (kapitalvinst)</option>
+            <option value="57" style={{ background: "#0f172a" }}>57% (inkomstskatt)</option>
+          </select>
+        </div>
+        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+          <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Total försäljning</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0" }}>{(vardeNum / 1000000).toFixed(1)} Mkr</div>
+        </div>
+      </div>
+
+      {agare.map((a, i) => {
+        const brutto = (parseFloat(a.andel) || 0) / 100 * vardeNum;
+        const skattBelOpp = brutto * skatt;
+        const netto = brutto - skattBelOpp;
+        const colors = ["#8b5cf6", "#10b981", "#3b82f6", "#f59e0b", "#ef4444"];
+        const color = colors[i % colors.length];
+        return (
+          <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${color}33`, padding: 16, marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div>
+                <input value={a.namn} onChange={e => { const n = [...agare]; n[i] = {...a, namn: e.target.value}; setAgare(n); }}
+                  style={{ background: "none", border: "none", outline: "none", fontSize: 16, fontWeight: 700, color: "#e2e8f0" }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                  <input value={a.andel} onChange={e => { const n = [...agare]; n[i] = {...a, andel: e.target.value}; setAgare(n); }}
+                    inputMode="decimal" style={{ width: 50, background: "#1e293b", border: "1px solid #334155", borderRadius: 6, color: "#e2e8f0", fontSize: 14, fontWeight: 700, outline: "none", padding: "3px 6px", textAlign: "center" }} />
+                  <span style={{ fontSize: 13, color: "#64748b" }}>%</span>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 11, color: "#64748b" }}>Brutto</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color }}>+{Math.round(brutto).toLocaleString("sv-SE")} kr</div>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+              {[["Skatt", "-" + Math.round(skattBelOpp).toLocaleString("sv-SE") + " kr", "#ef4444"], ["Netto", Math.round(netto).toLocaleString("sv-SE") + " kr", "#10b981"], ["I Mkr", (netto/1000000).toFixed(2) + " Mkr", color]].map(([l, v, c]) => (
+                <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
+                  <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: c }}>{v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      <button onClick={() => setAgare([...agare, { namn: "Ny delägare", andel: 0, preferens: false }])}
+        style={{ width: "100%", padding: "11px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer" }}>
+        + Lägg till delägare
+      </button>
+    </div>
+  );
+}
+
+// ── Förmånsvärde & Traktamente ────────────────────────────────────────────
+function FormansvardeTraktamente() {
+  const [tab, setTab] = useState("bil");
+  const [nypris, setNypris] = useState("300000");
+  const [drivmedel, setDrivmedel] = useState("bensin");
+  const [arslon, setArslon] = useState("600000");
+  const [kmTjänst, setKmTjanst] = useState("1000");
+  const [resor, setResor] = useState([{ typ: "inrikes", dagar: "0" }]);
+
+  const IBB = 57300;
+  const nyprisNum = parseFloat(nypris) || 0;
+
+  // Förmånsvärde bil (förenklat)
+  const basForman = nyprisNum * 0.317;
+  const drivTillagg = drivmedel === "bensin" ? 9400 : drivmedel === "diesel" ? 8000 : 0;
+  const arsForman = basForman + drivTillagg;
+  const manadsForman = arsForman / 12;
+  const extraSkatt = arsForman * 0.32;
+
+  // Milersättning
+  const milersattning = parseFloat(kmTjänst) / 10 * 25;
+
+  // Traktamente 2026
+  const TRAKTAMENTE = {
+    inrikes: { hel: 290, halv: 145, natt: 145 },
+    norden: { hel: 480, halv: 240, natt: 240 },
+    europa: { hel: 550, halv: 275, natt: 275 },
+    usa: { hel: 720, halv: 360, natt: 360 },
+  };
+
+  const totalTraktamente = resor.reduce((s, r) => {
+    const t = TRAKTAMENTE[r.typ] || TRAKTAMENTE.inrikes;
+    return s + t.hel * (parseFloat(r.dagar) || 0);
+  }, 0);
+
+  return (
+    <div>
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1020)", borderRadius: 16, border: "1px solid #3b82f633", padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "#3b82f6", marginBottom: 4 }}>🚗 Förmånsvärde & Traktamente</div>
+        <div style={{ fontSize: 12, color: "#64748b" }}>Räkna ut förmånsvärde på tjänstebil och skattefri milersättning. Sparar tusentals kronor i onödig skatt.</div>
+      </div>
+
+      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+        {[["bil","🚗 Tjänstebil"],["milersatt","🛣️ Milersättning"],["traktamente","🌍 Traktamente"]].map(([id, label]) => (
+          <button key={id} onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", background: tab === id ? "linear-gradient(135deg,#3b82f6,#2563eb)" : "none", border: "none", borderRadius: 9, color: tab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: tab === id ? 700 : 400, cursor: "pointer" }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "bil" && (
+        <div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+            <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+              <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Nypris bil (kr)</div>
+              <input value={nypris} onChange={e => setNypris(e.target.value)} inputMode="decimal"
+                style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 800, color: "#e2e8f0", boxSizing: "border-box" }} />
+            </div>
+            <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+              <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Drivmedel</div>
+              <select value={drivmedel} onChange={e => setDrivmedel(e.target.value)} style={{ background: "none", border: "none", outline: "none", fontSize: 15, fontWeight: 700, color: "#e2e8f0", cursor: "pointer", width: "100%" }}>
+                <option value="bensin" style={{ background: "#0f172a" }}>Bensin/Diesel</option>
+                <option value="diesel" style={{ background: "#0f172a" }}>Laddhybrid</option>
+                <option value="el" style={{ background: "#0f172a" }}>Elbil (inget tillägg)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #3b82f633", padding: 16 }}>
+            {[
+              ["Förmånsvärde per år", arsForman.toLocaleString("sv-SE") + " kr", "#e2e8f0"],
+              ["Förmånsvärde per månad", manadsForman.toLocaleString("sv-SE") + " kr", "#e2e8f0"],
+              ["Extra skatt per år (32%)", extraSkatt.toLocaleString("sv-SE") + " kr", "#ef4444"],
+              ["Nettokostnad för dig/mån", (extraSkatt / 12).toLocaleString("sv-SE") + " kr", "#f59e0b"],
+            ].map(([l, v, c]) => (
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+                <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: "#475569", marginTop: 10, textAlign: "center" }}>Förenklad beräkning för bil äldre än 3 år. Exakt värde beräknas av Skatteverket.</div>
+        </div>
+      )}
+
+      {tab === "milersatt" && (
+        <div>
+          <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Tjänstekilometer per månad</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input value={kmTjänst} onChange={e => setKmTjanst(e.target.value)} inputMode="decimal"
+                style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 28, fontWeight: 900, color: "#e2e8f0" }} />
+              <span style={{ fontSize: 13, color: "#475569" }}>km</span>
+            </div>
+          </div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16 }}>
+            <div style={{ fontSize: 13, color: "#10b981", fontWeight: 700, marginBottom: 10 }}>Skattefri milersättning 2026</div>
+            {[["Skattefri ersättning/mån", milersattning.toLocaleString("sv-SE") + " kr", "#10b981"], ["Per km (25 öre/km)", "2,50 kr/km", "#e2e8f0"], ["Per mil (25 kr/mil)", "25 kr/mil", "#e2e8f0"]].map(([l, v, c]) => (
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+                <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: "#f59e0b11", borderRadius: 12, border: "1px solid #f59e0b33", padding: 14, marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 6 }}>💡 Kom ihåg</div>
+            {["Håll körjournal med datum, syfte och km — Skatteverket kräver detta", "Avdrag för arbetsresor: överstiger 11 km och kostar mer än kollektivt", "Elbilar: 9,50 kr/mil i skattefri milersättning (högre än bensin)"].map((t, i) => (
+              <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}><span style={{ color: "#f59e0b" }}>→</span>{t}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === "traktamente" && (
+        <div>
+          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Skattefria traktamenten 2026</div>
+            {[["🇸🇪 Inrikes (hel dag)", "290 kr"], ["🇸🇪 Inrikes (halv dag)", "145 kr"], ["🇳🇴🇩🇰 Norden", "480 kr/dag"], ["🇪🇺 Europa", "550 kr/dag"], ["🇺🇸 USA & Fjärran östern", "720 kr/dag"]].map(([l, v]) => (
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+                <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+            <div style={{ fontSize: 12, color: "#3b82f6", marginBottom: 8 }}>💡 Regler</div>
+            {["Övernattning mer än 5 mil från hemmet krävs för natt-traktamente", "Tjänsteresan måste vara minst 6 timmar för halvdags-traktamente", "Arbetsgivaren betalar — du behöver inte kvitto för schablonbeloppet", "Hotell & mat KAN betalas av arbetsgivaren utöver traktamentet"].map((t, i) => (
+              <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}><span style={{ color: "#3b82f6" }}>→</span>{t}</div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
   const [kategori, setKategori] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
