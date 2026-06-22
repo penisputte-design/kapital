@@ -7,7 +7,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: "100vh", background: "#0a0f1e", color: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "sans-serif" }}>
+        <div style={{ minHeight: "100vh", background: "var(--bg2)", color: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "sans-serif" }}>
           <div style={{ textAlign: "center", maxWidth: 400 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Något gick fel</div>
@@ -376,7 +376,7 @@ function LegalBanner() {
 const fmt = (n, d = 0) => Number(n).toLocaleString("sv-SE", { minimumFractionDigits: d, maximumFractionDigits: d });
 const recColor = r => r === "Köp" ? "#22c55e" : r === "Sälj" ? "#ef4444" : "#f59e0b";
 const card = (children, extra = {}) => ({
-  background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12, ...extra
+  background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12, ...extra
 });
 
 // ── UI Atoms ──────────────────────────────────────────────────────────────
@@ -400,7 +400,7 @@ function ScoreBar({ score }) {
         <span style={{ color, fontWeight: 700, fontSize: 14 }}>{label} · {score}/100</span>
         <span>Köpläge</span>
       </div>
-      <div style={{ background: "#1e293b", borderRadius: 99, height: 10, overflow: "hidden" }}>
+      <div style={{ background: "var(--border2)", borderRadius: 99, height: 10, overflow: "hidden" }}>
         <div style={{ width: `${score}%`, height: "100%", borderRadius: 99, background: "linear-gradient(90deg,#ef4444,#f59e0b 50%,#22c55e)", transition: "width 1s ease" }} />
       </div>
     </div>
@@ -417,7 +417,7 @@ function ProGate({ onUpgrade, t }) {
         <button onClick={onUpgrade} style={{ padding: "13px 28px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px #10b98144" }}>
           {t.proMonth}
         </button>
-        <button onClick={onUpgrade} style={{ padding: "13px 20px", background: "#1e293b", border: "1px solid #334155", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
+        <button onClick={onUpgrade} style={{ padding: "13px 20px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
           {t.proYear}
         </button>
       </div>
@@ -546,7 +546,7 @@ function QuickGrid({ onSelect }) {
                 <button key={s.name}
                   onClick={() => onSelect(s.name)}
                   style={{
-                    background: "#0f172a", border: `1px solid ${p && up !== null ? (up ? "#22c55e22" : "#ef444422") : "#1e293b"}`,
+                    background: "var(--card)", border: `1px solid ${p && up !== null ? (up ? "#22c55e22" : "#ef444422") : "#1e293b"}`,
                     borderRadius: 12, padding: "10px 6px", cursor: "pointer",
                     textAlign: "center", transition: "all 0.2s", animation: "fadeIn 0.3s ease"
                   }}
@@ -557,7 +557,7 @@ function QuickGrid({ onSelect }) {
                   <div style={{ fontSize: 10, fontWeight: 700, color: "#e2e8f0", lineHeight: 1.2, marginBottom: 3 }}>{s.name}</div>
 
                   {priceLoading ? (
-                    <div style={{ height: 24, background: "#1e293b", borderRadius: 4, animation: "shimmer 1.5s infinite", backgroundSize: "200% 100%", backgroundImage: "linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%)" }} />
+                    <div style={{ height: 24, background: "var(--border2)", borderRadius: 4, animation: "shimmer 1.5s infinite", backgroundSize: "200% 100%", backgroundImage: "linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%)" }} />
                   ) : p ? (
                     <div>
                       <div style={{ fontSize: 11, fontWeight: 700, color: "#e2e8f0" }}>{fmtPrice(p.price, s.ticker)}</div>
@@ -637,7 +637,7 @@ function NyckeltalCard({ nyckeltal: n }) {
       <div style={{ fontSize: 11, fontWeight: 700, color: "#3b82f6", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>📊 Nyckeltal</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {items.map(({ label, value, suffix, tip, color }) => (
-          <div key={label} style={{ background: "#0a0f1e", borderRadius: 10, padding: "10px 12px" }} title={tip}>
+          <div key={label} style={{ background: "var(--bg2)", borderRadius: 10, padding: "10px 12px" }} title={tip}>
             <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>{label}</div>
             <div style={{ fontSize: 16, fontWeight: 700, color: color || "#e2e8f0" }}>
               {value !== undefined && value !== null ? `${value}${suffix}` : "—"}
@@ -656,15 +656,15 @@ function UtdelningCard({ utdelning: u }) {
     <div style={{ ...card(), marginBottom: 12 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#22c55e", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>💰 Utdelning</div>
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-        <div style={{ flex: 1, background: "#0a0f1e", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
+        <div style={{ flex: 1, background: "var(--bg2)", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
           <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>Belopp</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#22c55e" }}>{u.belopp}</div>
         </div>
-        <div style={{ flex: 1, background: "#0a0f1e", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
+        <div style={{ flex: 1, background: "var(--bg2)", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
           <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>Datum</div>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{u.datum}</div>
         </div>
-        <div style={{ flex: 1, background: "#0a0f1e", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
+        <div style={{ flex: 1, background: "var(--bg2)", borderRadius: 10, padding: "10px 12px", textAlign: "center" }}>
           <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>Frekvens</div>
           <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0" }}>{u.frekvens}</div>
         </div>
@@ -694,7 +694,7 @@ function InsiderCard({ insider }) {
       {insider.map((t, i) => {
         const isBuy = t.typ === "Köp";
         return (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < insider.length - 1 ? "1px solid #1e293b" : "none" }}>
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: i < insider.length - 1 ? "1px solid var(--border)" : "none" }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, color: "#e2e8f0", fontWeight: 500 }}>{t.namn}</div>
               <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>{t.datum}</div>
@@ -786,7 +786,7 @@ function WatchButton({ company }) {
 function NotificationBell({ onOpen }) {
   const { unreadCount } = useNotifications();
   return (
-    <button onClick={onOpen} style={{ position: "relative", padding: "6px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 18, cursor: "pointer", lineHeight: 1 }}>
+    <button onClick={onOpen} style={{ position: "relative", padding: "6px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 18, cursor: "pointer", lineHeight: 1 }}>
       🔔
       {unreadCount > 0 && (
         <span style={{ position: "absolute", top: 2, right: 2, width: 16, height: 16, borderRadius: "50%", background: "#ef4444", fontSize: 9, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -805,7 +805,7 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && analyze()}
           placeholder={t.placeholder}
-          style={{ flex: 1, padding: "11px 14px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 15, outline: "none" }} />
+          style={{ flex: 1, padding: "11px 14px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "#e2e8f0", fontSize: 15, outline: "none" }} />
         <button onClick={() => analyze()} disabled={loading || !query.trim()} style={{
           padding: "11px 18px", background: loading ? "#1e293b" : "linear-gradient(135deg,#10b981,#0ea5e9)",
           border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer"
@@ -815,13 +815,13 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
       {/* Quick action row */}
       {!result && !loading && (
         <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-          <button onClick={onGoMaklare} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#94a3b8", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
+          <button onClick={onGoMaklare} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#94a3b8", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
             🏦 <span>Mäklare</span>
           </button>
-          <button onClick={onGoKalender} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#94a3b8", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
+          <button onClick={onGoKalender} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#94a3b8", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
             🗓 <span>Rapporter</span>
           </button>
-          <button onClick={onCompare} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#94a3b8", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
+          <button onClick={onCompare} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#94a3b8", fontSize: 12, cursor: "pointer", fontWeight: 500 }}>
             ⚖️ <span>Jämför</span>
           </button>
         </div>
@@ -835,7 +835,7 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
               {remaining > 0 ? t.freeLeft(remaining) : t.freeDone}
             </span>
           </div>
-          <div style={{ background: "#1e293b", borderRadius: 99, height: 6, overflow: "hidden" }}>
+          <div style={{ background: "var(--border2)", borderRadius: 99, height: 6, overflow: "hidden" }}>
             <div style={{
               width: `${(usageCount / FREE_LIMIT) * 100}%`,
               height: "100%", borderRadius: 99,
@@ -850,11 +850,11 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
       {!result && !loading && <QuickGrid onSelect={(name) => { setQuery(name); analyze(name); }} />}
 
       {!isPro && usageCount >= FREE_LIMIT && !loading && <ProGate onUpgrade={onUpgrade} t={t} />}
-      {error && <div style={{ padding: 14, background: "#1e293b", border: "1px solid #ef4444", borderRadius: 12, color: "#fca5a5", fontSize: 14, marginBottom: 12 }}>{error}</div>}
+      {error && <div style={{ padding: 14, background: "var(--border2)", border: "1px solid #ef4444", borderRadius: 12, color: "#fca5a5", fontSize: 14, marginBottom: 12 }}>{error}</div>}
       {loading && (
         <div>
           {/* Animated status */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: "20px 18px", marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: "20px 18px", marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
               <div style={{ position: "relative", width: 36, height: 36 }}>
                 <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "3px solid #1e293b" }} />
@@ -874,7 +874,7 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
           </div>
           {/* Skeleton cards */}
           {[80, 120, 60].map((h, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12, overflow: "hidden", position: "relative" }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12, overflow: "hidden", position: "relative" }}>
               <div style={{ height: h, borderRadius: 8, background: "linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
             </div>
           ))}
@@ -921,8 +921,8 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
 
             <p style={{ fontSize: 14, color: "#cbd5e1", marginTop: 14, lineHeight: 1.6 }}>{result.summary}</p>
             <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-              <span style={{ padding: "3px 10px", background: "#1e293b", borderRadius: 6, fontSize: 12, color: "#94a3b8" }}>⏱ {result.timeHorizon}</span>
-              <span style={{ padding: "3px 10px", background: "#1e293b", borderRadius: 6, fontSize: 12, color: "#94a3b8" }}>🗓 {result.lastUpdated}</span>
+              <span style={{ padding: "3px 10px", background: "var(--border2)", borderRadius: 6, fontSize: 12, color: "#94a3b8" }}>⏱ {result.timeHorizon}</span>
+              <span style={{ padding: "3px 10px", background: "var(--border2)", borderRadius: 6, fontSize: 12, color: "#94a3b8" }}>🗓 {result.lastUpdated}</span>
             </div>
           </div>
 
@@ -960,7 +960,7 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
           <div style={card()}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>📰 Nyheter</div>
             {result.news?.map((n, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, padding: "10px 0", borderBottom: i < result.news.length - 1 ? "1px solid #1e293b" : "none" }}>
+              <div key={i} style={{ display: "flex", gap: 10, padding: "10px 0", borderBottom: i < result.news.length - 1 ? "1px solid var(--border)" : "none" }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", marginTop: 5, flexShrink: 0, background: n.sentiment === "positiv" ? "#22c55e" : n.sentiment === "negativ" ? "#ef4444" : "#f59e0b" }} />
                 <div>
                   <div style={{ fontSize: 13, color: "#e2e8f0" }}>{n.headline}</div>
@@ -984,7 +984,7 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>{t.recentAnalyzed}</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {history.slice(1).map((h, i) => (
-              <button key={i} onClick={() => { setResult(h); setQuery(h.company); }} style={{ padding: "6px 12px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 8, color: "#94a3b8", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <button key={i} onClick={() => { setResult(h); setQuery(h.company); }} style={{ padding: "6px 12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "#94a3b8", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: recColor(h.recommendation) }} />{h.company} <span style={{ color: "#475569" }}>{h.score}/100</span>
               </button>
             ))}
@@ -1011,7 +1011,7 @@ function WatchlistTab({ onAnalyze, isPro, onUpgrade, onlySection }) {
     <div>
       {/* Sub-tabs - only shown when not controlled by parent */}
       {!onlySection && (
-        <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
           <button onClick={() => setSection("watchlist")} style={{ flex: 1, padding: "9px", background: section === "watchlist" ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: section === "watchlist" ? "#fff" : "#64748b", fontSize: 13, fontWeight: section === "watchlist" ? 700 : 400, cursor: "pointer" }}>
             ⭐ Bevakningar
           </button>
@@ -1060,7 +1060,7 @@ function WatchlistTab({ onAnalyze, isPro, onUpgrade, onlySection }) {
                       <button onClick={() => onAnalyze(company)} style={{ padding: "5px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                         Analysera
                       </button>
-                      <button onClick={() => toggle(company)} style={{ padding: "4px 10px", background: "none", border: "1px solid #334155", borderRadius: 8, color: "#64748b", fontSize: 11, cursor: "pointer" }}>
+                      <button onClick={() => toggle(company)} style={{ padding: "4px 10px", background: "none", border: "1px solid var(--border2)", borderRadius: 8, color: "#64748b", fontSize: 11, cursor: "pointer" }}>
                         Ta bort
                       </button>
                     </div>
@@ -1170,7 +1170,7 @@ function PortfoljTab({ isPro, onUpgrade }) {
 
   const inp = (key, ph) => (
     <input value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} placeholder={ph}
-      style={{ width: "100%", padding: "8px 10px", background: "#0a0f1e", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+      style={{ width: "100%", padding: "8px 10px", background: "var(--bg2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
   );
 
   if (!isPro) return (
@@ -1211,7 +1211,7 @@ function PortfoljTab({ isPro, onUpgrade }) {
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#94a3b8", marginBottom: 2 }}>
                   <span>{h.company}</span><span>{fmt(pct, 1)}%</span>
                 </div>
-                <div style={{ background: "#1e293b", borderRadius: 4, height: 6, overflow: "hidden" }}>
+                <div style={{ background: "var(--border2)", borderRadius: 4, height: 6, overflow: "hidden" }}>
                   <div style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 4 }} />
                 </div>
               </div>
@@ -1260,11 +1260,11 @@ function PortfoljTab({ isPro, onUpgrade }) {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={addHolding} style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
           + Lägg till aktie
         </button>
       )}
@@ -1351,7 +1351,7 @@ function AlertsPanel({ company, currentPrice }) {
   const companyAlerts = alerts.filter(a => a.company === company);
 
   return (
-    <div style={{ marginTop: 12, padding: "14px", background: "#0a0f1e", borderRadius: 10, border: "1px solid #1e293b" }}>
+    <div style={{ marginTop: 12, padding: "14px", background: "var(--bg2)", borderRadius: 10, border: "1px solid var(--border)" }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>🔔 Kurslarm</div>
       <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
         <button onClick={() => setAlertType("above")} style={{ flex: 1, padding: "7px", background: alertType === "above" ? "#22c55e22" : "#1e293b", border: `1px solid ${alertType === "above" ? "#22c55e" : "#334155"}`, borderRadius: 8, color: alertType === "above" ? "#22c55e" : "#64748b", fontSize: 12, cursor: "pointer", fontWeight: alertType === "above" ? 700 : 400 }}>
@@ -1363,7 +1363,7 @@ function AlertsPanel({ company, currentPrice }) {
       </div>
       <div style={{ display: "flex", gap: 6 }}>
         <input value={targetPrice} onChange={e => setTargetPrice(e.target.value)} placeholder={currentPrice ? `Nu: ${currentPrice.toFixed(2)}` : "Kurs (kr)"}
-          style={{ flex: 1, padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+          style={{ flex: 1, padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
         <button onClick={handleAdd} disabled={!targetPrice} style={{ padding: "9px 16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
           + Lägg till
         </button>
@@ -1374,7 +1374,7 @@ function AlertsPanel({ company, currentPrice }) {
       {companyAlerts.length > 0 && (
         <div style={{ marginTop: 10 }}>
           {companyAlerts.map(a => (
-            <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderTop: "1px solid #1e293b" }}>
+            <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderTop: "1px solid var(--border)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ color: a.type === "above" ? "#22c55e" : "#ef4444", fontSize: 13 }}>{a.type === "above" ? "▲" : "▼"}</span>
                 <span style={{ fontSize: 13, color: a.triggered ? "#64748b" : "#e2e8f0", textDecoration: a.triggered ? "line-through" : "none" }}>{a.price} kr</span>
@@ -1414,7 +1414,7 @@ function KalkylatornTab() {
   const rr = Math.abs(lossKr) > 0 ? Math.abs(profitKr / lossKr) : 0;
 
   const BigInput = ({ label, value, set, placeholder, color, emoji }) => (
-    <div style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${color}33`, padding: "16px", marginBottom: 10 }}>
+    <div style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${color}33`, padding: "16px", marginBottom: 10 }}>
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>{emoji} {label}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <input value={value} onChange={e => set(e.target.value)} placeholder={placeholder} inputMode="decimal"
@@ -1429,7 +1429,7 @@ function KalkylatornTab() {
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}`}</style>
 
       {/* Mode toggle */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 16, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b" }}>
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)" }}>
         {[["amount", "💰 Investerat belopp"], ["shares", "📦 Antal aktier"]].map(([m, label]) => (
           <button key={m} onClick={() => setMode(m)} style={{ flex: 1, padding: "9px", background: mode === m ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: mode === m ? "#fff" : "#64748b", fontSize: 13, fontWeight: mode === m ? 700 : 400, cursor: "pointer" }}>
             {label}
@@ -1441,7 +1441,7 @@ function KalkylatornTab() {
       <BigInput label="Köpkurs" value={buyPrice} set={setBuyPrice} placeholder="0.00" color="#0ea5e9" emoji="📈" />
 
       {mode === "amount" ? (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #0ea5e933", padding: "16px", marginBottom: 10 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #0ea5e933", padding: "16px", marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>💸 Belopp att investera</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="10 000" inputMode="decimal"
@@ -1451,7 +1451,7 @@ function KalkylatornTab() {
           {numShares > 0 && <div style={{ fontSize: 12, color: "#10b981", marginTop: 6 }}>≈ {numShares} aktier</div>}
         </div>
       ) : (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #0ea5e933", padding: "16px", marginBottom: 10 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #0ea5e933", padding: "16px", marginBottom: 10 }}>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>📦 Antal aktier</div>
           <input value={shares} onChange={e => setShares(e.target.value)} placeholder="1 000" inputMode="numeric"
             style={{ background: "none", border: "none", outline: "none", fontSize: 28, fontWeight: 700, color: "#e2e8f0", width: "100%" }} />
@@ -1467,11 +1467,11 @@ function KalkylatornTab() {
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1 }}>📊 Sammanfattning</div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-            <div style={{ background: "#0a0f1e", borderRadius: 10, padding: 12, textAlign: "center" }}>
+            <div style={{ background: "var(--bg2)", borderRadius: 10, padding: 12, textAlign: "center" }}>
               <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Investerat</div>
               <div style={{ fontSize: 18, fontWeight: 700 }}>{fmt(totalInvested, 0)} kr</div>
             </div>
-            <div style={{ background: "#0a0f1e", borderRadius: 10, padding: 12, textAlign: "center" }}>
+            <div style={{ background: "var(--bg2)", borderRadius: 10, padding: 12, textAlign: "center" }}>
               <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Courtage (est.)</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "#f59e0b" }}>{fmt(fee, 2)} kr</div>
             </div>
@@ -1511,7 +1511,7 @@ function KalkylatornTab() {
 
       {/* Quick scenarios */}
       {bp > 0 && numShares > 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginTop: 10 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginTop: 10 }}>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>⚡ Snabbscenarier</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6 }}>
             {[["🚀", "+50%", 50], ["↗", "+20%", 20], ["→", "+5%", 5], ["↘", "-15%", -15], ["📉", "-40%", -40]].map(([icon, label, pct]) => {
@@ -1519,7 +1519,7 @@ function KalkylatornTab() {
               const pl = numShares * (newP - bp);
               const up = pct > 0;
               return (
-                <div key={label} style={{ background: "#0a0f1e", borderRadius: 10, padding: "10px 6px", textAlign: "center", border: `1px solid ${up ? "#22c55e22" : "#ef444422"}` }}>
+                <div key={label} style={{ background: "var(--bg2)", borderRadius: 10, padding: "10px 6px", textAlign: "center", border: `1px solid ${up ? "#22c55e22" : "#ef444422"}` }}>
                   <div style={{ fontSize: 16 }}>{icon}</div>
                   <div style={{ fontSize: 10, color: up ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{label}</div>
                   <div style={{ fontSize: 10, color: "#64748b", marginTop: 2 }}>{pl >= 0 ? "+" : ""}{fmt(pl, 0)}</div>
@@ -1531,11 +1531,11 @@ function KalkylatornTab() {
       )}
 
       {/* Price alert section */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginTop: 10 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginTop: 10 }}>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>🔔 Sätt kurslarm</div>
         <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <input value={alertCompany} onChange={e => setAlertCompany(e.target.value)} placeholder="Bolagsnamn t.ex. Ericsson"
-            style={{ flex: 1, padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+            style={{ flex: 1, padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
         </div>
         {alertCompany && <AlertsPanel company={alertCompany} currentPrice={bp || null} />}
         {!alertCompany && (
@@ -1653,7 +1653,7 @@ function MaklareTab() {
   return (
     <div>
       {/* Section toggle */}
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
         <SBtn id="courtage" label="📈 Courtage" />
         <SBtn id="bolan" label="🏠 Bolån" />
         <SBtn id="blanko" label="💳 Blankolån" />
@@ -1667,8 +1667,8 @@ function MaklareTab() {
             <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6 }}>Beräkna courtage för köp på:</div>
             <div style={{ display: "flex", gap: 8 }}>
               <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="10000"
-                style={{ flex: 1, padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 15, outline: "none" }} />
-              <span style={{ padding: "10px 14px", background: "#1e293b", borderRadius: 8, color: "#64748b", fontSize: 14 }}>kr</span>
+                style={{ flex: 1, padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 15, outline: "none" }} />
+              <span style={{ padding: "10px 14px", background: "var(--border2)", borderRadius: 8, color: "#64748b", fontSize: 14 }}>kr</span>
             </div>
           </div>
           {BROKERS.map((b, i) => {
@@ -1694,8 +1694,8 @@ function MaklareTab() {
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
-                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: "#1e293b", color: "#94a3b8" }}>Min. {b.minFee} kr</span>
-                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: "#1e293b", color: "#94a3b8" }}>ISK: {b.isk ? `${b.isk}%` : "❌"}</span>
+                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: "var(--border2)", color: "#94a3b8" }}>Min. {b.minFee} kr</span>
+                  <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 6, background: "var(--border2)", color: "#94a3b8" }}>ISK: {b.isk ? `${b.isk}%` : "❌"}</span>
                   <a href={b.affiliate} target="_blank" rel="noopener noreferrer" style={{ marginLeft: "auto", fontSize: 12, padding: "4px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 8, color: "#fff", textDecoration: "none", fontWeight: 600 }}>
                     {b.bonus} →
                   </a>
@@ -1716,7 +1716,7 @@ function MaklareTab() {
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Lånebelopp</div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <input value={loanAmount} onChange={e => setLoanAmount(e.target.value)} inputMode="decimal"
-                    style={{ flex: 1, padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+                    style={{ flex: 1, padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
                   <span style={{ padding: "9px 8px", color: "#64748b", fontSize: 12 }}>kr</span>
                 </div>
               </div>
@@ -1724,7 +1724,7 @@ function MaklareTab() {
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Löptid</div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <input value={loanYears} onChange={e => setLoanYears(e.target.value)} inputMode="numeric"
-                    style={{ flex: 1, padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+                    style={{ flex: 1, padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
                   <span style={{ padding: "9px 8px", color: "#64748b", fontSize: 12 }}>år</span>
                 </div>
               </div>
@@ -1765,11 +1765,11 @@ function MaklareTab() {
                 </div>
                 {lv > 0 && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                    <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ fontSize: 10, color: "#475569" }}>Månadskostnad</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{Math.round(monthly).toLocaleString("sv-SE")} kr</div>
                     </div>
-                    <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ fontSize: 10, color: "#475569" }}>Total ränta {ly} år</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>{Math.round(totalInterest / 1000)}k kr</div>
                     </div>
@@ -1803,7 +1803,7 @@ function MaklareTab() {
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Belopp</div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <input value={loanAmount} onChange={e => setLoanAmount(e.target.value)} inputMode="decimal"
-                    style={{ flex: 1, padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+                    style={{ flex: 1, padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
                   <span style={{ padding: "9px 8px", color: "#64748b", fontSize: 12 }}>kr</span>
                 </div>
               </div>
@@ -1811,7 +1811,7 @@ function MaklareTab() {
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Löptid</div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <input value={loanYears} onChange={e => setLoanYears(e.target.value)} inputMode="numeric"
-                    style={{ flex: 1, padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+                    style={{ flex: 1, padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
                   <span style={{ padding: "9px 8px", color: "#64748b", fontSize: 12 }}>år</span>
                 </div>
               </div>
@@ -1849,11 +1849,11 @@ function MaklareTab() {
                 </div>
                 {lv > 0 && !tooLarge && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                    <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ fontSize: 10, color: "#475569" }}>Månadskostnad</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{Math.round(monthly).toLocaleString("sv-SE")} kr</div>
                     </div>
-                    <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ fontSize: 10, color: "#475569" }}>Total räntekostnad</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>{Math.round(totalInterest / 1000)}k kr</div>
                     </div>
@@ -1880,7 +1880,7 @@ function MaklareTab() {
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Bilens pris</div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <input value={loanAmount} onChange={e => setLoanAmount(e.target.value)} inputMode="decimal"
-                    style={{ flex: 1, padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+                    style={{ flex: 1, padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
                   <span style={{ padding: "9px 8px", color: "#64748b", fontSize: 12 }}>kr</span>
                 </div>
               </div>
@@ -1888,7 +1888,7 @@ function MaklareTab() {
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Löptid</div>
                 <div style={{ display: "flex", gap: 4 }}>
                   <input value={loanYears} onChange={e => setLoanYears(e.target.value)} inputMode="numeric"
-                    style={{ flex: 1, padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+                    style={{ flex: 1, padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
                   <span style={{ padding: "9px 8px", color: "#64748b", fontSize: 12 }}>år</span>
                 </div>
               </div>
@@ -1924,11 +1924,11 @@ function MaklareTab() {
                 </div>
                 {lv > 0 && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                    <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ fontSize: 10, color: "#475569" }}>Månadskostnad</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{Math.round(monthly).toLocaleString("sv-SE")} kr</div>
                     </div>
-                    <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ fontSize: 10, color: "#475569" }}>Total ränta</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>{Math.round(totalInterest / 1000)}k kr</div>
                     </div>
@@ -1975,7 +1975,7 @@ function KalenderTab({ isPro, onUpgrade }) {
     const isWatched = watched.includes(e.company);
     const days = !past ? daysUntil(e.date) : null;
     return (
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1e293b", opacity: past ? 0.5 : 1 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)", opacity: past ? 0.5 : 1 }}>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <div style={{ width: 36, textAlign: "center" }}>
             <div style={{ fontSize: 11, color: "#64748b" }}>{new Date(e.date).toLocaleDateString("sv-SE", { month: "short" }).toUpperCase()}</div>
@@ -2066,7 +2066,7 @@ function BudgetOversiktInline({ inc, totalExp, leftover, savingsRate, goals }) {
   return (
     <div>
       {/* Income input */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
         <div style={{ fontSize: 12, color: "#10b981", marginBottom: 6 }}>💰 Månadsinkomst (netto)</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <input value={income} onChange={e => { setIncome(e.target.value); save(e.target.value); }} inputMode="decimal"
@@ -2081,7 +2081,7 @@ function BudgetOversiktInline({ inc, totalExp, leftover, savingsRate, goals }) {
           ["💸 Utgifter", Math.round(totalExp).toLocaleString("sv-SE") + " kr", "#ef4444"],
           ["💵 Kvar", Math.round(leftover).toLocaleString("sv-SE") + " kr", leftover >= 0 ? "#10b981" : "#ef4444"],
         ].map(([l, v, c]) => (
-          <div key={l} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div key={l} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>{l}</div>
             <div style={{ fontSize: 20, fontWeight: 800, color: c }}>{v}</div>
           </div>
@@ -2089,12 +2089,12 @@ function BudgetOversiktInline({ inc, totalExp, leftover, savingsRate, goals }) {
       </div>
 
       {/* Sparkvot */}
-      <div style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${rateColor}33`, padding: 14, marginBottom: 12 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${rateColor}33`, padding: 14, marginBottom: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span style={{ fontSize: 13, color: "#64748b" }}>📈 Sparkvot</span>
           <span style={{ fontSize: 14, fontWeight: 700, color: rateColor }}>{savingsRate.toFixed(1)}%</span>
         </div>
-        <div style={{ background: "#1e293b", borderRadius: 99, height: 8 }}>
+        <div style={{ background: "var(--border2)", borderRadius: 99, height: 8 }}>
           <div style={{ width: Math.min(100, Math.max(0, savingsRate)) + "%", height: "100%", background: rateColor, borderRadius: 99, transition: "width 0.5s" }} />
         </div>
         <div style={{ fontSize: 11, color: "#475569", marginTop: 5 }}>Mål: 20% · {savingsRate >= 20 ? "✓ Du klarar det!" : `${(20 - savingsRate).toFixed(1)}% kvar till målet`}</div>
@@ -2129,21 +2129,21 @@ function UtgifterInline({ expenses: initExp, inc }) {
 
   return (
     <div>
-      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 12 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 12 }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <span style={{ fontSize: 13, color: "#64748b" }}>Totala utgifter</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: budgetPct > 80 ? "#ef4444" : "#f59e0b" }}>{Math.round(total).toLocaleString("sv-SE")} kr</span>
         </div>
-        <div style={{ background: "#1e293b", borderRadius: 99, height: 6 }}>
+        <div style={{ background: "var(--border2)", borderRadius: 99, height: 6 }}>
           <div style={{ width: Math.min(100, budgetPct) + "%", height: "100%", background: budgetPct > 80 ? "#ef4444" : "#f59e0b", borderRadius: 99 }} />
         </div>
       </div>
       {CATS.map(c => (
-        <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 12, background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "12px 14px", marginBottom: 8 }}>
+        <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 14px", marginBottom: 8 }}>
           <span style={{ fontSize: 22, flexShrink: 0 }}>{c.icon}</span>
           <span style={{ flex: 1, fontSize: 14, color: "#e2e8f0" }}>{c.label}</span>
           <input value={expenses[c.key] || ""} onChange={e => save(c.key, e.target.value)} placeholder="0" inputMode="decimal"
-            style={{ width: 90, textAlign: "right", padding: "6px 8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 15, fontWeight: 700, outline: "none" }} />
+            style={{ width: 90, textAlign: "right", padding: "6px 8px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 15, fontWeight: 700, outline: "none" }} />
           <span style={{ fontSize: 12, color: "#475569" }}>kr</span>
         </div>
       ))}
@@ -2165,7 +2165,7 @@ function MalInline({ goals: initGoals, leftover }) {
         const remaining = (g.target || 0) - (g.saved || 0);
         const months = leftover > 0 ? Math.ceil(remaining / leftover) : null;
         return (
-          <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+          <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 28 }}>{g.emoji}</span>
@@ -2179,13 +2179,13 @@ function MalInline({ goals: initGoals, leftover }) {
                 {months && <div style={{ fontSize: 10, color: "#475569" }}>{months} mån kvar</div>}
               </div>
             </div>
-            <div style={{ background: "#1e293b", borderRadius: 99, height: 8, marginBottom: 8 }}>
+            <div style={{ background: "var(--border2)", borderRadius: 99, height: 8, marginBottom: 8 }}>
               <div style={{ width: pct + "%", height: "100%", background: g.color || "#10b981", borderRadius: 99 }} />
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <input type="number" value={g.saved || ""} onChange={e => { const ng = [...goals]; ng[i] = {...g, saved: parseFloat(e.target.value) || 0}; save(ng); }}
                 placeholder="Sparat hittills"
-                style={{ flex: 1, padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+                style={{ flex: 1, padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
               <button onClick={() => save(goals.filter((_, j) => j !== i))} style={{ padding: "8px 12px", background: "#ef444422", border: "1px solid #ef444433", borderRadius: 8, color: "#ef4444", fontSize: 12, cursor: "pointer" }}>✕</button>
             </div>
           </div>
@@ -2193,14 +2193,14 @@ function MalInline({ goals: initGoals, leftover }) {
       })}
 
       {adding ? (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             <input value={newGoal.name} onChange={e => setNewGoal(n => ({...n, name: e.target.value}))} placeholder="Sparmål-namn"
-              style={{ gridColumn: "1/-1", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+              style={{ gridColumn: "1/-1", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
             <input type="number" value={newGoal.target} onChange={e => setNewGoal(n => ({...n, target: e.target.value}))} placeholder="Målbelopp (kr)"
-              style={{ padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+              style={{ padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
             <input type="date" value={newGoal.deadline} onChange={e => setNewGoal(n => ({...n, deadline: e.target.value}))}
-              style={{ padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+              style={{ padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
           </div>
           <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
             {["🎯","🏠","🚗","✈️","💻","💍","📱","🏖️"].map(e => (
@@ -2211,11 +2211,11 @@ function MalInline({ goals: initGoals, leftover }) {
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newGoal.name && newGoal.target) { save([...goals, {...newGoal, target: parseFloat(newGoal.target), saved: 0}]); setAdding(false); setNewGoal({ name: "", target: "", saved: "0", emoji: "🎯", color: "#10b981", deadline: "" }); }}}
               style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Skapa mål</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "13px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "13px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
           + Nytt sparmål
         </button>
       )}
@@ -2265,14 +2265,14 @@ function SparaTab({ currency, exchangeRates, currencies }) {
 
   const inp = (val, set, ph, type = "text") => (
     <input value={val} onChange={e => set(e.target.value)} placeholder={ph} inputMode={type === "number" ? "decimal" : "text"}
-      style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+      style={{ width: "100%", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
   );
 
   // Sub-section picker for Budget/Kalkylatorer/Skatt
   const SubPicker = ({ items }) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {items.map(({ id, icon, label, desc }) => (
-        <button key={id} onClick={() => setActiveSubSection(id)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, cursor: "pointer", textAlign: "left" }}>
+        <button key={id} onClick={() => setActiveSubSection(id)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, cursor: "pointer", textAlign: "left" }}>
           <span style={{ fontSize: 26 }}>{icon}</span>
           <div>
             <div style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0" }}>{label}</div>
@@ -2298,7 +2298,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {!activeSection && (
         <div>
           {/* Income pill */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: "14px 16px", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: "14px 16px", marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ fontSize: 12, color: "#64748b" }}>💰 Månadsinkomst</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <input value={income} onChange={e => saveIncome(e.target.value)} placeholder="35 000" inputMode="decimal"
@@ -2315,7 +2315,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
                 ["Kvar/mån", `${Math.round(leftover / 1000)}k`, leftover >= 0 ? "#10b981" : "#ef4444"],
                 ["Mål aktiva", `${goals.length} st`, "#3b82f6"],
               ].map(([l, v, c]) => (
-                <div key={l} style={{ background: "#0f172a", borderRadius: 10, border: "1px solid #1e293b", padding: "10px 8px", textAlign: "center" }}>
+                <div key={l} style={{ background: "var(--card)", borderRadius: 10, border: "1px solid var(--border)", padding: "10px 8px", textAlign: "center" }}>
                   <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>{l}</div>
                   <div style={{ fontSize: 18, fontWeight: 800, color: c }}>{v}</div>
                 </div>
@@ -2359,7 +2359,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
             { id: "bygghus", icon: "🏗️", color: "#f97316", label: "Bygg & Renovera", desc: "Kostnadsplan för hus, renovering och VVS", items: [{ id: "bygghusguide", icon: "🏗️", label: "Bygg ditt hem" }, { id: "renoveringskalkyl", icon: "🔨", label: "Renovering" }] },
             { id: "billigtliv", icon: "💡", color: "#06b6d4", label: "Lev billigare", desc: "Tips och verktyg för att sänka dina kostnader", items: [{ id: "billigboende", icon: "🏠", label: "Billigt boende" }, { id: "resebiljett", icon: "🚌", label: "Resa smart" }, { id: "affiliates", icon: "🤝", label: "Erbjudanden" }] },
           ].map(cat => (
-            <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "16px", background: "#0f172a", border: `1px solid ${cat.color}22`, borderRadius: 16, cursor: "pointer", textAlign: "left", marginBottom: 10 }}>
+            <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "16px", background: "var(--card)", border: `1px solid ${cat.color}22`, borderRadius: 16, cursor: "pointer", textAlign: "left", marginBottom: 10 }}>
               <div style={{ width: 48, height: 48, borderRadius: 14, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
                 {cat.icon}
               </div>
@@ -2454,7 +2454,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "overview" && (
             <>
               {/* Income input */}
-              <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 18, marginBottom: 12 }}>
+              <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 18, marginBottom: 12 }}>
                 <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Manadsinkomst (netto efter skatt)</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <input value={income} onChange={e => saveIncome(e.target.value)} placeholder="35 000" inputMode="decimal"
@@ -2473,7 +2473,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
                   { label: "Spartakt", value: `${savingsRate.toFixed(0)}%`, color: savingsRate >= 20 ? "#10b981" : savingsRate >= 10 ? "#f59e0b" : "#ef4444", emoji: "📈", raw: true },
                   { label: "Till mål/mån", value: totalGoalNeeded, color: "#3b82f6", emoji: "🎯" },
                 ].map(({ label, value, color, emoji, raw }) => (
-                  <div key={label} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "12px 14px" }}>
+                  <div key={label} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 14px" }}>
                     <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{emoji} {label}</div>
                     <div style={{ fontSize: 20, fontWeight: 800, color }}>
                       {raw ? value : `${value >= 0 ? "" : ""}${Math.abs(value).toLocaleString("sv-SE", { maximumFractionDigits: 0 })} kr`}
@@ -2483,7 +2483,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               </div>
 
               {/* Spending breakdown donut-style bar */}
-              <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+              <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
                 <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Fördelning av inkomst</div>
                 <div style={{ display: "flex", height: 12, borderRadius: 99, overflow: "hidden", marginBottom: 12, gap: 1 }}>
                   {EXPENSE_CATEGORIES.map(c => {
@@ -2497,7 +2497,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
                   const val = parseFloat(expenses[c.id]) || 0;
                   const pct = inc > 0 ? val / inc * 100 : 0;
                   return (
-                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid #1e293b" }}>
+                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
                         <span style={{ fontSize: 13, color: "#e2e8f0" }}>{c.emoji} {c.label}</span>
@@ -2542,7 +2542,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
         <div>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12 }}>Fyll i dina genomsnittliga månadskostnader</div>
           {EXPENSE_CATEGORIES.map(c => (
-            <div key={c.id} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "12px 14px", marginBottom: 8 }}>
+            <div key={c.id} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 14px", marginBottom: 8 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: c.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{c.emoji}</div>
@@ -2554,14 +2554,14 @@ function SparaTab({ currency, exchangeRates, currencies }) {
                     onChange={e => saveExpense(c.id, e.target.value)}
                     placeholder="0"
                     inputMode="decimal"
-                    style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", textAlign: "right" }}
+                    style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", textAlign: "right" }}
                   />
                   <span style={{ fontSize: 12, color: "#475569", flexShrink: 0 }}>kr</span>
                 </div>
               </div>
               {parseFloat(expenses[c.id]) > 0 && inc > 0 && (
                 <div style={{ marginTop: 8 }}>
-                  <div style={{ background: "#1e293b", borderRadius: 99, height: 4, overflow: "hidden" }}>
+                  <div style={{ background: "var(--border2)", borderRadius: 99, height: 4, overflow: "hidden" }}>
                     <div style={{ width: `${Math.min(100, (parseFloat(expenses[c.id]) / inc) * 100)}%`, height: "100%", background: c.color, borderRadius: 99, transition: "width 0.4s" }} />
                   </div>
                   <div style={{ fontSize: 10, color: "#475569", marginTop: 3, textAlign: "right" }}>
@@ -2571,7 +2571,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               )}
             </div>
           ))}
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: "14px", marginTop: 4, display: "flex", justifyContent: "space-between" }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: "14px", marginTop: 4, display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontSize: 14, color: "#64748b" }}>Totalt</span>
             <span style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{totalExpenses.toLocaleString("sv-SE")} kr/mån</span>
           </div>
@@ -2587,7 +2587,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
             const monthly = remaining / (g.months || 12);
             const canAfford = leftover >= monthly;
             return (
-              <div key={g.id} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${g.color}33`, padding: 16, marginBottom: 10 }}>
+              <div key={g.id} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${g.color}33`, padding: 16, marginBottom: 10 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ fontSize: 28 }}>{g.emoji}</div>
@@ -2605,7 +2605,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
                     <span>{g.saved.toLocaleString("sv-SE")} kr sparade</span>
                     <span style={{ color: g.color, fontWeight: 700 }}>{pct.toFixed(0)}%</span>
                   </div>
-                  <div style={{ background: "#1e293b", borderRadius: 99, height: 10, overflow: "hidden" }}>
+                  <div style={{ background: "var(--border2)", borderRadius: 99, height: 10, overflow: "hidden" }}>
                     <div style={{ width: `${pct}%`, height: "100%", background: `linear-gradient(90deg, ${g.color}88, ${g.color})`, borderRadius: 99, transition: "width 0.6s ease" }} />
                   </div>
                   <div style={{ fontSize: 11, color: "#475569", marginTop: 3 }}>{remaining.toLocaleString("sv-SE")} kr kvar</div>
@@ -2629,7 +2629,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
                     value={g.saved || ""}
                     onChange={e => updateGoalSaved(g.id, e.target.value)}
                     inputMode="decimal"
-                    style={{ flex: 1, padding: "7px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }}
+                    style={{ flex: 1, padding: "7px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }}
                   />
                   <span style={{ fontSize: 12, color: "#475569" }}>kr</span>
                 </div>
@@ -2639,7 +2639,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
 
           {/* Add goal */}
           {addingGoal ? (
-            <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+            <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 12 }}>✨ Nytt sparmål</div>
               <div style={{ marginBottom: 8 }}>
                 <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Namn</div>
@@ -2679,20 +2679,20 @@ function SparaTab({ currency, exchangeRates, currencies }) {
                 <button onClick={addGoal} disabled={!newGoal.name || !newGoal.target} style={{ flex: 1, padding: "11px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
                   Lägg till mål
                 </button>
-                <button onClick={() => setAddingGoal(false)} style={{ padding: "11px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
+                <button onClick={() => setAddingGoal(false)} style={{ padding: "11px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
                   Avbryt
                 </button>
               </div>
             </div>
           ) : (
-            <button onClick={() => setAddingGoal(true)} style={{ width: "100%", padding: "13px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginTop: 4 }}>
+            <button onClick={() => setAddingGoal(true)} style={{ width: "100%", padding: "13px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginTop: 4 }}>
               + Lägg till sparmål
             </button>
           )}
 
           {/* Total monthly commitment */}
           {goals.length > 0 && (
-            <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 12 }}>
+            <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginTop: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>Total sparåtagande/mån</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: "#3b82f6" }}>{totalGoalNeeded.toLocaleString("sv-SE", { maximumFractionDigits: 0 })} kr</span>
@@ -2792,7 +2792,7 @@ function FireKalkylator({ inc, leftover }) {
   const passiveIncome = projectedWealth * wr / 12;
 
   const inp = (val, set, ph, suffix) => (
-    <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+    <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
       <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>{ph}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <input value={val} onChange={e => set(e.target.value)} inputMode="decimal"
@@ -2823,19 +2823,19 @@ function FireKalkylator({ inc, leftover }) {
       {mi > 0 && (
         <div>
           {/* FIRE Number */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 18, marginBottom: 10, textAlign: "center" }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #f59e0b33", padding: 18, marginBottom: 10, textAlign: "center" }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>🎯 Ditt FIRE-nummer</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: "#f59e0b" }}>{(fireNumber / 1000000).toFixed(1)} mkr</div>
             <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>= {Math.round(yearlyExpenses).toLocaleString("sv-SE")} kr/år ÷ {(wr * 100).toFixed(0)}%</div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-            <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 14, textAlign: "center" }}>
+            <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: 14, textAlign: "center" }}>
               <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>🏁 FIRE-ålder</div>
               <div style={{ fontSize: 28, fontWeight: 800, color: months >= 600 ? "#ef4444" : "#10b981" }}>{months >= 600 ? "50+" : fireAge} år</div>
               <div style={{ fontSize: 11, color: "#64748b" }}>om {months >= 600 ? "50+" : yearsToFire} år</div>
             </div>
-            <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #3b82f633", padding: 14, textAlign: "center" }}>
+            <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #3b82f633", padding: 14, textAlign: "center" }}>
               <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>💰 Passiv inkomst/mån</div>
               <div style={{ fontSize: 22, fontWeight: 800, color: "#3b82f6" }}>{Math.round(passiveIncome).toLocaleString("sv-SE")} kr</div>
               <div style={{ fontSize: 11, color: "#64748b" }}>vid FIRE</div>
@@ -2843,7 +2843,7 @@ function FireKalkylator({ inc, leftover }) {
           </div>
 
           {/* Timeline */}
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Milstolpar</div>
             {[0.25, 0.5, 0.75, 1.0].map(pct => {
               let m = 0, fv = cs;
@@ -2851,7 +2851,7 @@ function FireKalkylator({ inc, leftover }) {
               while (fv < target && m < months) { fv = fv * (1 + monthlyR) + mi; m++; }
               const y = Math.ceil(m / 12);
               return (
-                <div key={pct} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+                <div key={pct} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 32, height: 32, borderRadius: "50%", background: pct === 1 ? "#f59e0b22" : "#1e293b", border: `2px solid ${pct === 1 ? "#f59e0b" : "#334155"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: pct === 1 ? "#f59e0b" : "#64748b" }}>{pct * 100}%</div>
                     <div>
@@ -2901,7 +2901,7 @@ function RantaKalkylator() {
   const maxVal = chartData[chartData.length - 1].value;
 
   const inp = (val, set, ph, suffix) => (
-    <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+    <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
       <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>{ph}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
         <input value={val} onChange={e => set(e.target.value)} inputMode="decimal"
@@ -2933,18 +2933,18 @@ function RantaKalkylator() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 12, textAlign: "center" }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 12, textAlign: "center" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>💸 Insatt totalt</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0" }}>{(totalInvested / 1000).toFixed(0)}k kr</div>
         </div>
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 12, textAlign: "center" }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: 12, textAlign: "center" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>✨ Ränta-på-ränta</div>
           <div style={{ fontSize: 18, fontWeight: 700, color: "#10b981" }}>{(totalReturn / 1000).toFixed(0)}k kr</div>
         </div>
       </div>
 
       {/* Visual chart */}
-      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Tillväxtkurva</div>
         <div style={{ position: "relative", height: 100 }}>
           <svg viewBox={`0 0 ${y} 100`} style={{ width: "100%", height: "100%" }} preserveAspectRatio="none">
@@ -3064,7 +3064,7 @@ function SkuldfriKalkylator() {
       </div>
 
       {/* Strategy toggle */}
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 14 }}>
         <button onClick={() => setStrategy("avalanche")} style={{ flex: 1, padding: "10px", background: strategy === "avalanche" ? "#f59e0b22" : "none", border: `1px solid ${strategy === "avalanche" ? "#f59e0b" : "transparent"}`, borderRadius: 9, color: strategy === "avalanche" ? "#f59e0b" : "#64748b", fontSize: 13, fontWeight: strategy === "avalanche" ? 700 : 400, cursor: "pointer" }}>
           🏔 Avalanche (billigast)
         </button>
@@ -3074,7 +3074,7 @@ function SkuldfriKalkylator() {
       </div>
 
       {/* Extra payment */}
-      <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
+      <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px", marginBottom: 14 }}>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Extra betalning utöver minimierna</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <input value={extraPayment} onChange={e => setExtraPayment(e.target.value)} inputMode="decimal"
@@ -3085,7 +3085,7 @@ function SkuldfriKalkylator() {
 
       {/* Debts list */}
       {debts.map(d => (
-        <div key={d.id} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${d.color}33`, padding: 14, marginBottom: 8 }}>
+        <div key={d.id} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${d.color}33`, padding: 14, marginBottom: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: d.color }} />
@@ -3099,7 +3099,7 @@ function SkuldfriKalkylator() {
                 <div style={{ fontSize: 10, color: "#475569", marginBottom: 2 }}>{label}</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
                   <input value={val} onChange={e => setDebts(debts.map(x => x.id === d.id ? { ...x, [key]: parseFloat(e.target.value) || 0 } : x))}
-                    inputMode="decimal" style={{ width: "100%", background: "#1e293b", border: "1px solid #334155", borderRadius: 6, padding: "5px 7px", color: "#e2e8f0", fontSize: 12, outline: "none" }} />
+                    inputMode="decimal" style={{ width: "100%", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 6, padding: "5px 7px", color: "#e2e8f0", fontSize: 12, outline: "none" }} />
                   <span style={{ fontSize: 10, color: "#475569" }}>{suf}</span>
                 </div>
               </div>
@@ -3108,15 +3108,15 @@ function SkuldfriKalkylator() {
         </div>
       ))}
 
-      <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "10px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 10, color: "#64748b", fontSize: 13, cursor: "pointer", marginBottom: 14 }}>
+      <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "10px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 10, color: "#64748b", fontSize: 13, cursor: "pointer", marginBottom: 14 }}>
         + Lägg till skuld
       </button>
       {adding && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             {[["Namn", "name", "text"], ["Skuld (kr)", "balance", "decimal"], ["Ränta (%)", "rate", "decimal"], ["Min/mån (kr)", "minPayment", "decimal"]].map(([ph, key, mode]) => (
               <input key={key} value={newDebt[key]} onChange={e => setNewDebt(n => ({ ...n, [key]: e.target.value }))} placeholder={ph} inputMode={mode}
-                style={{ padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+                style={{ padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
             ))}
           </div>
           <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
@@ -3124,7 +3124,7 @@ function SkuldfriKalkylator() {
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newDebt.name && newDebt.balance) { setDebts([...debts, { ...newDebt, id: Date.now(), balance: +newDebt.balance, rate: +newDebt.rate, minPayment: +newDebt.minPayment }]); setNewDebt({ name: "", balance: "", rate: "", minPayment: "", color: "#3b82f6" }); setAdding(false); }}} style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 14px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 14px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       )}
@@ -3132,7 +3132,7 @@ function SkuldfriKalkylator() {
       {/* Results */}
       {debts.length > 0 && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10, textAlign: "center" }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10, textAlign: "center" }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>🏁 Skuldfri om</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: "#10b981" }}>{years}år {remainingMonths}mån</div>
             <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Total skuld: {totalDebt.toLocaleString("sv-SE")} kr · Min/mån: {totalMinPayment.toLocaleString("sv-SE")} kr</div>
@@ -3179,7 +3179,7 @@ function PensionBerakna({ inc }) {
   const rateColor = replacementRate >= 70 ? "#10b981" : replacementRate >= 50 ? "#f59e0b" : "#ef4444";
 
   const inp = (val, set, ph, suffix) => (
-    <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+    <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
       <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>{ph}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
         <input value={val} onChange={e => set(e.target.value)} inputMode="decimal" style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 700, color: "#e2e8f0" }} />
@@ -3205,13 +3205,13 @@ function PensionBerakna({ inc }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 12 }}>
         {[["Tjanstepension", Math.round(monthlyPension)], ["Allman pension", Math.round(statePensionMonthly)], ["Pensionskapital", Math.round(pensionCapital/1000) + "k kr"]].map(([l, v]) => (
-          <div key={l} style={{ background: "#0f172a", borderRadius: 10, border: "1px solid #1e293b", padding: "10px 8px", textAlign: "center" }}>
+          <div key={l} style={{ background: "var(--card)", borderRadius: 10, border: "1px solid var(--border)", padding: "10px 8px", textAlign: "center" }}>
             <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>{l}</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{typeof v === "number" ? v.toLocaleString("sv-SE") + " kr" : v}</div>
           </div>
         ))}
       </div>
-      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Rekommendationer</div>
         {replacementRate < 70 && <div style={{ fontSize: 13, color: "#f59e0b", marginBottom: 6, display: "flex", gap: 8 }}><span>!</span><span>Du behoever spara {Math.round(sal * 0.7 - totalMonthlyAtRetirement).toLocaleString("sv-SE")} kr/man extra for att na 70%-malet</span></div>}
         {["IPS ger skatteavdrag pa upp till 35 700 kr/ar", years > 5 ? "Med " + years + " ar kvar — valj aktiefonder" : "Nara pension — flytta till rantefonder", "Kolla minpension.se for exakta siffror"].map((t, i) => (
@@ -3237,12 +3237,12 @@ function PensionsBrev() {
 
   return (
     <div>
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #3b82f633", padding: 14, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #3b82f633", padding: 14, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#3b82f6", marginBottom: 4 }}>Samla dina pensionsbrev</div>
         <div style={{ fontSize: 12, color: "#64748b" }}>Hamta dina uppgifter fran minpension.se och fyll i beloppen har.</div>
       </div>
       {POSTER.map(p => (
-        <div key={p.key} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid " + p.color + "33", padding: 14, marginBottom: 10 }}>
+        <div key={p.key} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid " + p.color + "33", padding: 14, marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <span style={{ fontSize: 22 }}>{p.emoji}</span>
             <div>
@@ -3255,7 +3255,7 @@ function PensionsBrev() {
               <div key={suf}>
                 <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4 }}>{label}</div>
                 <input value={brev[p.key + "_" + suf] || ""} onChange={e => save(p.key + "_" + suf, e.target.value)} placeholder="0" inputMode="decimal"
-                  style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                  style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
               </div>
             ))}
           </div>
@@ -3267,10 +3267,10 @@ function PensionsBrev() {
           <div style={{ fontSize: 36, fontWeight: 900, color: "#10b981" }}>{(totalKapital/1000).toFixed(0)}k kr</div>
         </div>
       )}
-      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 12 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginTop: 12 }}>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Var hittar jag mina pensionsbrev?</div>
         {[["Allman pension (inkomst + PPM)", "minpension.se — logga in med BankID"], ["Tjanstepension ITP", "Collectum.se"], ["Tjanstepension SAF-LO", "Fora.se"], ["Statliga anstallda", "SPV.se"]].map(([l, s], i) => (
-          <div key={i} style={{ marginBottom: 8, paddingBottom: 8, borderBottom: i < 3 ? "1px solid #1e293b" : "none" }}>
+          <div key={i} style={{ marginBottom: 8, paddingBottom: 8, borderBottom: i < 3 ? "1px solid var(--border)" : "none" }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0" }}>{l}</div>
             <div style={{ fontSize: 11, color: "#64748b" }}>{s}</div>
           </div>
@@ -3305,19 +3305,19 @@ function PensionsFonder() {
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Ar kvar till pension</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <input value={arKvar} onChange={e => setArKvar(e.target.value)} inputMode="numeric" style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 24, fontWeight: 800, color: "#e2e8f0" }} />
             <span style={{ fontSize: 13, color: "#475569" }}>ar</span>
           </div>
         </div>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Riskprofil</div>
           <select value={riskprofil} onChange={e => setRiskprofil(e.target.value)} style={{ width: "100%", background: "none", border: "none", outline: "none", color: "#e2e8f0", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
-            <option value="hog" style={{ background: "#0f172a" }}>Hog (aktier)</option>
-            <option value="medel" style={{ background: "#0f172a" }}>Medel (bland)</option>
-            <option value="lag" style={{ background: "#0f172a" }}>Lag (rantor)</option>
+            <option value="hog" style={{ background: "var(--card)" }}>Hog (aktier)</option>
+            <option value="medel" style={{ background: "var(--card)" }}>Medel (bland)</option>
+            <option value="lag" style={{ background: "var(--card)" }}>Lag (rantor)</option>
           </select>
         </div>
       </div>
@@ -3332,7 +3332,7 @@ function PensionsFonder() {
       </div>
 
       {rekommFonder.slice(0, 3).map((f, i) => (
-        <div key={f.namn} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid " + f.color + "33", padding: 14, marginBottom: 10 }}>
+        <div key={f.namn} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid " + f.color + "33", padding: 14, marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
             <div>
               {i === 0 && <span style={{ fontSize: 10, background: "#f59e0b22", color: "#f59e0b", padding: "1px 7px", borderRadius: 99, fontWeight: 700, display: "inline-block", marginBottom: 4 }}>BAST VAL</span>}
@@ -3346,7 +3346,7 @@ function PensionsFonder() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
             {[["Avgift", f.avgift + "%/ar"], ["Betyg", "x".repeat(f.betyg).split("").map(() => "⭐").join("")], ["Risk", riskLabel(f.risk)]].map(([l, v]) => (
-              <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
+              <div key={l} style={{ background: "var(--bg2)", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
                 <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "#e2e8f0" }}>{v}</div>
               </div>
@@ -3369,10 +3369,10 @@ function PensionsStrategi() {
     { icon: "🎯", title: "6. Pensionsalder ar flexibelt", color: "#06b6d4", text: "Du kan ta ut pension fran 62 ar. Varje ar du vantar okar manadsbeloppet med ~7%." },
   ];
   return (
-    <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+    <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16 }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: "#10b981", marginBottom: 16 }}>Pensionsstrategi — Komplett guide</div>
       {strategier.map((s, i) => (
-        <div key={s.title} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < strategier.length - 1 ? "1px solid #1e293b" : "none" }}>
+        <div key={s.title} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < strategier.length - 1 ? "1px solid var(--border)" : "none" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: s.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>{s.icon}</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.title}</div>
@@ -3394,7 +3394,7 @@ function PensionKalkylator({ inc }) {
   );
   return (
     <div>
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
         <SBtn id="kalkyl" label="📊 Kalkylator" />
         <SBtn id="brev" label="📋 Pensionsbrev" />
         <SBtn id="fonder" label="📈 Fonder" />
@@ -3417,7 +3417,7 @@ function SkattKalkylator({ inc }) {
   );
   return (
     <div>
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
         <SBtn id="lon" label="💼 Lön" />
         <SBtn id="k4" label="📋 K4" />
         <SBtn id="isk" label="🏦 ISK" />
@@ -3448,7 +3448,7 @@ function LonSkatt({ inc }) {
   const skattePct = b > 0 ? totalSkatt / b * 100 : 0;
   const marginalSkatt = arsinkomst > 613900 ? k + 20 : k;
   const row = (l, v, c) => (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid #1e293b" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid var(--border)" }}>
       <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
       <span style={{ fontSize: 14, fontWeight: 600, color: c || "#e2e8f0" }}>{Math.round(Math.abs(v)).toLocaleString("sv-SE")} kr</span>
     </div>
@@ -3456,32 +3456,32 @@ function LonSkatt({ inc }) {
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px", gridColumn: "1/-1" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px", gridColumn: "1/-1" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Bruttolön/månad</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <input value={brutto} onChange={e => setBrutto(e.target.value)} inputMode="decimal" style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 28, fontWeight: 800, color: "#10b981" }} />
             <span style={{ fontSize: 14, color: "#475569" }}>kr</span>
           </div>
         </div>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Kommunalskatt</div>
           <div style={{ display: "flex", gap: 4 }}>
             <input value={kommun} onChange={e => setKommun(e.target.value)} inputMode="decimal" style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 700, color: "#e2e8f0" }} />
             <span style={{ fontSize: 12, color: "#475569" }}>%</span>
           </div>
         </div>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Snabbval kommun</div>
           <select value={kommun} onChange={e => setKommun(e.target.value)} style={{ width: "100%", background: "none", border: "none", outline: "none", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}>
             {[["Stockholm","30.11"],["Göteborg","32.35"],["Malmö","32.35"],["Uppsala","32.22"],["Snitt","32.24"]].map(([n, v]) => (
-              <option key={n} value={v} style={{ background: "#0f172a" }}>{n} {v}%</option>
+              <option key={n} value={v} style={{ background: "var(--card)" }}>{n} {v}%</option>
             ))}
           </select>
         </div>
       </div>
       {b > 0 && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             {row("Bruttolön", b)}
             {row("Grundavdrag", ga, "#10b981")}
             {row(`Kommunalskatt (${k}%)`, kommunSkatt, "#ef4444")}
@@ -3494,10 +3494,10 @@ function LonSkatt({ inc }) {
             <div style={{ fontSize: 36, fontWeight: 900, color: "#10b981" }}>{Math.round(netto).toLocaleString("sv-SE")} kr</div>
             <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Effektiv skatt: {skattePct.toFixed(1)}% · Marginalskatt: {marginalSkatt.toFixed(1)}%</div>
           </div>
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Årsöversikt</div>
             {[["Bruttoinkomst", b * 12],["Total skatt", totalSkatt * 12],["Pensionsavgift", pensionsavgift * 12],["Nettoinkomst", netto * 12]].map(([l, v], i) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: i < 3 ? "1px solid #1e293b" : "none" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: i < 3 ? "1px solid var(--border)" : "none" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: i === 3 ? "#10b981" : i === 1 ? "#ef4444" : "#e2e8f0" }}>{Math.round(v).toLocaleString("sv-SE")} kr</span>
               </div>
@@ -3535,10 +3535,10 @@ function K4Kalkylator() {
       {gains.map(t => {
         const up = t.profit >= 0;
         return (
-          <div key={t.id} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${up ? "#22c55e22" : "#ef444422"}`, padding: 14, marginBottom: 8 }}>
+          <div key={t.id} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${up ? "#22c55e22" : "#ef444422"}`, padding: 14, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{t.name} <span style={{ fontSize: 10, color: "#475569", background: "#1e293b", padding: "1px 6px", borderRadius: 4 }}>{t.type}</span></div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{t.name} <span style={{ fontSize: 10, color: "#475569", background: "var(--border2)", padding: "1px 6px", borderRadius: 4 }}>{t.type}</span></div>
                 <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>{t.shares} st · Köpt {t.buyPrice} kr · Sålt {t.sellPrice} kr</div>
               </div>
               <div style={{ textAlign: "right" }}>
@@ -3551,32 +3551,32 @@ function K4Kalkylator() {
         );
       })}
       {adding ? (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
           <input value={newTrade.name} onChange={e => setNewTrade(n => ({ ...n, name: e.target.value }))} placeholder="Bolagsnamn / Tillgång"
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 8 }}>
             {[["Köpkurs", "buyPrice"], ["Säljkurs", "sellPrice"], ["Antal", "shares"]].map(([ph, key]) => (
               <input key={key} value={newTrade[key]} onChange={e => setNewTrade(n => ({ ...n, [key]: e.target.value }))} placeholder={ph} inputMode="decimal"
-                style={{ padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+                style={{ padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
             ))}
           </div>
           <select value={newTrade.type} onChange={e => setNewTrade(n => ({ ...n, type: e.target.value }))}
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
-            {["aktie", "fond", "etf", "krypto", "obligation"].map(o => <option key={o} value={o} style={{ background: "#0f172a" }}>{o.charAt(0).toUpperCase() + o.slice(1)}</option>)}
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
+            {["aktie", "fond", "etf", "krypto", "obligation"].map(o => <option key={o} value={o} style={{ background: "var(--card)" }}>{o.charAt(0).toUpperCase() + o.slice(1)}</option>)}
           </select>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newTrade.name && newTrade.buyPrice) { setTrades([...trades, { ...newTrade, id: Date.now(), buyPrice: +newTrade.buyPrice, sellPrice: +newTrade.sellPrice, shares: +newTrade.shares }]); setNewTrade({ name: "", buyPrice: "", sellPrice: "", shares: "", type: "aktie" }); setAdding(false); }}} style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 14px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 14px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "11px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginBottom: 14 }}>+ Lägg till affär</button>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "11px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginBottom: 14 }}>+ Lägg till affär</button>
       )}
       {trades.length > 0 && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             {[["Total vinst", totalProfit, "#22c55e"],["Total förlust", totalLoss, "#ef4444"],["Avdragsgill förlust (70%)", -avdragsgillForlust, "#f59e0b"],["Nettovinst", nettoVinst, "#e2e8f0"]].map(([l, v, c]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, color: c }}>{v >= 0 ? "+" : ""}{Math.round(v).toLocaleString("sv-SE")} kr</span>
               </div>
@@ -3595,7 +3595,7 @@ function K4Kalkylator() {
               <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>70% av förlusten reducerar din skatt</div>
             </div>
           )}
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 10 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginTop: 10 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>💡 Viktigt</div>
             {["Krypto deklareras också på K4 (30% skatt på vinst)","Schablonmetoden: 20% av säljpriset som GAV om du saknar kvitto","ISK beskattas annorlunda — se ISK-fliken","Deklarationsdag: 2 maj 2027"].map((tip, i) => (
               <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 4, display: "flex", gap: 8 }}><span style={{ color: "#10b981" }}>→</span>{tip}</div>
@@ -3631,7 +3631,7 @@ function ISKKalkylator() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
         {[["Kapital (ingående)", kapital, setKapital, "kr"],["Månadssparande", insattningar, setInsattningar, "kr"],["Förv. avkastning", avkastning, setAvkastning, "%"]].map(([l, v, s, suf]) => (
-          <div key={l} style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 10px" }}>
+          <div key={l} style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 10px" }}>
             <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6 }}>{l}</div>
             <div style={{ display: "flex", gap: 3 }}>
               <input value={v} onChange={e => s(e.target.value)} inputMode="decimal" style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 16, fontWeight: 700, color: "#e2e8f0" }} />
@@ -3642,9 +3642,9 @@ function ISKKalkylator() {
       </div>
       {k > 0 && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             {[["Schablonunderlag",schablongrund,"kr"],["Schablonintäkt "+(slr+1).toFixed(2)+"%",schablonintakt,"kr"],["ISK-skatt (30%)",iskSkatt,"kr"],["Verklig avkastning "+avk+"%",avkastningKr,"kr"],["Effektiv skattesats",effektivPct.toFixed(1)+"%",""]].map(([l,v,s]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{typeof v === "number" ? Math.round(v).toLocaleString("sv-SE")+" "+s : v}</span>
               </div>
@@ -3656,7 +3656,7 @@ function ISKKalkylator() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {[["ISK-skatt", iskSkatt, iskArmEr], ["Kapitalskatt 30%", kapitalSkatt, !iskArmEr]].map(([l,v,best]) => (
-                <div key={l} style={{ background: "#0a0f1e", borderRadius: 10, padding: 12, textAlign: "center" }}>
+                <div key={l} style={{ background: "var(--bg2)", borderRadius: 10, padding: 12, textAlign: "center" }}>
                   <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{l}</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: best ? "#10b981" : "#e2e8f0" }}>{Math.round(v).toLocaleString("sv-SE")} kr</div>
                 </div>
@@ -3687,7 +3687,7 @@ function RotRutKalkylator() {
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 14 }}>
         {[["rot","🔨 ROT (30%)","#f59e0b"],["rut","🏠 RUT (50%)","#3b82f6"]].map(([id, label, color]) => (
           <button key={id} onClick={() => setType(id)} style={{ flex: 1, padding: "10px", background: type === id ? color + "22" : "none", border: `1px solid ${type === id ? color : "transparent"}`, borderRadius: 9, color: type === id ? color : "#64748b", fontSize: 13, fontWeight: type === id ? 700 : 400, cursor: "pointer" }}>
             {label}
@@ -3696,7 +3696,7 @@ function RotRutKalkylator() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
         {[["Arbete (kr)", labor, setLabor],["Material (kr)", material, setMaterial],["Antal pers.", persons, setPersons]].map(([label, val, set]) => (
-          <div key={label} style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 10px" }}>
+          <div key={label} style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 10px" }}>
             <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6 }}>{label}</div>
             <input value={val} onChange={e => set(e.target.value)} inputMode="decimal" style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 18, fontWeight: 700, color: "#e2e8f0" }} />
           </div>
@@ -3704,9 +3704,9 @@ function RotRutKalkylator() {
       </div>
       {l > 0 && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             {[["Arbetskostnad",l],["Materialkostnad",m],[`${type.toUpperCase()}-avdrag (${pct*100}%)`,-avdrag],["Max avdrag",maxTotal],["Du betalar",afterAvdrag]].map(([label, val], i) => (
-              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: i < 4 ? "1px solid #1e293b" : "none" }}>
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: i < 4 ? "1px solid var(--border)" : "none" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{label}</span>
                 <span style={{ fontSize: 14, fontWeight: 600, color: val < 0 ? "#10b981" : i === 4 ? "#10b981" : "#e2e8f0" }}>{Math.abs(Math.round(val)).toLocaleString("sv-SE")} kr</span>
               </div>
@@ -3817,13 +3817,13 @@ function KreditScore({ inc }) {
   const ny = cy + r * Math.sin(rad);
 
   const inp = (key, label, ph, type = "text") => (
-    <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
+    <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
       <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>{label}</div>
       {type === "select" ? (
         <select value={form[key] || "nej"} onChange={e => set(key, e.target.value)}
           style={{ width: "100%", background: "none", border: "none", outline: "none", color: "#e2e8f0", fontSize: 18, fontWeight: 700, cursor: "pointer" }}>
-          <option value="nej" style={{ background: "#0f172a" }}>Nej</option>
-          <option value="ja" style={{ background: "#0f172a" }}>Ja</option>
+          <option value="nej" style={{ background: "var(--card)" }}>Nej</option>
+          <option value="ja" style={{ background: "var(--card)" }}>Ja</option>
         </select>
       ) : (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -3840,7 +3840,7 @@ function KreditScore({ inc }) {
   return (
     <div>
       {/* Gauge */}
-      <div style={{ background: "#0f172a", borderRadius: 16, border: `1px solid ${color}33`, padding: 20, marginBottom: 16, textAlign: "center" }}>
+      <div style={{ background: "var(--card)", borderRadius: 16, border: `1px solid ${color}33`, padding: 20, marginBottom: 16, textAlign: "center" }}>
         <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>Din uppskattade kreditscore</div>
         <svg viewBox="0 0 200 110" style={{ width: "100%", maxWidth: 280, height: "auto", display: "block", margin: "0 auto" }}>
           {/* Background arc */}
@@ -3874,7 +3874,7 @@ function KreditScore({ inc }) {
       </div>
 
       {/* Inputs */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>📋 Fyll i din kreditprofil</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {inp("income", "Månadsinkomst (netto)", "35 000", "kr")}
@@ -3898,10 +3898,10 @@ function KreditScore({ inc }) {
       </div>
 
       {/* Factor breakdown */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>📊 Vad påverkar din score?</div>
         {factors.map((f, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: i < factors.length - 1 ? "1px solid #1e293b" : "none" }}>
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "10px 0", borderBottom: i < factors.length - 1 ? "1px solid var(--border)" : "none" }}>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, color: f.impact < 0 ? "#ef4444" : "#22c55e", fontWeight: 600 }}>
                 {f.impact < 0 ? "▼" : "✓"} {f.label}
@@ -3963,7 +3963,7 @@ function LoneSpec({ inc }) {
   const totalKostnadArbetsgivare = b + arbetsgivaravgift + semesterersattning + tjanstepension;
 
   const Row = ({ label, value, color, bold }) => (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid #1e293b" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid var(--border)" }}>
       <span style={{ fontSize: 13, color: "#64748b" }}>{label}</span>
       <span style={{ fontSize: 14, fontWeight: bold ? 700 : 500, color: color || "#e2e8f0" }}>
         {Math.round(value).toLocaleString("sv-SE")} kr
@@ -3982,7 +3982,7 @@ function LoneSpec({ inc }) {
 
   return (
     <div>
-      <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
+      <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Bruttolön per månad</div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <input value={brutto} onChange={e => setBrutto(e.target.value)} inputMode="decimal"
@@ -3994,7 +3994,7 @@ function LoneSpec({ inc }) {
       {/* Visual breakdown */}
       {b > 0 && (
         <>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Av din bruttolön går...</div>
             <div style={{ display: "flex", height: 16, borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
               {segments.map(s => (
@@ -4022,7 +4022,7 @@ function LoneSpec({ inc }) {
           </div>
 
           {/* Arbetsgivarens kostnad */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Vad kostar du arbetsgivaren?</div>
             <Row label="Din bruttolön" value={b} />
             <Row label="Arbetsgivaravgift (31.42%)" value={arbetsgivaravgift} color="#ef4444" />
@@ -4031,7 +4031,7 @@ function LoneSpec({ inc }) {
             <Row label="Total kostnad för arbetsgivaren" value={totalKostnadArbetsgivare} bold />
           </div>
 
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>💡 Visste du att...</div>
             <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>
               Du kostar arbetsgivaren <b style={{ color: "#e2e8f0" }}>{Math.round(totalKostnadArbetsgivare).toLocaleString("sv-SE")} kr/mån</b> men
@@ -4106,7 +4106,7 @@ function SnittLon() {
         <div style={{ fontSize: 12, color: "#64748b" }}>Baserat på SCB-data 2026. Söker du ett yrke jämförs din lön med branschsnittet.</div>
       </div>
 
-      <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
+      <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Sök yrke</div>
         <input value={search} onChange={e => { setSearch(e.target.value); setSelected(null); }}
           placeholder="t.ex. Sjuksköterska, Programmerare..."
@@ -4115,10 +4115,10 @@ function SnittLon() {
 
       {/* Search results */}
       {filtered.length > 0 && !selected && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", marginBottom: 12, overflow: "hidden" }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", marginBottom: 12, overflow: "hidden" }}>
           {filtered.slice(0, 6).map((y, i) => (
             <button key={y.yrke} onClick={() => { setSelected(y); setSearch(y.yrke); }}
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "12px 16px", background: "none", border: "none", borderBottom: i < filtered.length - 1 ? "1px solid #1e293b" : "none", cursor: "pointer", textAlign: "left" }}>
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "12px 16px", background: "none", border: "none", borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none", cursor: "pointer", textAlign: "left" }}>
               <div>
                 <div style={{ fontSize: 14, color: "#e2e8f0", fontWeight: 500 }}>{y.yrke}</div>
                 <div style={{ fontSize: 11, color: "#475569" }}>{y.bransch}</div>
@@ -4135,7 +4135,7 @@ function SnittLon() {
       {/* Selected yrke details */}
       {selected && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: "#e2e8f0" }}>{selected.yrke}</div>
@@ -4162,7 +4162,7 @@ function SnittLon() {
             </div>
 
             {/* Min lön input */}
-            <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
+            <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px", marginBottom: 12 }}>
               <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Din nuvarande lön (valfritt)</div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <input value={myLon} onChange={e => setMyLon(e.target.value)} placeholder="45 000" inputMode="decimal"
@@ -4192,7 +4192,7 @@ function SnittLon() {
           </div>
 
           {/* Tips */}
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>💡 Lönetips för {selected.yrke}</div>
             {[
               "Begär lönesamtal minst en gång per år",
@@ -4210,11 +4210,11 @@ function SnittLon() {
 
       {/* Top paying jobs */}
       {!selected && search.length < 2 && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16 }}>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Högst betalda yrken</div>
           {[...YRKEN].sort((a, b) => b.snitt - a.snitt).slice(0, 6).map((y, i) => (
             <button key={y.yrke} onClick={() => { setSelected(y); setSearch(y.yrke); }}
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "10px 0", background: "none", border: "none", borderBottom: i < 5 ? "1px solid #1e293b" : "none", cursor: "pointer", textAlign: "left" }}>
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "10px 0", background: "none", border: "none", borderBottom: i < 5 ? "1px solid var(--border)" : "none", cursor: "pointer", textAlign: "left" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 24, height: 24, borderRadius: "50%", background: "#10b98122", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#10b981" }}>{i + 1}</div>
                 <div>
@@ -4254,7 +4254,7 @@ function LoneKalkyl({ inc }) {
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
         {[["Nuv. lön", lon, setLon, "kr"], ["Ökning/år", okning, setOkning, "%"], ["Antal år", ar, setAr, "år"]].map(([label, val, set, suf]) => (
-          <div key={label} style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 10px" }}>
+          <div key={label} style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 10px" }}>
             <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6 }}>{label}</div>
             <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
               <input value={val} onChange={e => set(e.target.value)} inputMode="decimal"
@@ -4274,7 +4274,7 @@ function LoneKalkyl({ inc }) {
           </div>
 
           {/* Bar chart */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>Löneutveckling år för år</div>
             <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 80 }}>
               {lonAr.map(y => (
@@ -4289,7 +4289,7 @@ function LoneKalkyl({ inc }) {
           </div>
 
           {/* Tips */}
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>💡 Löneförhandlingstips</div>
             <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
               Skillnaden mellan {o}% och {(o + 2).toFixed(0)}% löneökning per år är
@@ -4375,14 +4375,14 @@ function AICoach({ inc, expenses, goals }) {
       {/* Quick questions */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
         {QUICK_QUESTIONS.map(q => (
-          <button key={q} onClick={() => send(q)} style={{ padding: "6px 12px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 99, color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>
+          <button key={q} onClick={() => send(q)} style={{ padding: "6px 12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 99, color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>
             {q}
           </button>
         ))}
       </div>
 
       {/* Chat messages */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12, maxHeight: 400, overflowY: "auto" }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12, maxHeight: 400, overflowY: "auto" }}>
         {messages.map((m, i) => (
           <div key={i} style={{ marginBottom: 16, display: "flex", flexDirection: m.role === "user" ? "row-reverse" : "row", gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: "50%", background: m.role === "user" ? "#3b82f6" : "#10b981", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
@@ -4396,7 +4396,7 @@ function AICoach({ inc, expenses, goals }) {
         {loading && (
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#10b981", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🤖</div>
-            <div style={{ background: "#1e293b", borderRadius: "14px 14px 14px 4px", padding: "12px 16px" }}>
+            <div style={{ background: "var(--border2)", borderRadius: "14px 14px 14px 4px", padding: "12px 16px" }}>
               <div style={{ display: "flex", gap: 4 }}>
                 {[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "#10b981", animation: `pulse 1s ${i * 0.2}s infinite` }} />)}
               </div>
@@ -4410,7 +4410,7 @@ function AICoach({ inc, expenses, goals }) {
       <div style={{ display: "flex", gap: 8 }}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()}
           placeholder="Skriv din fråga..."
-          style={{ flex: 1, padding: "12px 16px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+          style={{ flex: 1, padding: "12px 16px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
         <button onClick={() => send()} disabled={loading || !input.trim()} style={{ padding: "12px 20px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
           →
         </button>
@@ -4471,7 +4471,7 @@ function LanAnsokan() {
       </div>
 
       {/* Loan type */}
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 14 }}>
         {[["blanko", "💳 Blankolån"], ["billån", "🚗 Billån"], ["samla", "🔄 Samla lån"]].map(([id, label]) => (
           <button key={id} onClick={() => setLanTyp(id)} style={{ flex: 1, padding: "9px 4px", background: lanTyp === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: lanTyp === id ? "#fff" : "#64748b", fontSize: 12, fontWeight: lanTyp === id ? 700 : 400, cursor: "pointer" }}>
             {label}
@@ -4481,7 +4481,7 @@ function LanAnsokan() {
 
       {/* Inputs */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Belopp</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <input value={belopp} onChange={e => setBelopp(e.target.value)} inputMode="decimal"
@@ -4489,7 +4489,7 @@ function LanAnsokan() {
             <span style={{ fontSize: 12, color: "#475569" }}>kr</span>
           </div>
         </div>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Löptid</div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <input value={lopetid} onChange={e => setLopetid(e.target.value)} inputMode="numeric"
@@ -4513,7 +4513,7 @@ function LanAnsokan() {
         const isBest = i === 0;
 
         return (
-          <div key={lg.name} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${isBest ? "#10b98144" : "#1e293b"}`, padding: 16, marginBottom: 10 }}>
+          <div key={lg.name} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${isBest ? "#10b98144" : "#1e293b"}`, padding: 16, marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 24 }}>{lg.logo}</span>
@@ -4533,11 +4533,11 @@ function LanAnsokan() {
 
             {b > 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
-                <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                   <div style={{ fontSize: 10, color: "#475569" }}>Månadskostnad</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{Math.round(monthly).toLocaleString("sv-SE")} kr</div>
                 </div>
-                <div style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                <div style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                   <div style={{ fontSize: 10, color: "#475569" }}>Total räntekostnad</div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>{Math.round(totalInterest).toLocaleString("sv-SE")} kr</div>
                 </div>
@@ -4591,7 +4591,7 @@ function MinaForsakringar() {
 
   return (
     <div>
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #06b6d433", padding: 16, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #06b6d433", padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Total försäkringskostnad</div>
         <div style={{ fontSize: 32, fontWeight: 800, color: "#06b6d4" }}>{Math.round(total).toLocaleString("sv-SE")} kr/mån</div>
         <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>{Math.round(total * 12).toLocaleString("sv-SE")} kr/år</div>
@@ -4602,7 +4602,7 @@ function MinaForsakringar() {
         const days = daysUntil(f.fornyelse);
         const expiringSoon = days !== null && days <= 30 && days >= 0;
         return (
-          <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${expiringSoon ? "#f59e0b44" : "#1e293b"}`, padding: 14, marginBottom: 8 }}>
+          <div key={i} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${expiringSoon ? "#f59e0b44" : "#1e293b"}`, padding: 14, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 24 }}>{typ?.emoji || "🛡️"}</span>
@@ -4624,34 +4624,34 @@ function MinaForsakringar() {
       })}
 
       {adding ? (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 12 }}>Lägg till försäkring</div>
           <select value={newF.typ} onChange={e => setNewF(n => ({ ...n, typ: e.target.value }))}
-            style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
-            {FORSAKRING_TYPER.map(t => <option key={t.id} value={t.id} style={{ background: "#0f172a" }}>{t.emoji} {t.label}</option>)}
+            style={{ width: "100%", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
+            {FORSAKRING_TYPER.map(t => <option key={t.id} value={t.id} style={{ background: "var(--card)" }}>{t.emoji} {t.label}</option>)}
           </select>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             {[["Försäkringsbolag", "bolag", "text", "Folksam, If..."], ["Kostnad (kr/mån)", "kostnad", "decimal", "299"]].map(([label, key, mode, ph]) => (
               <div key={key}>
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{label}</div>
                 <input value={newF[key]} onChange={e => setNewF(n => ({ ...n, [key]: e.target.value }))} placeholder={ph} inputMode={mode}
-                  style={{ width: "100%", padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                  style={{ width: "100%", padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
               </div>
             ))}
           </div>
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Förnyelsedatum (valfritt)</div>
             <input type="date" value={newF.fornyelse} onChange={e => setNewF(n => ({ ...n, fornyelse: e.target.value }))}
-              style={{ width: "100%", padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+              style={{ width: "100%", padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newF.kostnad) { save([...forsakringar, newF]); setNewF({ typ: "hem", bolag: "", kostnad: "", fornyelse: "" }); setAdding(false); }}}
               style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginBottom: 12 }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginBottom: 12 }}>
           + Lägg till försäkring
         </button>
       )}
@@ -4691,7 +4691,7 @@ function ForsakringsGuide() {
 
   return (
     <div>
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 14 }}>Berätta om din situation</div>
         {[
           ["Boende", sel(boende, setBoende, [["hyresratt", "Hyresrätt"], ["bostadsratt", "BRF"], ["villa", "Villa"]])],
@@ -4708,7 +4708,7 @@ function ForsakringsGuide() {
 
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Baserat på din situation behöver du:</div>
       {recommendations.map((r, i) => (
-        <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${r.color}33`, padding: 14, marginBottom: 8 }}>
+        <div key={i} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${r.color}33`, padding: 14, marginBottom: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 22 }}>{r.emoji}</span>
@@ -4760,13 +4760,13 @@ function Abonnemang() {
 
       {/* Grouped list */}
       {grouped.map(g => (
-        <div key={g.id} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 10 }}>
+        <div key={g.id} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{g.emoji} {g.label}</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#8b5cf6" }}>{Math.round(g.total)} kr/mån</div>
           </div>
           {g.items.map((a, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderTop: "1px solid #1e293b" }}>
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderTop: "1px solid var(--border)" }}>
               <div style={{ fontSize: 13, color: "#cbd5e1" }}>{a.namn}</div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 13, color: "#e2e8f0" }}>{parseFloat(a.kostnad)} kr/{a.fakturering}</span>
@@ -4779,31 +4779,31 @@ function Abonnemang() {
 
       {/* Add */}
       {adding ? (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 10 }}>Lägg till abonnemang</div>
           <input value={newA.namn} onChange={e => setNewA(n => ({ ...n, namn: e.target.value }))} placeholder="Namn t.ex. Netflix, Spotify..."
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
           <select value={newA.kategori} onChange={e => setNewA(n => ({ ...n, kategori: e.target.value }))}
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
-            {ABONNEMANG_KATEGORIER.map(k => <option key={k.id} value={k.id} style={{ background: "#0f172a" }}>{k.emoji} {k.label}</option>)}
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
+            {ABONNEMANG_KATEGORIER.map(k => <option key={k.id} value={k.id} style={{ background: "var(--card)" }}>{k.emoji} {k.label}</option>)}
           </select>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 8, marginBottom: 10 }}>
             <input value={newA.kostnad} onChange={e => setNewA(n => ({ ...n, kostnad: e.target.value }))} placeholder="Kostnad" inputMode="decimal"
-              style={{ padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+              style={{ padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
             <select value={newA.fakturering} onChange={e => setNewA(n => ({ ...n, fakturering: e.target.value }))}
-              style={{ padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
-              <option value="mån" style={{ background: "#0f172a" }}>kr/mån</option>
-              <option value="ar" style={{ background: "#0f172a" }}>kr/år</option>
+              style={{ padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
+              <option value="mån" style={{ background: "var(--card)" }}>kr/mån</option>
+              <option value="ar" style={{ background: "var(--card)" }}>kr/år</option>
             </select>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newA.namn && newA.kostnad) { save([...abos, newA]); setNewA({ namn: "", kategori: "streaming", kostnad: "", fakturering: "mån" }); setAdding(false); }}}
               style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
           + Lägg till abonnemang
         </button>
       )}
@@ -4845,7 +4845,7 @@ function Boendekostnad() {
       </div>
 
       {poster.map((p, i) => (
-        <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "12px 16px", marginBottom: 8 }}>
+        <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 16px", marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 22 }}>{p.emoji}</span>
             <span style={{ fontSize: 14, color: "#e2e8f0" }}>{p.label}</span>
@@ -4853,14 +4853,14 @@ function Boendekostnad() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input value={p.kostnad} onChange={e => { const next = [...poster]; next[i] = { ...p, kostnad: e.target.value }; save(next); }}
               placeholder="0" inputMode="decimal"
-              style={{ width: 80, padding: "6px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", textAlign: "right" }} />
+              style={{ width: 80, padding: "6px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", textAlign: "right" }} />
             <span style={{ fontSize: 12, color: "#475569" }}>kr</span>
           </div>
         </div>
       ))}
 
       {total > 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 4 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginTop: 4 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>💡 Spara på boendekostnader</div>
           {[
             "Jämför elpriser på Elpriskollen.se — kan spara 500-2000 kr/år",
@@ -4906,7 +4906,7 @@ function Fordonskostnad() {
       </div>
 
       {poster.map((p, i) => (
-        <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "12px 16px", marginBottom: 8 }}>
+        <div key={p.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 16px", marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 22 }}>{p.emoji}</span>
             <span style={{ fontSize: 14, color: "#e2e8f0" }}>{p.label}</span>
@@ -4914,14 +4914,14 @@ function Fordonskostnad() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <input value={p.kostnad} onChange={e => { const next = [...poster]; next[i] = { ...p, kostnad: e.target.value }; save(next); }}
               placeholder="0" inputMode="decimal"
-              style={{ width: 80, padding: "6px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", textAlign: "right" }} />
+              style={{ width: 80, padding: "6px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", textAlign: "right" }} />
             <span style={{ fontSize: 12, color: "#475569" }}>kr</span>
           </div>
         </div>
       ))}
 
       {total > 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 4 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginTop: 4 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>💡 Spara på bilkostnader</div>
           {[
             "Jämför bilförsäkring varje år — kan spara 500-2000 kr/år",
@@ -4999,7 +4999,7 @@ function AgarstrukturKalkyl() {
         <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>Räkna ut ägarandelar, röstvärde och exit-belopp. Normalt kostar denna rådgivning 2 000-5 000 kr/timme hos bolagsjurist.</div>
       </div>
 
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
         {[["agare","👥 Delägare"],["analys","📊 Analys"],["tips","💡 Råd"]].map(([id, label]) => (
           <button key={id} onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", background: tab === id ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "none", border: "none", borderRadius: 9, color: tab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: tab === id ? 700 : 400, cursor: "pointer" }}>
             {label}
@@ -5010,7 +5010,7 @@ function AgarstrukturKalkyl() {
       {tab === "agare" && (
         <div>
           {/* Bolagsvärde */}
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #8b5cf633", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #8b5cf633", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>💎 Bolagets värdering (kr)</div>
             <input value={varde} onChange={e => setVarde(e.target.value)} inputMode="decimal"
               style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 28, fontWeight: 900, color: "#8b5cf6", boxSizing: "border-box" }} />
@@ -5018,22 +5018,22 @@ function AgarstrukturKalkyl() {
 
           {/* Delägare */}
           {agare.map((a, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 10 }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14, marginBottom: 10 }}>
               <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 <input value={a.namn} onChange={e => updateAgare(i, "namn", e.target.value)}
-                  style={{ flex: 1, padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+                  style={{ flex: 1, padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
                 <button onClick={() => removeAgare(i)} style={{ padding: "8px 12px", background: "#ef444422", border: "1px solid #ef444433", borderRadius: 8, color: "#ef4444", fontSize: 13, cursor: "pointer" }}>✕</button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
                 <div>
                   <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4 }}>Ägarandel (%)</div>
                   <input value={a.andel} onChange={e => updateAgare(i, "andel", e.target.value)} inputMode="decimal"
-                    style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 16, fontWeight: 700, outline: "none", boxSizing: "border-box" }} />
+                    style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 16, fontWeight: 700, outline: "none", boxSizing: "border-box" }} />
                 </div>
                 <div>
                   <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4 }}>Roll</div>
                   <input value={a.roll} onChange={e => updateAgare(i, "roll", e.target.value)}
-                    style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+                    style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
                 </div>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -5052,7 +5052,7 @@ function AgarstrukturKalkyl() {
             </div>
           ))}
 
-          <button onClick={addAgare} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginBottom: 10 }}>
+          <button onClick={addAgare} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginBottom: 10 }}>
             + Lägg till delägare
           </button>
 
@@ -5071,7 +5071,7 @@ function AgarstrukturKalkyl() {
           {agare.map((a, i) => {
             const exitBelopp = (parseFloat(a.andel) || 0) / 100 * vardeNum;
             return (
-              <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+              <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{a.namn}</div>
@@ -5085,7 +5085,7 @@ function AgarstrukturKalkyl() {
                     ["Röststyrka", rostandel(a) + "%"],
                     ["Aktietyp", a.aAktier ? "A (10×)" : "B (1×)"],
                   ].map(([l, v]) => (
-                    <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                    <div key={l} style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
                       <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0" }}>{v}</div>
                     </div>
@@ -5096,7 +5096,7 @@ function AgarstrukturKalkyl() {
           })}
 
           {/* Pie visualization */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16 }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Ägarfördelning</div>
             <div style={{ display: "flex", height: 20, borderRadius: 99, overflow: "hidden", marginBottom: 12 }}>
               {agare.map((a, i) => {
@@ -5127,7 +5127,7 @@ function AgarstrukturKalkyl() {
             { icon: "💰", title: "3:12-reglerna — lön vs utdelning", color: "#10b981", text: "Som delägare kan du ta ut vinst via utdelning med 20% skatt (upp till gränsbeloppet) istället för 57% i marginalskatt på lön. Beräkna ditt gränsbelopp varje år!" },
             { icon: "🏛️", title: "Registrera AB på Bolagsverket", color: "#06b6d4", text: "Starta AB på verksamt.se — tar 1 vecka och kostar 2 200 kr (digital anmälan). Minsta aktiekapital: 25 000 kr. Du kan vara ensam styrelseledamot och VD." },
           ].map(s => (
-            <div key={s.title} style={{ display: "flex", gap: 14, marginBottom: 16, background: "#0f172a", borderRadius: 14, border: `1px solid ${s.color}22`, padding: 16 }}>
+            <div key={s.title} style={{ display: "flex", gap: 14, marginBottom: 16, background: "var(--card)", borderRadius: 14, border: `1px solid ${s.color}22`, padding: 16 }}>
               <div style={{ width: 36, height: 36, borderRadius: "50%", background: s.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{s.icon}</div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: s.color, marginBottom: 6 }}>{s.title}</div>
@@ -5188,7 +5188,7 @@ function TolvtreaKalkyl() {
           { label: "Aktiekapital (kr)", val: aktiekapital, set: setAktiekapital },
           { label: "Önskad utdelning (kr)", val: utdelning, set: setUtdelning },
         ].map(({ label, val, set: setter }) => (
-          <div key={label} style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+          <div key={label} style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
             <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>{label}</div>
             <input value={val} onChange={e => setter(e.target.value)} inputMode="decimal"
               style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 18, fontWeight: 800, color: "#e2e8f0", boxSizing: "border-box" }} />
@@ -5197,7 +5197,7 @@ function TolvtreaKalkyl() {
       </div>
 
       {/* Results */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Beräkning</div>
         {[
           ["Gränsbelopp (schablonmetoden)", schablonbelopp.toLocaleString("sv-SE") + " kr", "#94a3b8"],
@@ -5207,7 +5207,7 @@ function TolvtreaKalkyl() {
           ["Total skatt på utdelning", totalSkattUtd.toLocaleString("sv-SE") + " kr", "#f59e0b"],
           ["Netto till dig", nettoUtd.toLocaleString("sv-SE") + " kr", "#10b981"],
         ].map(([l, v, c]) => (
-          <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b", alignItems: "center" }}>
+          <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)", alignItems: "center" }}>
             <span style={{ fontSize: 12, color: "#64748b", flex: 1 }}>{l}</span>
             <span style={{ fontSize: 13, fontWeight: 600, color: c, textAlign: "right", marginLeft: 8 }}>{v}</span>
           </div>
@@ -5220,7 +5220,7 @@ function TolvtreaKalkyl() {
         <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>per år i lägre skatt via utdelning</div>
       </div>
 
-      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 12 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginTop: 12 }}>
         <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 8 }}>💡 Tips</div>
         {["Ta alltid ut lön upp till gränsbeloppet (IBB-regeln) för att maximera gränsbeloppet nästa år", "Lönebaserat gränsbelopp är ofta bättre om du har anställda eller hög lön", "Spara utdelningsutrymme — det kan sparas och användas kommande år", "Konsultera revisor — 3:12 är komplicerat och regler ändras ofta"].map((t, i) => (
           <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}>
@@ -5253,23 +5253,23 @@ function ExitKalkyl() {
         <div style={{ fontSize: 12, color: "#64748b" }}>Vad får var och en vid en försäljning? Beräkna netto efter skatt.</div>
       </div>
 
-      <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+      <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
         <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>💎 Försäljningspris (kr)</div>
         <input value={varde} onChange={e => setVarde(e.target.value)} inputMode="decimal"
           style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 30, fontWeight: 900, color: "#f97316", boxSizing: "border-box" }} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Skattesats på vinst (%)</div>
           <select value={skattSats} onChange={e => setSkattSats(e.target.value)}
             style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 18, fontWeight: 800, color: "#e2e8f0", cursor: "pointer" }}>
-            <option value="20" style={{ background: "#0f172a" }}>20% (3:12 inom gräns)</option>
-            <option value="30" style={{ background: "#0f172a" }}>30% (kapitalvinst)</option>
-            <option value="57" style={{ background: "#0f172a" }}>57% (inkomstskatt)</option>
+            <option value="20" style={{ background: "var(--card)" }}>20% (3:12 inom gräns)</option>
+            <option value="30" style={{ background: "var(--card)" }}>30% (kapitalvinst)</option>
+            <option value="57" style={{ background: "var(--card)" }}>57% (inkomstskatt)</option>
           </select>
         </div>
-        <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
           <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Total försäljning</div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0" }}>{(vardeNum / 1000000).toFixed(1)} Mkr</div>
         </div>
@@ -5282,14 +5282,14 @@ function ExitKalkyl() {
         const colors = ["#8b5cf6", "#10b981", "#3b82f6", "#f59e0b", "#ef4444"];
         const color = colors[i % colors.length];
         return (
-          <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${color}33`, padding: 16, marginBottom: 10 }}>
+          <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${color}33`, padding: 16, marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
               <div>
                 <input value={a.namn} onChange={e => { const n = [...agare]; n[i] = {...a, namn: e.target.value}; setAgare(n); }}
                   style={{ background: "none", border: "none", outline: "none", fontSize: 16, fontWeight: 700, color: "#e2e8f0" }} />
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                   <input value={a.andel} onChange={e => { const n = [...agare]; n[i] = {...a, andel: e.target.value}; setAgare(n); }}
-                    inputMode="decimal" style={{ width: 50, background: "#1e293b", border: "1px solid #334155", borderRadius: 6, color: "#e2e8f0", fontSize: 14, fontWeight: 700, outline: "none", padding: "3px 6px", textAlign: "center" }} />
+                    inputMode="decimal" style={{ width: 50, background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 6, color: "#e2e8f0", fontSize: 14, fontWeight: 700, outline: "none", padding: "3px 6px", textAlign: "center" }} />
                   <span style={{ fontSize: 13, color: "#64748b" }}>%</span>
                 </div>
               </div>
@@ -5300,7 +5300,7 @@ function ExitKalkyl() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
               {[["Skatt", "-" + Math.round(skattBelOpp).toLocaleString("sv-SE") + " kr", "#ef4444"], ["Netto", Math.round(netto).toLocaleString("sv-SE") + " kr", "#10b981"], ["I Mkr", (netto/1000000).toFixed(2) + " Mkr", color]].map(([l, v, c]) => (
-                <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
+                <div key={l} style={{ background: "var(--bg2)", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
                   <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: c }}>{v}</div>
                 </div>
@@ -5311,7 +5311,7 @@ function ExitKalkyl() {
       })}
 
       <button onClick={() => setAgare([...agare, { namn: "Ny delägare", andel: 0, preferens: false }])}
-        style={{ width: "100%", padding: "11px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer" }}>
+        style={{ width: "100%", padding: "11px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer" }}>
         + Lägg till delägare
       </button>
     </div>
@@ -5360,7 +5360,7 @@ function FormansvardeTraktamente() {
         <div style={{ fontSize: 12, color: "#64748b" }}>Räkna ut förmånsvärde på tjänstebil och skattefri milersättning. Sparar tusentals kronor i onödig skatt.</div>
       </div>
 
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
         {[["bil","🚗 Tjänstebil"],["milersatt","🛣️ Milersättning"],["traktamente","🌍 Traktamente"]].map(([id, label]) => (
           <button key={id} onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", background: tab === id ? "linear-gradient(135deg,#3b82f6,#2563eb)" : "none", border: "none", borderRadius: 9, color: tab === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: tab === id ? 700 : 400, cursor: "pointer" }}>
             {label}
@@ -5371,29 +5371,29 @@ function FormansvardeTraktamente() {
       {tab === "bil" && (
         <div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-            <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+            <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
               <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Nypris bil (kr)</div>
               <input value={nypris} onChange={e => setNypris(e.target.value)} inputMode="decimal"
                 style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 800, color: "#e2e8f0", boxSizing: "border-box" }} />
             </div>
-            <div style={{ background: "#0a0f1e", borderRadius: 10, padding: "12px 14px" }}>
+            <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px" }}>
               <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Drivmedel</div>
               <select value={drivmedel} onChange={e => setDrivmedel(e.target.value)} style={{ background: "none", border: "none", outline: "none", fontSize: 15, fontWeight: 700, color: "#e2e8f0", cursor: "pointer", width: "100%" }}>
-                <option value="bensin" style={{ background: "#0f172a" }}>Bensin/Diesel</option>
-                <option value="diesel" style={{ background: "#0f172a" }}>Laddhybrid</option>
-                <option value="el" style={{ background: "#0f172a" }}>Elbil (inget tillägg)</option>
+                <option value="bensin" style={{ background: "var(--card)" }}>Bensin/Diesel</option>
+                <option value="diesel" style={{ background: "var(--card)" }}>Laddhybrid</option>
+                <option value="el" style={{ background: "var(--card)" }}>Elbil (inget tillägg)</option>
               </select>
             </div>
           </div>
 
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #3b82f633", padding: 16 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #3b82f633", padding: 16 }}>
             {[
               ["Förmånsvärde per år", arsForman.toLocaleString("sv-SE") + " kr", "#e2e8f0"],
               ["Förmånsvärde per månad", manadsForman.toLocaleString("sv-SE") + " kr", "#e2e8f0"],
               ["Extra skatt per år (32%)", extraSkatt.toLocaleString("sv-SE") + " kr", "#ef4444"],
               ["Nettokostnad för dig/mån", (extraSkatt / 12).toLocaleString("sv-SE") + " kr", "#f59e0b"],
             ].map(([l, v, c]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</span>
               </div>
@@ -5405,7 +5405,7 @@ function FormansvardeTraktamente() {
 
       {tab === "milersatt" && (
         <div>
-          <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+          <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>Tjänstekilometer per månad</div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <input value={kmTjänst} onChange={e => setKmTjanst(e.target.value)} inputMode="decimal"
@@ -5413,10 +5413,10 @@ function FormansvardeTraktamente() {
               <span style={{ fontSize: 13, color: "#475569" }}>km</span>
             </div>
           </div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16 }}>
             <div style={{ fontSize: 13, color: "#10b981", fontWeight: 700, marginBottom: 10 }}>Skattefri milersättning 2026</div>
             {[["Skattefri ersättning/mån", milersattning.toLocaleString("sv-SE") + " kr", "#10b981"], ["Per km (25 öre/km)", "2,50 kr/km", "#e2e8f0"], ["Per mil (25 kr/mil)", "25 kr/mil", "#e2e8f0"]].map(([l, v, c]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</span>
               </div>
@@ -5433,16 +5433,16 @@ function FormansvardeTraktamente() {
 
       {tab === "traktamente" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Skattefria traktamenten 2026</div>
             {[["🇸🇪 Inrikes (hel dag)", "290 kr"], ["🇸🇪 Inrikes (halv dag)", "145 kr"], ["🇳🇴🇩🇰 Norden", "480 kr/dag"], ["🇪🇺 Europa", "550 kr/dag"], ["🇺🇸 USA & Fjärran östern", "720 kr/dag"]].map(([l, v]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>{v}</span>
               </div>
             ))}
           </div>
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 12, color: "#3b82f6", marginBottom: 8 }}>💡 Regler</div>
             {["Övernattning mer än 5 mil från hemmet krävs för natt-traktamente", "Tjänsteresan måste vara minst 6 timmar för halvdags-traktamente", "Arbetsgivaren betalar — du behöver inte kvitto för schablonbeloppet", "Hotell & mat KAN betalas av arbetsgivaren utöver traktamentet"].map((t, i) => (
               <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}><span style={{ color: "#3b82f6" }}>→</span>{t}</div>
@@ -5540,7 +5540,7 @@ function JuridiskAI() {
           <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
             Få svar på juridiska frågor om avtal, försäkringar, lån, hyresrätt och mer — baserat på svensk lag. Ladda upp dokument för analys.
           </div>
-          <div style={{ marginTop: 12, background: "#1e293b", borderRadius: 10, padding: "10px 14px" }}>
+          <div style={{ marginTop: 12, background: "var(--border2)", borderRadius: 10, padding: "10px 14px" }}>
             <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 600 }}>⚠️ Viktig information</div>
             <div style={{ fontSize: 11, color: "#64748b", marginTop: 4, lineHeight: 1.5 }}>
               Detta är ett AI-baserat informationsverktyg och utgör inte juridisk rådgivning. Konsultera alltid en auktoriserad jurist för ditt specifika ärende. Kapital AB är inte ett advokatbyrå och kan inte representera dig juridiskt.
@@ -5552,7 +5552,7 @@ function JuridiskAI() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           {JURIDISK_KATEGORIER.map(kat => (
             <button key={kat.id} onClick={() => selectKategori(kat)}
-              style={{ background: "#0f172a", border: `1px solid ${kat.color}33`, borderRadius: 14, padding: 16, cursor: "pointer", textAlign: "left" }}>
+              style={{ background: "var(--card)", border: `1px solid ${kat.color}33`, borderRadius: 14, padding: 16, cursor: "pointer", textAlign: "left" }}>
               <div style={{ fontSize: 26, marginBottom: 8 }}>{kat.icon}</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0", marginBottom: 4 }}>{kat.label}</div>
               <div style={{ fontSize: 11, color: "#475569" }}>{kat.desc}</div>
@@ -5580,14 +5580,14 @@ function JuridiskAI() {
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
         {(JURIDISK_SNABBFRAGOR[kategori.id] || []).map(q => (
           <button key={q} onClick={() => send(q)}
-            style={{ padding: "6px 12px", background: "#0f172a", border: `1px solid ${kategori.color}33`, borderRadius: 99, color: "#94a3b8", fontSize: 11, cursor: "pointer" }}>
+            style={{ padding: "6px 12px", background: "var(--card)", border: `1px solid ${kategori.color}33`, borderRadius: 99, color: "#94a3b8", fontSize: 11, cursor: "pointer" }}>
             {q}
           </button>
         ))}
       </div>
 
       {/* Chat */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 12, maxHeight: 400, overflowY: "auto" }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 12, maxHeight: 400, overflowY: "auto" }}>
         {messages.map((m, i) => (
           <div key={i} style={{ marginBottom: 16, display: "flex", flexDirection: m.role === "user" ? "row-reverse" : "row", gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: "50%", background: m.role === "user" ? "#3b82f6" : kategori.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
@@ -5601,7 +5601,7 @@ function JuridiskAI() {
         {loading && (
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <div style={{ width: 32, height: 32, borderRadius: "50%", background: kategori.color, display: "flex", alignItems: "center", justifyContent: "center" }}>⚖️</div>
-            <div style={{ background: "#1e293b", borderRadius: "14px 14px 14px 4px", padding: "12px 16px" }}>
+            <div style={{ background: "var(--border2)", borderRadius: "14px 14px 14px 4px", padding: "12px 16px" }}>
               <div style={{ display: "flex", gap: 4 }}>
                 {[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: kategori.color, animation: `pulse 1s ${i * 0.2}s infinite` }} />)}
               </div>
@@ -5620,13 +5620,13 @@ function JuridiskAI() {
 
       {/* Input */}
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        <label style={{ padding: "12px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, cursor: "pointer", fontSize: 16 }}>
+        <label style={{ padding: "12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, cursor: "pointer", fontSize: 16 }}>
           📎
           <input type="file" accept=".txt,.pdf" onChange={handleFileUpload} style={{ display: "none" }} />
         </label>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()}
           placeholder="Skriv din juridiska fråga..."
-          style={{ flex: 1, padding: "12px 16px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
+          style={{ flex: 1, padding: "12px 16px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
         <button onClick={() => send()} disabled={loading || !input.trim()}
           style={{ padding: "12px 20px", background: `linear-gradient(135deg,${kategori.color},#0ea5e9)`, border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
           →
@@ -5751,7 +5751,7 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
           { label: "Skuld/inkomst", value: dti.toFixed(1) + "%", color: dti < 35 ? "#10b981" : dti < 50 ? "#f59e0b" : "#ef4444", icon: "📊" },
           { label: "Sparkvot", value: savingsRate.toFixed(1) + "%", color: savingsRate >= 20 ? "#10b981" : "#f59e0b", icon: "📈" },
         ].map(m => (
-          <div key={m.label} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${m.color}22`, padding: "12px 14px" }}>
+          <div key={m.label} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${m.color}22`, padding: "12px 14px" }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{m.icon} {m.label}</div>
             <div style={{ fontSize: 14, fontWeight: 700, color: m.color }}>{m.value}</div>
           </div>
@@ -5759,7 +5759,7 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
       </div>
 
       {/* Bank assessment */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>🏦 Bankbedömning</div>
         {[
           {
@@ -5798,7 +5798,7 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
               : "Inga försäkringar registrerade"
           },
         ].map((item, i) => (
-          <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < 4 ? "1px solid #1e293b" : "none", alignItems: "flex-start" }}>
+          <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < 4 ? "1px solid var(--border)" : "none", alignItems: "flex-start" }}>
             <div style={{ width: 24, height: 24, borderRadius: "50%", background: item.ok ? "#22c55e22" : "#ef444422", border: `1px solid ${item.ok ? "#22c55e" : "#ef4444"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>
               {item.ok ? "✓" : "!"}
             </div>
@@ -5812,14 +5812,14 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
 
       {/* Detailed breakdown toggle */}
       <button onClick={() => setShowFull(!showFull)}
-        style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer", marginBottom: 10 }}>
+        style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer", marginBottom: 10 }}>
         {showFull ? "▲ Dölj detaljer" : "▼ Visa fullständig profil"}
       </button>
 
       {showFull && (
         <div>
           {/* Income details */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#10b981", marginBottom: 10 }}>💰 Inkomst & Utgifter</div>
             {[
               ["Månadsinkomst (netto)", income],
@@ -5830,7 +5830,7 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
               ["Totala utgifter", totalAllExp],
               ["Disponibelt", leftover],
             ].map(([l, v]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: v === leftover ? (leftover >= 0 ? "#10b981" : "#ef4444") : "#e2e8f0" }}>
                   {Math.round(v).toLocaleString("sv-SE")} kr
@@ -5840,16 +5840,16 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
           </div>
 
           {/* Assets & Debts */}
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 10 }}>💎 Tillgångar & Skulder</div>
             {tillgangar.filter(t => parseFloat(t.varde) > 0).map(t => (
-              <div key={t.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={t.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{t.emoji} {t.label}</span>
                 <span style={{ fontSize: 13, color: "#10b981" }}>+{parseFloat(t.varde).toLocaleString("sv-SE")} kr</span>
               </div>
             ))}
             {skulder.filter(s => parseFloat(s.varde) > 0).map(s => (
-              <div key={s.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={s.id} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{s.emoji} {s.label}</span>
                 <span style={{ fontSize: 13, color: "#ef4444" }}>-{parseFloat(s.varde).toLocaleString("sv-SE")} kr</span>
               </div>
@@ -5864,10 +5864,10 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
 
           {/* Forsäkringar */}
           {forsakringar.length > 0 && (
-            <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+            <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 10 }}>🛡️ Försäkringar</div>
               {forsakringar.map((f, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #1e293b" }}>
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
                   <span style={{ fontSize: 13, color: "#64748b" }}>{f.bolag} — {f.typ}</span>
                   <span style={{ fontSize: 13, color: "#e2e8f0" }}>{parseFloat(f.kostnad).toLocaleString("sv-SE")} kr/mån</span>
                 </div>
@@ -5884,7 +5884,7 @@ OBS: Denna profil är genererad från självrapporterade uppgifter i Kapital-app
           {copied ? "✓ Kopierat!" : "📋 Kopiera profil"}
         </button>
         <button onClick={printProfile}
-          style={{ flex: 1, padding: "13px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
+          style={{ flex: 1, padding: "13px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
           🖨️ Skriv ut
         </button>
       </div>
@@ -5929,13 +5929,13 @@ function AILaneBedömning() {
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 5 }}>{label}</div>
       {opts ? (
         <select value={form[k]} onChange={e => set(k, e.target.value)}
-          style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
-          {opts.map(([v, l]) => <option key={v} value={v} style={{ background: "#0f172a" }}>{l}</option>)}
+          style={{ width: "100%", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
+          {opts.map(([v, l]) => <option key={v} value={v} style={{ background: "var(--card)" }}>{l}</option>)}
         </select>
       ) : (
         <input value={form[k]} onChange={e => set(k, e.target.value)} placeholder={placeholder}
           inputMode={type === "number" ? "decimal" : "text"}
-          style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+          style={{ width: "100%", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
       )}
     </div>
   );
@@ -6007,7 +6007,7 @@ Svara BARA med JSON:
               ["Kvar efter lån", Math.round(result.kvar || 0).toLocaleString("sv-SE") + " kr/mån", result.kvar > 5000 ? "#10b981" : "#ef4444"],
               ["Skuld/inkomst", (result.dti || 0) + "%", result.dti < 40 ? "#10b981" : "#f59e0b"],
             ].map(([l, v, c]) => (
-              <div key={l} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 12 }}>
+              <div key={l} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 12 }}>
                 <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>{l}</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</div>
               </div>
@@ -6028,33 +6028,33 @@ Svara BARA med JSON:
 
         {/* Styrkor & Risker */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>✅ Styrkor</div>
             {(result.styrkor || []).map((s, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 6 }}><span style={{ color: "#10b981" }}>+</span>{s}</div>)}
           </div>
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #ef444433", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #ef444433", padding: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>⚠ Risker</div>
             {(result.risker || []).map((r, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 6 }}><span style={{ color: "#ef4444" }}>!</span>{r}</div>)}
           </div>
         </div>
 
         {/* Villkor & Tips */}
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", marginBottom: 8 }}>📋 Troliga villkor</div>
           {(result.villkor || []).map((v, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}><span style={{ color: "#f59e0b" }}>→</span>{v}</div>)}
         </div>
 
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#3b82f6", marginBottom: 8 }}>💡 Tips för att förbättra chanserna</div>
           {(result.tips || []).map((t, i) => <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}><span style={{ color: "#3b82f6" }}>→</span>{t}</div>)}
         </div>
 
         {/* Recommended banks */}
         {result.banker?.length > 0 && (
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>🏦 Rekommenderade banker att ansöka hos</div>
             {result.banker.map((b, i) => (
-              <div key={i} style={{ fontSize: 13, color: "#e2e8f0", padding: "6px 0", borderBottom: i < result.banker.length - 1 ? "1px solid #1e293b" : "none", display: "flex", gap: 8 }}>
+              <div key={i} style={{ fontSize: 13, color: "#e2e8f0", padding: "6px 0", borderBottom: i < result.banker.length - 1 ? "1px solid var(--border)" : "none", display: "flex", gap: 8 }}>
                 <span style={{ color: "#10b981" }}>→</span>{b}
               </div>
             ))}
@@ -6194,13 +6194,13 @@ function SmartLanAnsokan() {
       <div style={{ fontSize: 11, color: "#64748b", marginBottom: 5 }}>{label}</div>
       {options ? (
         <select value={ansokan[keyName]} onChange={e => set(keyName, e.target.value)}
-          style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
-          {options.map(([v, l]) => <option key={v} value={v} style={{ background: "#0f172a" }}>{l}</option>)}
+          style={{ width: "100%", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
+          {options.map(([v, l]) => <option key={v} value={v} style={{ background: "var(--card)" }}>{l}</option>)}
         </select>
       ) : (
         <input value={ansokan[keyName]} onChange={e => set(keyName, e.target.value)} placeholder={placeholder}
           inputMode={type === "number" ? "decimal" : "text"}
-          style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+          style={{ width: "100%", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
       )}
     </div>
   );
@@ -6225,7 +6225,7 @@ function SmartLanAnsokan() {
       </div>
 
       {/* Loan type */}
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
         {[["blanko","💳 Blankolån"],["billan","🚗 Billån"],["bolan","🏠 Bolån"],["samla","🔄 Samla"]].map(([id, label]) => (
           <button key={id} onClick={() => setLanTyp(id)} style={{ flex: 1, padding: "9px 2px", background: lanTyp === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: lanTyp === id ? "#fff" : "#64748b", fontSize: 11, fontWeight: lanTyp === id ? 700 : 400, cursor: "pointer", whiteSpace: "nowrap" }}>
             {label}
@@ -6251,13 +6251,13 @@ function SmartLanAnsokan() {
             options={[["renovering","Renovering"],["fordon","Fordon"],["konsumtion","Konsumtion"],["samla","Samla lån"],["bosta","Bostad"],["ovrigt","Övrigt"]]} />
 
           {belopp > 0 && (
-            <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+            <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
               <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Uppskattad månadskostnad</div>
               {(LANGIVARE_BAST[lanTyp] || []).slice(0, 3).map(lg => {
                 const rate = parseFloat(lg.rate) || 8;
                 const monthly = calcMonthly(rate, Math.min(belopp, lg.max), lopetid);
                 return (
-                  <div key={lg.name} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #1e293b" }}>
+                  <div key={lg.name} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid var(--border)" }}>
                     <span style={{ fontSize: 13, color: "#64748b" }}>{lg.name} ({lg.rate})</span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{Math.round(monthly).toLocaleString("sv-SE")} kr/mån</span>
                   </div>
@@ -6305,7 +6305,7 @@ function SmartLanAnsokan() {
         <div>
           <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0", marginBottom: 14 }}>Steg 3 — Välj banker</div>
 
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#10b981", marginBottom: 10 }}>📋 Din ansökan sammanfattning</div>
             {[
               ["Namn", ansokan.fornamn + " " + ansokan.efternamn],
@@ -6314,7 +6314,7 @@ function SmartLanAnsokan() {
               ["Syfte", ansokan.syfte],
               ["Inkomst", ansokan.inkomst ? Math.round(ansokan.inkomst).toLocaleString("sv-SE") + " kr/mån" : "Ej angiven"],
             ].map(([l, v]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 13, color: "#e2e8f0" }}>{v}</span>
               </div>
@@ -6324,7 +6324,7 @@ function SmartLanAnsokan() {
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Skicka ansökan till (öppnas i ny flik):</div>
           {(LANGIVARE_BAST[lanTyp] || []).map(lg => (
             <a key={lg.name} href={lg.url} target="_blank" rel="noopener noreferrer"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0f172a", border: "1px solid #10b98133", borderRadius: 12, padding: "14px 16px", marginBottom: 10, textDecoration: "none" }}>
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--card)", border: "1px solid #10b98133", borderRadius: 12, padding: "14px 16px", marginBottom: 10, textDecoration: "none" }}>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0" }}>{lg.name}</div>
                 <div style={{ fontSize: 12, color: "#64748b" }}>Ränta: {lg.rate} · Max {(lg.max / 1000).toFixed(0)}k kr</div>
@@ -6335,7 +6335,7 @@ function SmartLanAnsokan() {
             </a>
           ))}
 
-          <button onClick={() => setStep(1)} style={{ width: "100%", padding: "12px", background: "none", border: "1px solid #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginTop: 8 }}>
+          <button onClick={() => setStep(1)} style={{ width: "100%", padding: "12px", background: "none", border: "1px solid var(--border2)", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginTop: 8 }}>
             ← Börja om
           </button>
 
@@ -6363,7 +6363,7 @@ function DelaTab({ result }) {
   );
 
   const shareBtn = (icon, label, action, color) => (
-    <button onClick={action} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "14px 16px", marginBottom: 10, background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, color: "#e2e8f0", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
+    <button onClick={action} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "14px 16px", marginBottom: 10, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#e2e8f0", fontSize: 14, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
       <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>{icon}</span>
       <span style={{ flex: 1 }}>{label}</span>
       <span style={{ fontSize: 12, color }}>→</span>
@@ -6419,7 +6419,7 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#000c", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
-      <div style={{ background: "#0f172a", borderRadius: "20px 20px 0 0", padding: "24px 20px 40px", maxWidth: 480, width: "100%", border: "1px solid #1e293b", maxHeight: "90vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: "var(--card)", borderRadius: "20px 20px 0 0", padding: "24px 20px 40px", maxWidth: 480, width: "100%", border: "1px solid var(--border)", maxHeight: "90vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
@@ -6451,7 +6451,7 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
         ))}
 
         {/* Plan toggle */}
-        <div style={{ display: "flex", gap: 4, background: "#1e293b", borderRadius: 12, padding: 4, marginTop: 20, marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 4, background: "var(--border2)", borderRadius: 12, padding: 4, marginTop: 20, marginBottom: 14 }}>
           <button onClick={() => setPlan("monthly")} style={{ flex: 1, padding: "10px", background: plan === "monthly" ? "#0f172a" : "none", border: "none", borderRadius: 9, color: plan === "monthly" ? "#e2e8f0" : "#64748b", fontSize: 14, fontWeight: plan === "monthly" ? 700 : 400, cursor: "pointer" }}>
             49 kr/mån
           </button>
@@ -6508,7 +6508,7 @@ function NotificationCenter({ onClose }) {
   useEffect(() => { markAllRead(); }, []);
   return (
     <div style={{ position: "fixed", inset: 0, background: "#000c", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
-      <div style={{ background: "#0f172a", borderRadius: "20px 20px 0 0", padding: "20px 16px 40px", maxWidth: 480, width: "100%", border: "1px solid #1e293b", maxHeight: "75vh", display: "flex", flexDirection: "column" }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: "var(--card)", borderRadius: "20px 20px 0 0", padding: "20px 16px 40px", maxWidth: 480, width: "100%", border: "1px solid var(--border)", maxHeight: "75vh", display: "flex", flexDirection: "column" }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>🔔 Notiser</div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#64748b", fontSize: 20, cursor: "pointer" }}>✕</button>
@@ -6521,7 +6521,7 @@ function NotificationCenter({ onClose }) {
               <div style={{ fontSize: 12, color: "#334155", marginTop: 6 }}>Kurslarm och analyser visas här</div>
             </div>
           ) : notifications.map(n => (
-            <div key={n.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "1px solid #1e293b", opacity: n.read ? 0.6 : 1 }}>
+            <div key={n.id} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: "1px solid var(--border)", opacity: n.read ? 0.6 : 1 }}>
               <div style={{ fontSize: 22, flexShrink: 0 }}>{n.icon || "📊"}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, color: "#e2e8f0", fontWeight: n.read ? 400 : 600 }}>{n.title}</div>
@@ -6570,14 +6570,14 @@ function CompareView({ onClose, onAnalyze }) {
       <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
         <input value={comp} onChange={e => setComp(e.target.value)} onKeyDown={e => e.key === "Enter" && fetchAnalysis(comp, side === "A" ? setResA : setResB, side === "A" ? setLoadA : setLoadB)}
           placeholder={side === "A" ? "Bolag 1..." : "Bolag 2..."}
-          style={{ flex: 1, padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+          style={{ flex: 1, padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
         <button onClick={() => fetchAnalysis(comp, side === "A" ? setResA : setResB, side === "A" ? setLoadA : setLoadB)}
           style={{ padding: "9px 12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, cursor: "pointer" }}>
           {load ? "⏳" : "→"}
         </button>
       </div>
       {res && (
-        <div style={{ background: "#0a0f1e", borderRadius: 12, border: `1px solid ${recColor(res.recommendation)}44`, padding: 14 }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 12, border: `1px solid ${recColor(res.recommendation)}44`, padding: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0", marginBottom: 4 }}>{res.company}</div>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10 }}>{res.sector}</div>
 
@@ -6602,7 +6602,7 @@ function CompareView({ onClose, onAnalyze }) {
           {res.nyckeltal && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 10 }}>
               {[["P/E", res.nyckeltal.pe + "x"], ["Utd.", res.nyckeltal.direktavkastning + "%"], ["EBITDA", res.nyckeltal.ebitdaMarginal + "%"], ["Beta", res.nyckeltal.betavarde]].map(([k, v]) => (
-                <div key={k} style={{ background: "#1e293b", borderRadius: 8, padding: "6px 8px" }}>
+                <div key={k} style={{ background: "var(--border2)", borderRadius: 8, padding: "6px 8px" }}>
                   <div style={{ fontSize: 9, color: "#475569" }}>{k}</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{v}</div>
                 </div>
@@ -6623,12 +6623,12 @@ function CompareView({ onClose, onAnalyze }) {
         </div>
       )}
       {load && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 20, textAlign: "center", color: "#64748b", fontSize: 13 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 20, textAlign: "center", color: "#64748b", fontSize: 13 }}>
           Analyserar...
         </div>
       )}
       {!res && !load && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px dashed #334155", padding: 20, textAlign: "center", color: "#334155", fontSize: 12 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px dashed #334155", padding: 20, textAlign: "center", color: "#334155", fontSize: 12 }}>
           Ange bolagsnamn ovan
         </div>
       )}
@@ -6636,7 +6636,7 @@ function CompareView({ onClose, onAnalyze }) {
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 3000, overflowY: "auto" }}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--bg2)", zIndex: 3000, overflowY: "auto" }}>
       <div style={{ maxWidth: 680, margin: "0 auto", padding: "16px 14px 80px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div>
@@ -6670,7 +6670,7 @@ function CompareView({ onClose, onAnalyze }) {
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {[["Ericsson","Tele2"],["Volvo","Scania"],["H&M","Inditex"],["Apple","Microsoft"],["Nvidia","AMD"]].map(([a, b]) => (
               <button key={a+b} onClick={() => { setCompA(a); setCompB(b); fetchAnalysis(a, setResA, setLoadA); fetchAnalysis(b, setResB, setLoadB); }}
-                style={{ padding: "5px 12px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 99, color: "#94a3b8", fontSize: 11, cursor: "pointer" }}>
+                style={{ padding: "5px 12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 99, color: "#94a3b8", fontSize: 11, cursor: "pointer" }}>
                 {a} vs {b}
               </button>
             ))}
@@ -6779,11 +6779,11 @@ function HealthScore() {
           ["Försäkring", hasForsakring ? 100 : 0, hasForsakring ? "#10b981" : "#ef4444", hasForsakring ? forsakringar.length + " st" : "Saknas"],
           ["Nettovärde", totalTillgangar > 0 ? Math.min(100, Math.max(0, (1 - skuldgrad/100) * 100)) : 0, nettovarde >= 0 ? "#10b981" : "#ef4444", totalTillgangar > 0 ? (nettovarde >= 0 ? "+" : "") + Math.round(nettovarde/1000) + "k" : "—"],
         ].map(([label, pct, col, val]) => (
-          <div key={label} style={{ background: "#0a0f1e", borderRadius: 10, padding: "10px 12px" }}>
+          <div key={label} style={{ background: "var(--bg2)", borderRadius: 10, padding: "10px 12px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b", marginBottom: 5 }}>
               <span>{label}</span><span style={{ color: col, fontWeight: 600 }}>{val}</span>
             </div>
-            <div style={{ background: "#1e293b", borderRadius: 99, height: 5, overflow: "hidden" }}>
+            <div style={{ background: "var(--border2)", borderRadius: 99, height: 5, overflow: "hidden" }}>
               <div style={{ width: `${pct}%`, height: "100%", background: col, borderRadius: 99, transition: "width 0.6s" }} />
             </div>
           </div>
@@ -6854,7 +6854,7 @@ function Onboarding({ onDone }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
         {[["📊", "AI-analys av aktier på sekunder"],["💰", "Budget, abonnemang & boendekostnader"],["🏠", "Jämför bolån & ansök om lån direkt"],["🛡️", "Försäkringsguide & jämförelse"],["🔥", "FIRE, pension & lönekalkylator"],["🧾", "Skatt — K4, ISK & ROT/RUT"],["🤖", "AI-ekonomicoach för alla frågor"]].map(([icon, text]) => (
-          <div key={text} style={{ display: "flex", alignItems: "center", gap: 12, background: "#0f172a", borderRadius: 12, padding: "12px 16px", border: "1px solid #1e293b" }}>
+          <div key={text} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--card)", borderRadius: 12, padding: "12px 16px", border: "1px solid var(--border)" }}>
             <span style={{ fontSize: 22 }}>{icon}</span>
             <span style={{ fontSize: 14, color: "#e2e8f0" }}>{text}</span>
           </div>
@@ -6885,8 +6885,8 @@ function Onboarding({ onDone }) {
       <div style={{ fontSize: 22, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>Vad heter du?</div>
       <div style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>Helt valfritt — sparas bara lokalt på din enhet.</div>
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Ditt förnamn..."
-        style={{ width: "100%", padding: "14px 16px", background: "#0f172a", border: "2px solid #1e293b", borderRadius: 14, color: "#e2e8f0", fontSize: 18, outline: "none", textAlign: "center", boxSizing: "border-box", marginBottom: 24 }} />
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, textAlign: "left" }}>
+        style={{ width: "100%", padding: "14px 16px", background: "var(--card)", border: "2px solid #1e293b", borderRadius: 14, color: "#e2e8f0", fontSize: 18, outline: "none", textAlign: "center", boxSizing: "border-box", marginBottom: 24 }} />
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, textAlign: "left" }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ 3 gratis analyser per dag</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Kurslarm och bevakningar</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Budget & sparmål</div>
@@ -6897,7 +6897,7 @@ function Onboarding({ onDone }) {
   ];
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 9999, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--bg2)", zIndex: 9999, display: "flex", flexDirection: "column", overflowY: "auto" }}>
       <div style={{ maxWidth: 480, margin: "0 auto", width: "100%", padding: "40px 20px 100px", flex: 1 }}>
         {/* Progress dots */}
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 32 }}>
@@ -6913,7 +6913,7 @@ function Onboarding({ onDone }) {
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "linear-gradient(180deg,transparent,#0a0f1e 40%)", padding: "20px 20px 40px" }}>
         <div style={{ maxWidth: 480, margin: "0 auto", display: "flex", gap: 10 }}>
           {step > 0 && (
-            <button onClick={() => setStep(s => s - 1)} style={{ padding: "14px 20px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, color: "#64748b", fontSize: 15, cursor: "pointer" }}>
+            <button onClick={() => setStep(s => s - 1)} style={{ padding: "14px 20px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, color: "#64748b", fontSize: 15, cursor: "pointer" }}>
               ←
             </button>
           )}
@@ -7011,7 +7011,7 @@ function GamificationCard({ unlocked, points, level, levelProgress, nextLevelPoi
             <div style={{ fontSize: 11, color: "#8b5cf6", marginTop: 2 }}>{expanded ? "▲ Dölj" : "▼ Visa alla"}</div>
           </div>
         </div>
-        <div style={{ background: "#1e293b", borderRadius: 99, height: 8, overflow: "hidden" }}>
+        <div style={{ background: "var(--border2)", borderRadius: 99, height: 8, overflow: "hidden" }}>
           <div style={{ width: `${levelProgress}%`, height: "100%", background: "linear-gradient(90deg,#8b5cf6,#06b6d4)", borderRadius: 99, transition: "width 0.6s" }} />
         </div>
         <div style={{ fontSize: 10, color: "#475569", marginTop: 4 }}>{nextLevelPoints - points} poäng till nivå {level + 1}</div>
@@ -7093,7 +7093,7 @@ function EkonomiskTidslinje() {
   };
 
   return (
-    <div style={{ background: "#0f172a", borderRadius: 16, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+    <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
       <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 16 }}>📅 Din ekonomiska tidslinje</div>
       {events.length === 0 ? (
         <div style={{ textAlign: "center", padding: "20px 0", color: "#334155", fontSize: 13 }}>
@@ -7101,7 +7101,7 @@ function EkonomiskTidslinje() {
         </div>
       ) : (
         <div style={{ position: "relative" }}>
-          <div style={{ position: "absolute", left: 19, top: 0, bottom: 0, width: 2, background: "#1e293b", borderRadius: 2 }} />
+          <div style={{ position: "absolute", left: 19, top: 0, bottom: 0, width: 2, background: "var(--border2)", borderRadius: 2 }} />
           {events.slice(0, 6).map((e, i) => (
             <div key={i} style={{ display: "flex", gap: 14, marginBottom: 16, position: "relative" }}>
               <div style={{ width: 40, height: 40, borderRadius: "50%", background: e.color + "22", border: `2px solid ${e.color}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0, zIndex: 1 }}>
@@ -7188,7 +7188,7 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery, onNewsLoaded }) 
       {loading ? (
         <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ flexShrink: 0, width: 200, height: 100, background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", animation: "shimmer 1.5s infinite", backgroundSize: "200% 100%", backgroundImage: "linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%)" }} />
+            <div key={i} style={{ flexShrink: 0, width: 200, height: 100, background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", animation: "shimmer 1.5s infinite", backgroundSize: "200% 100%", backgroundImage: "linear-gradient(90deg,#1e293b 25%,#334155 50%,#1e293b 75%)" }} />
           ))}
         </div>
       ) : (
@@ -7196,7 +7196,7 @@ function EkonomiNyheter({ analyze, setTab, setSubTab, setQuery, onNewsLoaded }) 
           {news.map((n, i) => (
             <button key={i}
               onClick={() => { if (n.bolag) { setQuery(n.bolag); analyze(n.bolag); setTab(1); setSubTab("analys"); } }}
-              style={{ flexShrink: 0, width: 200, background: "#0f172a", border: `1px solid ${sentimentColor(n.sentiment)}22`, borderRadius: 14, padding: 14, cursor: n.bolag ? "pointer" : "default", textAlign: "left" }}>
+              style={{ flexShrink: 0, width: 200, background: "var(--card)", border: `1px solid ${sentimentColor(n.sentiment)}22`, borderRadius: 14, padding: 14, cursor: n.bolag ? "pointer" : "default", textAlign: "left" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <span style={{ fontSize: 10, background: katColor(n.kategori) + "22", color: katColor(n.kategori), padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{n.kategori}</span>
                 <span style={{ fontSize: 10, color: sentimentColor(n.sentiment) }}>{n.sentiment === "positiv" ? "▲" : n.sentiment === "negativ" ? "▼" : "●"}</span>
@@ -7376,7 +7376,7 @@ function VoiceButton({ voiceControl }) {
     <>
       {/* Transcript/response popup */}
       {(listening || transcript || response) && (
-        <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#0f172a", border: "1px solid #334155", borderRadius: 16, padding: "12px 20px", zIndex: 500, maxWidth: 300, width: "90%", textAlign: "center", boxShadow: "0 8px 32px #00000066" }}>
+        <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 16, padding: "12px 20px", zIndex: 500, maxWidth: 300, width: "90%", textAlign: "center", boxShadow: "0 8px 32px #00000066" }}>
           {listening && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: transcript ? 8 : 0 }}>
               <div style={{ display: "flex", gap: 3 }}>
@@ -7451,14 +7451,14 @@ function DagligSplash({ onClose, news }) {
   const topNews = news?.[0];
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 2000, display: "flex", flexDirection: "column", padding: "0 20px 40px", overflowY: "auto" }}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--bg2)", zIndex: 2000, display: "flex", flexDirection: "column", padding: "0 20px 40px", overflowY: "auto" }}>
       <div style={{ paddingTop: "env(safe-area-inset-top, 20px)", paddingBottom: 20, marginTop: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
             <div style={{ fontSize: 13, color: "#475569", marginBottom: 4 }}>{today}</div>
             <div style={{ fontSize: 26, fontWeight: 900, color: "#e2e8f0" }}>{greeting}{name ? `, ${name.split(" ")[0]}` : ""}! 👋</div>
           </div>
-          <button onClick={onClose} style={{ background: "#1e293b", border: "none", borderRadius: 10, color: "#64748b", fontSize: 13, padding: "8px 14px", cursor: "pointer", marginTop: 4 }}>
+          <button onClick={onClose} style={{ background: "var(--border2)", border: "none", borderRadius: 10, color: "#64748b", fontSize: 13, padding: "8px 14px", cursor: "pointer", marginTop: 4 }}>
             Hoppa över →
           </button>
         </div>
@@ -7476,7 +7476,7 @@ function DagligSplash({ onClose, news }) {
             <div style={{ fontSize: 11, color: "#8b5cf6", marginTop: 2 }}>{500 - (points % 500)} p till nästa</div>
           </div>
         </div>
-        <div style={{ background: "#1e293b", borderRadius: 99, height: 8, overflow: "hidden" }}>
+        <div style={{ background: "var(--border2)", borderRadius: 99, height: 8, overflow: "hidden" }}>
           <div style={{ width: `${levelProgress}%`, height: "100%", background: "linear-gradient(90deg,#8b5cf6,#06b6d4)", borderRadius: 99 }} />
         </div>
       </div>
@@ -7486,11 +7486,11 @@ function DagligSplash({ onClose, news }) {
         <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 18, border: "1px solid #10b98133", padding: 18, marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: "#10b981", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>💚 Din ekonomi idag</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+            <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "12px 14px" }}>
               <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>Kvar denna månad</div>
               <div style={{ fontSize: 20, fontWeight: 800, color: leftover >= 0 ? "#10b981" : "#ef4444" }}>{Math.round(leftover).toLocaleString("sv-SE")} kr</div>
             </div>
-            <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+            <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "12px 14px" }}>
               <div style={{ fontSize: 11, color: "#475569", marginBottom: 4 }}>Sparkvot</div>
               <div style={{ fontSize: 20, fontWeight: 800, color: savingsRate >= 20 ? "#10b981" : savingsRate >= 10 ? "#f59e0b" : "#ef4444" }}>{savingsRate.toFixed(0)}%</div>
             </div>
@@ -7500,7 +7500,7 @@ function DagligSplash({ onClose, news }) {
 
       {/* Goals */}
       {activeGoals.length > 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 18, border: "1px solid #1e293b", padding: 18, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 18, border: "1px solid var(--border)", padding: 18, marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: "#f59e0b", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginBottom: 12 }}>🎯 Dina sparmål</div>
           {activeGoals.map((g, i) => {
             const pct = Math.min(100, (g.saved / g.target) * 100);
@@ -7510,7 +7510,7 @@ function DagligSplash({ onClose, news }) {
                   <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{g.emoji} {g.name}</span>
                   <span style={{ color: g.color || "#10b981" }}>{pct.toFixed(0)}%</span>
                 </div>
-                <div style={{ background: "#1e293b", borderRadius: 99, height: 8, overflow: "hidden" }}>
+                <div style={{ background: "var(--border2)", borderRadius: 99, height: 8, overflow: "hidden" }}>
                   <div style={{ width: `${pct}%`, height: "100%", background: g.color || "#10b981", borderRadius: 99 }} />
                 </div>
                 <div style={{ fontSize: 11, color: "#475569", marginTop: 3 }}>
@@ -7524,7 +7524,7 @@ function DagligSplash({ onClose, news }) {
 
       {/* Top news */}
       {topNews && (
-        <div style={{ background: "#0f172a", borderRadius: 18, border: "1px solid #3b82f633", padding: 18, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 18, border: "1px solid #3b82f633", padding: 18, marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: "#3b82f6", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, marginBottom: 10 }}>📰 Senaste nytt</div>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0", marginBottom: 6, lineHeight: 1.4 }}>{topNews.titel}</div>
           <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5, marginBottom: 8 }}>{topNews.sammanfattning}</div>
@@ -7588,8 +7588,8 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
 
         {GUIDE_ITEMS.map((item, i) => (
           <button key={i} onClick={() => { setTab(item.tab); setShowGuide(false); }}
-            style={{ display: "flex", gap: 14, width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: 16, marginBottom: 10, cursor: "pointer", textAlign: "left" }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{item.icon}</div>
+            style={{ display: "flex", gap: 14, width: "100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: 16, marginBottom: 10, cursor: "pointer", textAlign: "left" }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{item.icon}</div>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, color: "#e2e8f0", marginBottom: 4 }}>{item.title}</div>
               <div style={{ fontSize: 12, color: "#64748b", lineHeight: 1.5 }}>{item.desc}</div>
@@ -7597,7 +7597,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
           </button>
         ))}
 
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginTop: 8 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginTop: 8 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 10 }}>❓ Vanliga frågor</div>
           {[
             ["Kostar appen något?", "Grundfunktioner är gratis. Pro kostar 49 kr/mån och ger obegränsade analyser och mer."],
@@ -7605,7 +7605,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
             ["Hur fungerar AI-analysen?", "Vi använder Anthropic Claude för att analysera bolag och ge köp/sälj-signaler baserade på tillgänglig information."],
             ["Är det finansiell rådgivning?", "Nej. Kapital är ett informationsverktyg. Rådgör alltid med en auktoriserad rådgivare."],
           ].map(([q, a], i) => (
-            <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: i < 3 ? "1px solid #1e293b" : "none" }}>
+            <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: i < 3 ? "1px solid var(--border)" : "none" }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", marginBottom: 4 }}>{q}</div>
               <div style={{ fontSize: 12, color: "#64748b" }}>{a}</div>
             </div>
@@ -7632,7 +7632,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
           <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🚀</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>Bygg din profil — {profilPct}% klar</div>
-            <div style={{ background: "#1e293b", borderRadius: 99, height: 5, marginTop: 6, overflow: "hidden" }}>
+            <div style={{ background: "var(--border2)", borderRadius: 99, height: 5, marginTop: 6, overflow: "hidden" }}>
               <div style={{ width: profilPct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99 }} />
             </div>
           </div>
@@ -7659,7 +7659,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
                 <div style={{ fontSize: 20, fontWeight: 700, color: "#e2e8f0" }}>{Math.round(income - totalExp).toLocaleString("sv-SE")} kr</div>
               </div>
             </div>
-            <div style={{ marginTop: 12, background: "#1e293b", borderRadius: 99, height: 6, overflow: "hidden" }}>
+            <div style={{ marginTop: 12, background: "var(--border2)", borderRadius: 99, height: 6, overflow: "hidden" }}>
               <div style={{ width: `${Math.min(100, savingsRate)}%`, height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99 }} />
             </div>
             <div style={{ fontSize: 11, color: "#475569", marginTop: 6 }}>Tryck för att se full ekonomiöversikt →</div>
@@ -7676,7 +7676,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Snabbval</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 20 }}>
         {QUICK_ACTIONS.map(({ icon, label, color, action }) => (
-          <button key={label} onClick={action} style={{ background: "#0f172a", border: `1px solid ${color}22`, borderRadius: 14, padding: "14px 8px", cursor: "pointer", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <button key={label} onClick={action} style={{ background: "var(--card)", border: `1px solid ${color}22`, borderRadius: 14, padding: "14px 8px", cursor: "pointer", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
             <div style={{ width: 42, height: 42, borderRadius: 12, background: color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{icon}</div>
             <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", lineHeight: 1.3 }}>{label}</div>
           </button>
@@ -7691,7 +7691,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
           const up = p.chgPct >= 0;
           return (
             <button key={s.name} onClick={() => { setQuery(s.name); analyze(s.name); setTab(1); setSubTab("analys"); unlock("first_analysis"); }}
-              style={{ flexShrink: 0, background: "#0f172a", border: `1px solid ${up ? "#22c55e22" : "#ef444422"}`, borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left", minWidth: 110 }}>
+              style={{ flexShrink: 0, background: "var(--card)", border: `1px solid ${up ? "#22c55e22" : "#ef444422"}`, borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left", minWidth: 110 }}>
               <div style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</div>
               <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0" }}>{s.name}</div>
               <div style={{ fontSize: 11, color: up ? "#22c55e" : "#ef4444", fontWeight: 700, marginTop: 2 }}>{up ? "▲" : "▼"} {Math.abs(p.chgPct).toFixed(2)}%</div>
@@ -7709,7 +7709,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
 
       {/* Guide button */}
       <button onClick={() => setShowGuide(true)}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: "14px 16px", cursor: "pointer", marginBottom: 10 }}>
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: "14px 16px", cursor: "pointer", marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 38, height: 38, borderRadius: 10, background: "#3b82f622", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>❓</div>
           <div style={{ textAlign: "left" }}>
@@ -7735,7 +7735,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
       )}
 
       {/* Always free badge */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98122", padding: "12px 16px", textAlign: "center" }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98122", padding: "12px 16px", textAlign: "center" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>✓ Kapital är alltid gratis</div>
         <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.5 }}>
           Budget, kalkylatorer, juridisk AI, försäkringsjämförelse, lånejämförelse och mer — helt gratis för alltid. Pro ger obegränsade AI-analyser.
@@ -7750,7 +7750,7 @@ function ForsakringHub() {
   const [section, setSection] = useState("mina");
   return (
     <div>
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
         {[["mina","📋 Mina"],["guide","🔍 Guide"],["jamfor","⚖️ Jämför"]].map(([id, label]) => (
           <button key={id} onClick={() => setSection(id)} style={{ flex: 1, padding: "9px 4px", background: section === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "none", border: "none", borderRadius: 9, color: section === id ? "#fff" : "#64748b", fontSize: 13, fontWeight: section === id ? 700 : 400, cursor: "pointer" }}>
             {label}
@@ -7838,7 +7838,7 @@ function Topp10Tab({ analyze, setSubTab }) {
       {/* List */}
       {aktier.map((a, i) => (
         <button key={a.ticker} onClick={() => { analyze(a.namn + " " + a.ticker); setSubTab("analys"); }}
-          style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: "14px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+          style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: "14px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
           {/* Rank */}
           <div style={{ width: 32, height: 32, borderRadius: 10, background: i < 3 ? "linear-gradient(135deg,#f59e0b,#f97316)" : "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: i < 3 ? "#fff" : "#475569", flexShrink: 0 }}>
             {i + 1}
@@ -7994,7 +7994,7 @@ function InvesterarGuide() {
         </div>
 
         {kapitel.innehall.map((s, i) => (
-          <div key={i} style={{ background: "#0f172a", borderRadius: 16, border: `1px solid ${kapitel.color}22`, padding: 18, marginBottom: 12 }}>
+          <div key={i} style={{ background: "var(--card)", borderRadius: 16, border: `1px solid ${kapitel.color}22`, padding: 18, marginBottom: 12 }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: kapitel.color, marginBottom: 8 }}>{s.rubrik}</div>
             <div style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.8 }}>{s.text}</div>
           </div>
@@ -8026,7 +8026,7 @@ function InvesterarGuide() {
 
         {kapitellista.map((k, i) => (
           <button key={k.id} onClick={() => setKapitel(k)}
-            style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "#0f172a", border: `1px solid ${k.color}33`, borderRadius: 16, padding: "16px 18px", marginBottom: 10, cursor: "pointer", textAlign: "left" }}>
+            style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "var(--card)", border: `1px solid ${k.color}33`, borderRadius: 16, padding: "16px 18px", marginBottom: 10, cursor: "pointer", textAlign: "left" }}>
             <div style={{ width: 48, height: 48, borderRadius: 14, background: k.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>{k.emoji}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{i + 1}. {k.titel}</div>
@@ -8053,7 +8053,7 @@ function InvesterarGuide() {
 
       {NIVAER.map(n => (
         <button key={n.id} onClick={() => setNiva(n.id)}
-          style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", background: "#0f172a", border: `2px solid ${n.color}33`, borderRadius: 18, padding: "20px 18px", marginBottom: 12, cursor: "pointer", textAlign: "left" }}>
+          style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", background: "var(--card)", border: `2px solid ${n.color}33`, borderRadius: 18, padding: "20px 18px", marginBottom: 12, cursor: "pointer", textAlign: "left" }}>
           <div style={{ fontSize: 42 }}>{n.emoji}</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0" }}>{n.label}</div>
@@ -8063,7 +8063,7 @@ function InvesterarGuide() {
         </button>
       ))}
 
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, marginTop: 4 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, marginTop: 4 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 10 }}>📊 Snabbfakta för investerare</div>
         {[
           ["Historisk årsavkastning S&P 500", "~10% nominellt (~7% realt)"],
@@ -8072,7 +8072,7 @@ function InvesterarGuide() {
           ["Optimal sparhorisont för aktier", "5+ år"],
           ["Andel aktier vs räntor (tumregel)", "110 minus din ålder = % aktier"],
         ].map(([l, v]) => (
-          <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #1e293b", gap: 10 }}>
+          <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid var(--border)", gap: 10 }}>
             <span style={{ fontSize: 12, color: "#64748b" }}>{l}</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", textAlign: "right" }}>{v}</span>
           </div>
@@ -8151,7 +8151,7 @@ function InvesterarAI() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {SNABBFRAGOR.map((q, i) => (
               <button key={i} onClick={() => send(q)}
-                style={{ padding: "6px 12px", background: "#0f172a", border: "1px solid #10b98133", borderRadius: 99, color: "#10b981", fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+                style={{ padding: "6px 12px", background: "var(--card)", border: "1px solid #10b98133", borderRadius: 99, color: "#10b981", fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
                 {q}
               </button>
             ))}
@@ -8170,7 +8170,7 @@ function InvesterarAI() {
               maxWidth: "82%",
               background: m.role === "user" ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a",
               borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-              border: m.role === "user" ? "none" : "1px solid #1e293b",
+              border: m.role === "user" ? "none" : "1px solid var(--border)",
               padding: "12px 16px",
             }}>
               <div style={{ fontSize: 14, color: m.role === "user" ? "#fff" : "#e2e8f0", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{m.content}</div>
@@ -8180,7 +8180,7 @@ function InvesterarAI() {
         {loading && (
           <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
             <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🎓</div>
-            <div style={{ background: "#0f172a", borderRadius: "18px 18px 18px 4px", border: "1px solid #1e293b", padding: "12px 16px" }}>
+            <div style={{ background: "var(--card)", borderRadius: "18px 18px 18px 4px", border: "1px solid var(--border)", padding: "12px 16px" }}>
               <div style={{ display: "flex", gap: 4 }}>
                 {[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", opacity: 0.5, animation: `pulse ${0.8 + i * 0.2}s infinite` }} />)}
               </div>
@@ -8191,7 +8191,7 @@ function InvesterarAI() {
       </div>
 
       {/* Input */}
-      <div style={{ display: "flex", gap: 8, background: "#0f172a", borderRadius: 16, border: "1px solid #10b98133", padding: 8 }}>
+      <div style={{ display: "flex", gap: 8, background: "var(--card)", borderRadius: 16, border: "1px solid #10b98133", padding: 8 }}>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
@@ -8239,7 +8239,7 @@ function ByggHusGuide() {
 
   return (
     <div>
-      <div style={{ display: "flex", gap: 4, background: "#0f172a", borderRadius: 12, padding: 4, border: "1px solid #1e293b", marginBottom: 16 }}>
+      <div style={{ display: "flex", gap: 4, background: "var(--card)", borderRadius: 12, padding: 4, border: "1px solid var(--border)", marginBottom: 16 }}>
         <SBtn id="plan" label="🏗️ Kostnadsplan" />
         <SBtn id="spar" label="💰 Sparplan" />
         <SBtn id="guide" label="📋 Steg-för-steg" />
@@ -8258,20 +8258,20 @@ function ByggHusGuide() {
               <div key={k} style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{label}</div>
                 {opts ? (
-                  <select value={form[k]} onChange={e => set(k, e.target.value)} style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }}>
-                    {opts.map(([v, l]) => <option key={v} value={v} style={{ background: "#0f172a" }}>{l}</option>)}
+                  <select value={form[k]} onChange={e => set(k, e.target.value)} style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }}>
+                    {opts.map(([v, l]) => <option key={v} value={v} style={{ background: "var(--card)" }}>{l}</option>)}
                   </select>
                 ) : (
                   <input value={form[k]} onChange={e => set(k, e.target.value)} inputMode="decimal"
-                    style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                    style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                 )}
               </div>
             ))}
           </div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f9731633", padding: 16, marginBottom: 12 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #f9731633", padding: 16, marginBottom: 12 }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Kostnadssammanställning</div>
             {[["🏗️ Byggnation", byggKostnad], ["🏚️ Grund & källare", grundKostnad], ["🚿 VVS, el & värme", vaVsKostnad], ["🌿 Tomt & utomhus", externtKostnad], ["⚠️ Oförutsett (10%)", oforutsett], ...(form.tomt === "nej" ? [["🌍 Tomt", tomtKostnad]] : [])].map(([l, v]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #1e293b" }}>
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: 13, color: "#64748b" }}>{l}</span>
                 <span style={{ fontSize: 13, color: "#e2e8f0" }}>{Math.round(v).toLocaleString("sv-SE")} kr</span>
               </div>
@@ -8283,7 +8283,7 @@ function ByggHusGuide() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
             {[["Kontantinsats 15%", Math.round(kontantinsats).toLocaleString("sv-SE") + " kr", "#f59e0b"], ["Bolån", (lan/1000000).toFixed(1) + " Mkr", "#3b82f6"], ["Kostnad/mån", Math.round(manadsKostnad).toLocaleString("sv-SE") + " kr", "#10b981"]].map(([l, v, c]) => (
-              <div key={l} style={{ background: "#0f172a", borderRadius: 10, padding: 12, border: "1px solid #1e293b" }}>
+              <div key={l} style={{ background: "var(--card)", borderRadius: 10, padding: 12, border: "1px solid var(--border)" }}>
                 <div style={{ fontSize: 9, color: "#475569", marginBottom: 4 }}>{l}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: c }}>{v}</div>
               </div>
@@ -8294,20 +8294,20 @@ function ByggHusGuide() {
 
       {tab === "spar" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 14 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981", marginBottom: 10 }}>💰 Sparplan för kontantinsats</div>
             <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12 }}>Du behöver: <b style={{ color: "#f97316" }}>{Math.round(kontantinsats).toLocaleString("sv-SE")} kr</b></div>
             {[1000, 2000, 3000, 5000, 8000, 10000].map(mån => {
               const år = Math.ceil(kontantinsats / (mån * 12 * 1.05));
               return (
-                <div key={mån} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #1e293b", alignItems: "center" }}>
+                <div key={mån} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)", alignItems: "center" }}>
                   <span style={{ fontSize: 14, color: "#e2e8f0", fontWeight: 600 }}>{mån.toLocaleString("sv-SE")} kr/mån</span>
                   <span style={{ fontSize: 13, color: år <= 5 ? "#10b981" : år <= 10 ? "#f59e0b" : "#ef4444" }}>≈ {år} år{år <= 3 ? " 🔥" : ""}</span>
                 </div>
               );
             })}
           </div>
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 8 }}>💡 Tips</div>
             {["Investera i ISK med globala indexfonder — 7-10% snittavkastning", "Undersök Startlån och Bostadsbidrag via Boverket", "Sök ROT-avdrag vid renovering — 30% avdrag", "Hyra ut rum ökar sparkvoten med 3 000-8 000 kr/mån"].map((t, i) => (
               <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6, display: "flex", gap: 8 }}><span style={{ color: "#f59e0b" }}>→</span>{t}</div>
@@ -8368,21 +8368,21 @@ function RenoveringKalkyl() {
         <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>ROT-avdrag (30%, max 50 000 kr) beräknas automatiskt.</div>
       </div>
       {POSTER.map(p => (
-        <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 10, background: "#0f172a", borderRadius: 10, border: "1px solid #1e293b", padding: "10px 12px", marginBottom: 6 }}>
+        <div key={p.key} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--card)", borderRadius: 10, border: "1px solid var(--border)", padding: "10px 12px", marginBottom: 6 }}>
           <span style={{ fontSize: 20, flexShrink: 0 }}>{p.icon}</span>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, color: "#e2e8f0" }}>{p.label}</div>
             {p.rot && <div style={{ fontSize: 10, color: "#10b981" }}>ROT-berättigat</div>}
           </div>
           <input value={val[p.key] || ""} onChange={e => set(p.key, e.target.value)} placeholder="0" inputMode="decimal"
-            style={{ width: 100, textAlign: "right", padding: "6px 8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, fontWeight: 700, outline: "none" }} />
+            style={{ width: 100, textAlign: "right", padding: "6px 8px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, fontWeight: 700, outline: "none" }} />
           <span style={{ fontSize: 11, color: "#475569" }}>kr</span>
         </div>
       ))}
       {total > 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginTop: 12 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginTop: 12 }}>
           {[["Totalt", total, "#e2e8f0"], ["ROT-avdrag", -rotAvdrag, "#10b981"], ["Netto att betala", netto, "#f97316"]].map(([l, v, c]) => (
-            <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: l !== "Netto att betala" ? "1px solid #1e293b" : "none" }}>
+            <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: l !== "Netto att betala" ? "1px solid var(--border)" : "none" }}>
               <span style={{ fontSize: 14, color: "#64748b" }}>{l}</span>
               <span style={{ fontSize: 15, fontWeight: 700, color: c }}>{v < 0 ? "-" : ""}{Math.round(Math.abs(v)).toLocaleString("sv-SE")} kr</span>
             </div>
@@ -8407,7 +8407,7 @@ function BilligtBoende() {
         <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Smarta sätt att sänka boendekostnaden</div>
       </div>
       {sektioner.map(s => (
-        <div key={s.title} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${s.color}22`, padding: 16, marginBottom: 10 }}>
+        <div key={s.title} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${s.color}22`, padding: 16, marginBottom: 10 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: s.color, marginBottom: 10 }}>{s.title}</div>
           {s.items.map((item, i) => (
             <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6, display: "flex", gap: 8 }}>
@@ -8454,7 +8454,7 @@ function ResaSmart() {
         <div key={kat.title} style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: kat.color, marginBottom: 10 }}>{kat.title}</div>
           {kat.items.map((item, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 8 }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{item.namn}</div>
                 {item.badge && <span style={{ fontSize: 10, background: item.badge.includes("Affiliate") ? "#f59e0b22" : "#10b98122", color: item.badge.includes("Affiliate") ? "#f59e0b" : "#10b981", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{item.badge}</span>}
@@ -8555,16 +8555,16 @@ function JamforLan() {
 
       {/* Amount and period */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
-        <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "12px 14px" }}>
           <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Lånebelopp (kr)</div>
           <input value={belopp} onChange={e => setBelopp(e.target.value)} inputMode="decimal"
             style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 800, color: "#3b82f6", boxSizing: "border-box" }} />
         </div>
-        <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "12px 14px" }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "12px 14px" }}>
           <div style={{ fontSize: 10, color: "#64748b", marginBottom: 5 }}>Löptid (år)</div>
           <select value={tid} onChange={e => setTid(e.target.value)}
             style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 20, fontWeight: 800, color: "#e2e8f0", cursor: "pointer" }}>
-            {[1,2,3,5,7,10,15,20,25,30].map(y => <option key={y} value={y} style={{ background: "#0f172a" }}>{y} år</option>)}
+            {[1,2,3,5,7,10,15,20,25,30].map(y => <option key={y} value={y} style={{ background: "var(--card)" }}>{y} år</option>)}
           </select>
         </div>
       </div>
@@ -8591,7 +8591,7 @@ function JamforLan() {
       {/* Bank comparison table */}
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Alla banker jämfört</div>
       {banker.sort((a, b) => (a.rorlig || 99) - (b.rorlig || 99)).map((b, i) => (
-        <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${i === 0 ? "#10b98133" : "#1e293b"}`, padding: 14, marginBottom: 8 }}>
+        <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${i === 0 ? "#10b98133" : "#1e293b"}`, padding: 14, marginBottom: 8 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 26 }}>{b.logo}</span>
@@ -8615,7 +8615,7 @@ function JamforLan() {
               ["Fast 3 år", b.fast3 ? b.fast3 + "%" : "—"],
               ["Fast 5 år", b.fast5 ? b.fast5 + "%" : "—"],
             ].map(([l, v]) => (
-              <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
+              <div key={l} style={{ background: "var(--bg2)", borderRadius: 8, padding: "6px 8px", textAlign: "center" }}>
                 <div style={{ fontSize: 9, color: "#475569" }}>{l}</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0" }}>{v}</div>
               </div>
@@ -8623,7 +8623,7 @@ function JamforLan() {
           </div>
 
           {beloppNum > 0 && b.rorlig && (
-            <div style={{ marginTop: 8, padding: "8px 10px", background: "#0a0f1e", borderRadius: 8, display: "flex", justifyContent: "space-between" }}>
+            <div style={{ marginTop: 8, padding: "8px 10px", background: "var(--bg2)", borderRadius: 8, display: "flex", justifyContent: "space-between" }}>
               <span style={{ fontSize: 12, color: "#64748b" }}>Månadskostnad</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#3b82f6" }}>{Math.round(manadsKostnad(b.rorlig)).toLocaleString("sv-SE")} kr/mån</span>
             </div>
@@ -8722,7 +8722,7 @@ function JamforForsakring() {
 
       {/* Comparison cards */}
       {forsakringar.map((f, i) => (
-        <div key={i} style={{ background: "#0f172a", borderRadius: 16, border: `1px solid ${i === 0 ? f.color + "55" : "#1e293b"}`, padding: 16, marginBottom: 12 }}>
+        <div key={i} style={{ background: "var(--card)", borderRadius: 16, border: `1px solid ${i === 0 ? f.color + "55" : "#1e293b"}`, padding: 16, marginBottom: 12 }}>
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
             <div>
@@ -8759,7 +8759,7 @@ function JamforForsakring() {
         </div>
       ))}
 
-      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginTop: 4 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginTop: 4 }}>
         <div style={{ fontSize: 12, color: "#f59e0b", marginBottom: 8 }}>💡 Tips för att spara på försäkringar</div>
         {["Samla alla försäkringar hos ett bolag — ofta 15-20% rabatt","Höj självrisken — halverar ofta premien","Jämför via Insplanet.se — tar 2 minuter och visar alla priser","Kolla om facket inkluderar försäkringar — A-kassan inkluderar ofta hemförsäkring"].map((t, i) => (
           <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}>
@@ -8834,7 +8834,7 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
   const DealCard = ({ item, keyStr }) => {
     const open = expanded === keyStr;
     return (
-      <div style={{ background: "#0f172a", borderRadius: 16, border: `2px solid ${open ? item.color + "88" : "#1e293b"}`, marginBottom: 10, overflow: "hidden", transition: "border-color 0.2s" }}>
+      <div style={{ background: "var(--card)", borderRadius: 16, border: `2px solid ${open ? item.color + "88" : "#1e293b"}`, marginBottom: 10, overflow: "hidden", transition: "border-color 0.2s" }}>
         <div style={{ padding: "16px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14 }} onClick={() => setExpanded(open ? null : keyStr)}>
           <div style={{ width: 44, height: 44, borderRadius: 12, background: item.color + "22", border: `1px solid ${item.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>
             {item.url.includes("sbab") ? "🏠" : item.url.includes("zmarta") || item.url.includes("lendo") ? "💰" : item.url.includes("insplanet") || item.url.includes("hedvig") || item.url.includes("lans") || item.url.includes("if.se") ? "🛡️" : item.url.includes("lease") || item.url.includes("sixt") || item.url.includes("sant") || item.url.includes("volvo") ? "🚗" : item.url.includes("tibber") || item.url.includes("vattenfall") || item.url.includes("bredband") ? "⚡" : item.url.includes("agria") || item.url.includes("folksam") ? "🐾" : item.url.includes("sas") || item.url.includes("coop") || item.url.includes("amex") ? "💳" : "🤝"}
@@ -8879,7 +8879,7 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
           {KATEGORIER.filter(k => k.id !== "deals_hem").map(k => (
             <button key={k.id} onClick={() => { setSubTab(k.id); setExpanded(null); }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, padding: "16px 14px", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 16, cursor: "pointer", textAlign: "left" }}>
+              style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8, padding: "16px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 16, cursor: "pointer", textAlign: "left" }}>
               <span style={{ fontSize: 28 }}>{k.icon}</span>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#e2e8f0" }}>{k.label}</div>
             </button>
@@ -8992,7 +8992,7 @@ function ErbjudandenHub() {
             const key = kat.kategori + i;
             const open = expanded === key;
             return (
-              <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${open ? kat.color + "55" : "#1e293b"}`, padding: 16, marginBottom: 8 }}>
+              <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${open ? kat.color + "55" : "#1e293b"}`, padding: 16, marginBottom: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", cursor: "pointer" }} onClick={() => setExpanded(open ? null : key)}>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
@@ -9004,7 +9004,7 @@ function ErbjudandenHub() {
                   <span style={{ color: "#475569", fontSize: 16 }}>{open ? "▲" : "▼"}</span>
                 </div>
                 {open && (
-                  <div style={{ borderTop: "1px solid #1e293b", paddingTop: 10, marginTop: 10 }}>
+                  <div style={{ borderTop: "1px solid var(--border)", paddingTop: 10, marginTop: 10 }}>
                     <div style={{ background: kat.color + "11", borderRadius: 8, padding: "8px 12px", marginBottom: 10, fontSize: 13, color: "#e2e8f0" }}>📋 {item.detalj}</div>
                     <a href={"https://" + item.url} target="_blank" rel="noopener noreferrer"
                       style={{ display: "block", padding: "12px", background: `linear-gradient(135deg,${kat.color},${kat.color}99)`, borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
@@ -9072,7 +9072,7 @@ function PrisGraf({ geckoId, symbol, color, height = 120 }) {
 
   if (loading) {
     return (
-      <div style={{ height, background: "#0a0f1e", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ height, background: "var(--bg2)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ fontSize: 12, color: "#334155" }}>Laddar graf...</div>
       </div>
     );
@@ -9103,7 +9103,7 @@ function PrisGraf({ geckoId, symbol, color, height = 120 }) {
   const fillPoints = `${pad},${h - pad} ` + points + ` ${w - pad},${h - pad}`;
 
   return (
-    <div style={{ background: "#0a0f1e", borderRadius: 14, padding: "12px 14px", marginBottom: 10 }}>
+    <div style={{ background: "var(--bg2)", borderRadius: 14, padding: "12px 14px", marginBottom: 10 }}>
       {/* Period selector */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ display: "flex", gap: 4 }}>
@@ -9207,7 +9207,7 @@ function AktieGraf({ ticker, color }) {
 
   if (loading) {
     return (
-      <div style={{ height: 120, background: "#0a0f1e", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ height: 120, background: "var(--bg2)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ fontSize: 12, color: "#334155" }}>Laddar graf...</div>
       </div>
     );
@@ -9233,7 +9233,7 @@ function AktieGraf({ ticker, color }) {
   const fillPoints = `${pad},${h - pad} ` + points + ` ${w - pad},${h - pad}`;
 
   return (
-    <div style={{ background: "#0a0f1e", borderRadius: 14, padding: "12px 14px", marginBottom: 10 }}>
+    <div style={{ background: "var(--bg2)", borderRadius: 14, padding: "12px 14px", marginBottom: 10 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ display: "flex", gap: 4 }}>
           {PERIODS.map(p => (
@@ -9419,7 +9419,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
 
         {/* Bull/Bear */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #22c55e33", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #22c55e33", padding: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", marginBottom: 8 }}>🐂 Bull case</div>
             {(result.bullCase || []).map((b, i) => (
               <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 6 }}>
@@ -9427,7 +9427,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
               </div>
             ))}
           </div>
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #ef444433", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #ef444433", padding: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>🐻 Bear case</div>
             {(result.bearCase || []).map((b, i) => (
               <div key={i} style={{ fontSize: 12, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 6 }}>
@@ -9438,7 +9438,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
         </div>
 
         {/* Teknisk analys */}
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>📊 Teknisk analys</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
@@ -9449,7 +9449,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
               ["RSI", result.tekniskAnalys?.rsi || "—"],
               ["Risknivå", result.riskNiva || "Hög"],
             ].map(([l, v]) => (
-              <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+              <div key={l} style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                 <div style={{ fontSize: 10, color: "#475569" }}>{l}</div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{v}</div>
               </div>
@@ -9458,7 +9458,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
         </div>
 
         {/* Fundamenta */}
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>🔍 Fundamenta</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
@@ -9469,7 +9469,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
               ["Konsensus", result.fundamenta?.konsensusmekanism || "—"],
               ["Skapad", result.fundamenta?.skapad || "—"],
             ].map(([l, v]) => (
-              <div key={l} style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+              <div key={l} style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                 <div style={{ fontSize: 10, color: "#475569" }}>{l}</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: "#e2e8f0" }}>{v}</div>
               </div>
@@ -9479,7 +9479,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
 
         {/* Katalysatorer */}
         {result.catalysts?.length > 0 && (
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b", marginBottom: 8 }}>🚀 Katalysatorer</div>
             {result.catalysts.map((c, i) => (
               <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 5, display: "flex", gap: 8 }}>
@@ -9491,10 +9491,10 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
 
         {/* Nyheter */}
         {result.nyheter?.length > 0 && (
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", marginBottom: 8 }}>📰 Senaste nyheter</div>
             {result.nyheter.map((n, i) => (
-              <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: i < result.nyheter.length - 1 ? "1px solid #1e293b" : "none", alignItems: "center" }}>
+              <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: i < result.nyheter.length - 1 ? "1px solid var(--border)" : "none", alignItems: "center" }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: n.sentiment === "positiv" ? "#22c55e" : n.sentiment === "negativ" ? "#ef4444" : "#f59e0b", flexShrink: 0 }} />
                 <div style={{ fontSize: 13, color: "#e2e8f0" }}>{n.rubrik}</div>
               </div>
@@ -9513,7 +9513,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
     <div>
       {/* Market overview */}
       {!pricesLoading && Object.keys(prices).length > 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "10px 14px", marginBottom: 14, overflow: "hidden" }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "10px 14px", marginBottom: 14, overflow: "hidden" }}>
           <div style={{ display: "flex", gap: 16, overflowX: "auto", scrollbarWidth: "none" }}>
             {KRYPTO_PRESETS.map(k => {
               const p = prices[k.geckoId];
@@ -9534,7 +9534,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
       )}
 
       {/* Search */}
-      <div style={{ background: "#0f172a", borderRadius: 16, border: "1px solid #f59e0b33", padding: 16, marginBottom: 16 }}>
+      <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid #f59e0b33", padding: 16, marginBottom: 16 }}>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>₿ Analysera kryptovaluta</div>
         <div style={{ display: "flex", gap: 8 }}>
           <input
@@ -9542,7 +9542,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === "Enter" && analyze()}
             placeholder="Bitcoin, Ethereum, Solana..."
-            style={{ flex: 1, padding: "12px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none" }}
+            style={{ flex: 1, padding: "12px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none" }}
           />
           <button onClick={() => analyze()} disabled={loading || !query.trim()}
             style={{ padding: "12px 20px", background: loading ? "#1e293b" : "linear-gradient(135deg,#f59e0b,#f97316)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer" }}>
@@ -9553,7 +9553,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
 
       {/* Loading */}
       {loading && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 20, textAlign: "center", marginBottom: 16 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #f59e0b33", padding: 20, textAlign: "center", marginBottom: 16 }}>
           <div style={{ fontSize: 32, marginBottom: 10 }}>⏳</div>
           <div style={{ fontSize: 14, color: "#f59e0b", fontWeight: 600 }}>{STEPS[loadStep]}</div>
           <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12 }}>
@@ -9594,7 +9594,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
           return (
             <div key={k.symbol}>
             <button onClick={() => setSelectedKrypto(selectedKrypto === k.geckoId ? null : k.geckoId)}
-              style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "#0f172a", border: `1px solid ${selectedKrypto === k.geckoId ? k.color + "66" : k.color + "22"}`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", textAlign: "left" }}>
+              style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", background: "var(--card)", border: `1px solid ${selectedKrypto === k.geckoId ? k.color + "66" : k.color + "22"}`, borderRadius: 14, padding: "14px 16px", cursor: "pointer", textAlign: "left" }}>
               {/* Icon */}
               <div style={{ width: 44, height: 44, borderRadius: "50%", background: k.color + "22", border: `1px solid ${k.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
                 {k.emoji}
@@ -9607,7 +9607,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
               {/* Price & change */}
               <div style={{ textAlign: "right" }}>
                 {pricesLoading ? (
-                  <div style={{ width: 60, height: 16, background: "#1e293b", borderRadius: 4 }} />
+                  <div style={{ width: 60, height: 16, background: "var(--border2)", borderRadius: 4 }} />
                 ) : priceSek ? (
                   <>
                     <div style={{ fontSize: 15, fontWeight: 800, color: "#e2e8f0" }}>
@@ -9650,7 +9650,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Tidigare analyser</div>
           {Object.values(cache).slice(0, 3).map((r, i) => (
             <button key={i} onClick={() => setResult(r)}
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, padding: "12px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "12px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{r.name} ({r.symbol})</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: recColor(r.recommendation) }}>{recLabel(r.recommendation)}</div>
             </button>
@@ -9710,14 +9710,14 @@ function KryptoGuide() {
             </div>
           </div>
 
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 14, marginBottom: 10 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: 14, marginBottom: 10 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>✅ Fördelar</div>
             {["Potentiellt hög avkastning", "Decentraliserat — ingen bank styr", "Handlas dygnet runt, 7 dagar i veckan", "Möjlighet till passiv inkomst via staking"].map((t, i) => (
               <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4, display: "flex", gap: 8 }}><span style={{ color: "#10b981" }}>→</span>{t}</div>
             ))}
           </div>
 
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #ef444433", padding: 14, marginBottom: 10 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #ef444433", padding: 14, marginBottom: 10 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>⚠️ Risker</div>
             {["Extremt volatilt — kan falla 80%+ på kort tid", "Oreglerat i många länder", "Bedrägerier och scams är vanliga", "Teknisk komplexitet — om du tappar nyckeln förlorar du allt", "Skattepliktig tillgång — måste deklareras på K4"].map((t, i) => (
               <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4, display: "flex", gap: 8 }}><span style={{ color: "#ef4444" }}>!</span>{t}</div>
@@ -9736,7 +9736,7 @@ function KryptoGuide() {
       {section === "krypton" && (
         <div>
           {KRYPTON.map((k, i) => (
-            <div key={k.symbol} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${k.color}33`, padding: 16, marginBottom: 10 }}>
+            <div key={k.symbol} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${k.color}33`, padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ width: 42, height: 42, borderRadius: "50%", background: k.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, border: `1px solid ${k.color}44` }}>{k.emoji}</div>
@@ -9758,7 +9758,7 @@ function KryptoGuide() {
 
       {section === "kopa" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 10 }}>Steg för steg — köp din första krypto</div>
             {[
               { num: 1, text: "Välj en reglerad börs — se listan nedan. Safello är enklast för svenska användare." },
@@ -9779,7 +9779,7 @@ function KryptoGuide() {
           </div>
 
           {BÖRSER.map(b => (
-            <div key={b.namn} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${b.safe === 5 ? "#10b98133" : "#1e293b"}`, padding: 14, marginBottom: 10 }}>
+            <div key={b.namn} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${b.safe === 5 ? "#10b98133" : "#1e293b"}`, padding: 14, marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 24 }}>{b.flag}</span>
@@ -9799,13 +9799,13 @@ function KryptoGuide() {
 
       {section === "portfölj" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 10 }}>₿ Mina krypton</div>
             {innehav.length === 0 ? (
               <div style={{ textAlign: "center", padding: "20px 0", color: "#334155", fontSize: 13 }}>Inga krypton tillagda ännu</div>
             ) : (
               innehav.map((k, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1e293b" }}>
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{k.namn} ({k.symbol})</div>
                     <div style={{ fontSize: 12, color: "#475569" }}>{k.antal} st · Köpt för {parseFloat(k.kostnad).toLocaleString("sv-SE")} kr</div>
@@ -9817,28 +9817,28 @@ function KryptoGuide() {
           </div>
 
           {adding ? (
-            <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+            <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
               <select value={newK.namn} onChange={e => { const k = KRYPTON.find(k => k.namn === e.target.value); setNewK(n => ({ ...n, namn: e.target.value, symbol: k?.symbol || "" })); }}
-                style={{ width: "100%", padding: "10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
-                {KRYPTON.map(k => <option key={k.symbol} value={k.namn} style={{ background: "#0f172a" }}>{k.emoji} {k.namn} ({k.symbol})</option>)}
+                style={{ width: "100%", padding: "10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
+                {KRYPTON.map(k => <option key={k.symbol} value={k.namn} style={{ background: "var(--card)" }}>{k.emoji} {k.namn} ({k.symbol})</option>)}
               </select>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
                 {[["antal", "Antal", "0.5"], ["kostnad", "Köpt för (kr)", "10000"]].map(([key, label, ph]) => (
                   <div key={key}>
                     <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{label}</div>
                     <input value={newK[key]} onChange={e => setNewK(n => ({ ...n, [key]: e.target.value }))} placeholder={ph} inputMode="decimal"
-                      style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                      style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
                   </div>
                 ))}
               </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => { if (newK.antal && newK.kostnad) { save([...innehav, newK]); setAdding(false); setNewK({ namn: "Bitcoin", symbol: "BTC", antal: "", kostnad: "" }); } }}
                   style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#f59e0b,#f97316)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-                <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+                <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
               </div>
             </div>
           ) : (
-            <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+            <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
               + Lägg till krypto
             </button>
           )}
@@ -9873,7 +9873,7 @@ function KryptoSkatt() {
         </div>
       </div>
 
-      <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>💡 Viktiga regler</div>
         {[
           "Varje försäljning är en skattepliktig händelse — även byte mellan krypton",
@@ -9907,7 +9907,7 @@ function KryptoSkatt() {
       {trades.map((t, i) => {
         const vinst = (parseFloat(t.saljPris) - parseFloat(t.kopPris)) * parseFloat(t.antal || 1);
         return (
-          <div key={i} style={{ background: "#0f172a", borderRadius: 10, border: `1px solid ${vinst >= 0 ? "#10b98122" : "#ef444422"}`, padding: 12, marginBottom: 8 }}>
+          <div key={i} style={{ background: "var(--card)", borderRadius: 10, border: `1px solid ${vinst >= 0 ? "#10b98122" : "#ef444422"}`, padding: 12, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>{t.krypto} · {t.antal} st</div>
@@ -9926,27 +9926,27 @@ function KryptoSkatt() {
       })}
 
       {adding ? (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 10 }}>Lägg till affär</div>
           <input value={newT.krypto} onChange={e => setNewT(n => ({ ...n, krypto: e.target.value }))} placeholder="BTC, ETH..."
-            style={{ width: "100%", padding: "9px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+            style={{ width: "100%", padding: "9px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             {[["kopPris", "Köppris/st (SEK)", "300000"], ["saljPris", "Säljpris/st (SEK)", "450000"], ["antal", "Antal", "0.5"], ["kopDatum", "Köpdatum", "2024-01-01"]].map(([key, label, ph]) => (
               <div key={key}>
                 <div style={{ fontSize: 10, color: "#64748b", marginBottom: 3 }}>{label}</div>
                 <input value={newT[key]} onChange={e => setNewT(n => ({ ...n, [key]: e.target.value }))} placeholder={ph}
-                  style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+                  style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
               </div>
             ))}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newT.kopPris && newT.saljPris) { save([...trades, newT]); setAdding(false); setNewT({ krypto: "BTC", kopDatum: "", kopPris: "", saljDatum: "", saljPris: "", antal: "" }); } }}
               style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#f59e0b,#f97316)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
           + Lägg till kryptoaffär för K4
         </button>
       )}
@@ -9967,7 +9967,7 @@ function UtlandGuide() {
   );
 
   const INFO_BOX = ({ title, items, color = "#10b981" }) => (
-    <div style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${color}33`, padding: 14, marginBottom: 12 }}>
+    <div style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${color}33`, padding: 14, marginBottom: 12 }}>
       <div style={{ fontSize: 13, fontWeight: 700, color, marginBottom: 10 }}>{title}</div>
       {items.map((item, i) => (
         <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
@@ -10053,12 +10053,12 @@ function UtlandGuide() {
       {/* BÖRSER */}
       {section === "borser" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 4 }}>Världens börser</div>
             <div style={{ fontSize: 12, color: "#64748b" }}>Tider är CET (svensk tid). Avanza och Nordnet ger tillgång till de flesta av dessa.</div>
           </div>
           {BÖRSER.map((b, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 28 }}>{b.flag}</span>
@@ -10067,7 +10067,7 @@ function UtlandGuide() {
                     <div style={{ fontSize: 11, color: "#475569" }}>{b.land} · {b.valutor}</div>
                   </div>
                 </div>
-                <div style={{ background: "#1e293b", borderRadius: 8, padding: "4px 10px", fontSize: 11, color: "#10b981" }}>
+                <div style={{ background: "var(--border2)", borderRadius: 8, padding: "4px 10px", fontSize: 11, color: "#10b981" }}>
                   🕐 {b.öppet}
                 </div>
               </div>
@@ -10085,7 +10085,7 @@ function UtlandGuide() {
       {/* ETF */}
       {section === "etf" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #3b82f633", padding: 14, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #3b82f633", padding: 14, marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#3b82f6", marginBottom: 4 }}>Vad är en ETF?</div>
             <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.6 }}>
               ETF (Exchange Traded Fund) är en fond som handlas på börsen som en aktie. En ETF kan innehålla hundratals bolag och ger dig automatisk diversifiering till minimal kostnad. <b style={{ color: "#e2e8f0" }}>En VUAA-aktie till ~500 SEK ger dig exponering mot 500 amerikanska bolag!</b>
@@ -10102,7 +10102,7 @@ function UtlandGuide() {
 
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Populära ETF:er</div>
           {ETF_GUIDE.map((e, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 10 }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>{e.namn}</div>
@@ -10162,7 +10162,7 @@ function UtlandGuide() {
       {section === "maklare" && (
         <div>
           {BROKERS.map((b, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: `1px solid ${b.betyg === 5 ? "#10b98133" : "#1e293b"}`, padding: 16, marginBottom: 12 }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${b.betyg === 5 ? "#10b98133" : "#1e293b"}`, padding: 16, marginBottom: 12 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 28 }}>{b.flag}</span>
@@ -10187,7 +10187,7 @@ function UtlandGuide() {
                   ["ISK", b.isk ? "✓ Ja" : "✗ Nej"],
                   ["ETF:er", b.etf ? "✓ Ja" : "✗ Nej"],
                 ].map(([label, value]) => (
-                  <div key={label} style={{ background: "#0a0f1e", borderRadius: 8, padding: "8px 10px" }}>
+                  <div key={label} style={{ background: "var(--bg2)", borderRadius: 8, padding: "8px 10px" }}>
                     <div style={{ fontSize: 10, color: "#475569" }}>{label}</div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: value.includes("✓") ? "#10b981" : value.includes("✗") ? "#ef4444" : "#e2e8f0" }}>{value}</div>
                   </div>
@@ -10196,7 +10196,7 @@ function UtlandGuide() {
             </div>
           ))}
 
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>💡 Vilket ska jag välja?</div>
             <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
               För de flesta svenska sparare är <b style={{ color: "#10b981" }}>Avanza eller Nordnet</b> bäst — gratis handel, ISK-konto, och enkelt gränssnitt på svenska. DEGIRO är bra om du handlar ofta på exotiska marknader. Interactive Brokers passar proffs.
@@ -10285,7 +10285,7 @@ function FondGuide() {
               ["Risk", selected.risk, riskFarg(selected.risk)],
               ["Hållbar", selected.hallbar ? "✓ Ja" : "Nej", selected.hallbar ? "#10b981" : "#475569"],
             ].map(([l, v, c]) => (
-              <div key={l} style={{ background: "#0a0f1e", borderRadius: 10, padding: "10px 10px" }}>
+              <div key={l} style={{ background: "var(--bg2)", borderRadius: 10, padding: "10px 10px" }}>
                 <div style={{ fontSize: 10, color: "#475569", marginBottom: 3 }}>{l}</div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: c }}>{v}</div>
               </div>
@@ -10293,7 +10293,7 @@ function FondGuide() {
           </div>
         </div>
 
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 10 }}>📈 Framtidsutsikter</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <div style={{ fontSize: 22 }}>{framtidStjarnor(selected.framtid)}</div>
@@ -10314,7 +10314,7 @@ function FondGuide() {
           )}
         </div>
 
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16 }}>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>💡 Var kan jag köpa denna fond?</div>
           {["Avanza", "Nordnet", "Din bank (Swedbank, SEB, Nordea, Handelsbanken)"].map((p, i) => (
             <div key={i} style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4, display: "flex", gap: 8 }}>
@@ -10343,7 +10343,7 @@ function FondGuide() {
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>⭐ Kapital rekommenderar</div>
       {ALLA_FONDER.filter(f => f.rekommenderas).map(f => (
         <button key={f.namn} onClick={() => setSelected(f)}
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#0f172a", border: `1px solid ${f.fargen}44`, borderRadius: 14, padding: "14px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "var(--card)", border: `1px solid ${f.fargen}44`, borderRadius: 14, padding: "14px 16px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
               <span style={{ fontSize: 10, background: "#10b98122", color: "#10b981", padding: "1px 7px", borderRadius: 99, fontWeight: 700 }}>REKOMMENDERAS</span>
@@ -10386,7 +10386,7 @@ function FondGuide() {
       {/* Fund list */}
       {filtered.map(f => (
         <button key={f.namn} onClick={() => setSelected(f)}
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 12, padding: "12px 14px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
+          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "12px 14px", marginBottom: 8, cursor: "pointer", textAlign: "left" }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", marginBottom: 3 }}>{f.namn}</div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -10457,12 +10457,12 @@ function ValutaWidget({ exchangeRates, currency, currencies }) {
         <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 14 }}>💱 Valutaomvandlare</div>
 
         {/* From */}
-        <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "14px 16px", marginBottom: 8 }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "14px 16px", marginBottom: 8 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Från</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <select value={fromCurr} onChange={e => setFromCurr(e.target.value)}
-              style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, padding: "6px 10px", outline: "none", cursor: "pointer" }}>
-              {CURR.map(c => <option key={c.code} value={c.code} style={{ background: "#0f172a" }}>{c.flag} {c.code}</option>)}
+              style={{ background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, padding: "6px 10px", outline: "none", cursor: "pointer" }}>
+              {CURR.map(c => <option key={c.code} value={c.code} style={{ background: "var(--card)" }}>{c.flag} {c.code}</option>)}
             </select>
             <input value={fromAmount} onChange={e => setFromAmount(e.target.value)} inputMode="decimal"
               style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 28, fontWeight: 800, color: "#e2e8f0", textAlign: "right" }} />
@@ -10472,18 +10472,18 @@ function ValutaWidget({ exchangeRates, currency, currencies }) {
         {/* Swap button */}
         <div style={{ textAlign: "center", marginBottom: 8 }}>
           <button onClick={() => { const tmp = fromCurr; setFromCurr(toCurr); setToCurr(tmp); }}
-            style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 18, color: "#10b981" }}>
+            style={{ background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 18, color: "#10b981" }}>
             ⇅
           </button>
         </div>
 
         {/* To */}
-        <div style={{ background: "#0a0f1e", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
+        <div style={{ background: "var(--bg2)", borderRadius: 12, padding: "14px 16px", marginBottom: 14 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Till</div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <select value={toCurr} onChange={e => setToCurr(e.target.value)}
-              style={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, padding: "6px 10px", outline: "none", cursor: "pointer" }}>
-              {CURR.map(c => <option key={c.code} value={c.code} style={{ background: "#0f172a" }}>{c.flag} {c.code}</option>)}
+              style={{ background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, padding: "6px 10px", outline: "none", cursor: "pointer" }}>
+              {CURR.map(c => <option key={c.code} value={c.code} style={{ background: "var(--card)" }}>{c.flag} {c.code}</option>)}
             </select>
             <div style={{ flex: 1, fontSize: 28, fontWeight: 800, color: "#10b981", textAlign: "right" }}>
               {converted.toLocaleString("sv-SE", { maximumFractionDigits: 2 })}
@@ -10499,13 +10499,13 @@ function ValutaWidget({ exchangeRates, currency, currencies }) {
       </div>
 
       {/* Live rates table */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Dagens kurser mot SEK</div>
         {CURR.filter(c => c.code !== "SEK").map(c => {
           const rate = exchangeRates[c.code];
           const rate1000 = rate ? (1000 * rate).toFixed(2) : "—";
           return (
-            <div key={c.code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1e293b" }}>
+            <div key={c.code} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ fontSize: 20 }}>{c.flag}</span>
                 <div>
@@ -10524,14 +10524,14 @@ function ValutaWidget({ exchangeRates, currency, currencies }) {
       </div>
 
       {/* Quick conversions */}
-      <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16 }}>
+      <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16 }}>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>Snabbomvandlare</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {POPULAR_PAIRS.map(p => {
             const r = convert(1000, p.from, p.to);
             return (
               <button key={p.label} onClick={() => { setFromCurr(p.from); setToCurr(p.to); setFromAmount("1000"); }}
-                style={{ background: "#0a0f1e", borderRadius: 10, padding: "10px 12px", border: "1px solid #1e293b", cursor: "pointer", textAlign: "left" }}>
+                style={{ background: "var(--bg2)", borderRadius: 10, padding: "10px 12px", border: "1px solid var(--border)", cursor: "pointer", textAlign: "left" }}>
                 <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>{p.label}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>
                   1 000 → {r.toFixed(0)}
@@ -10552,7 +10552,7 @@ function SeniorTab({ setSeniorMode }) {
 
   // Reusable big button
   const BIG_BTN = ({ icon, label, color, desc, onClick }) => (
-    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", padding: "20px 18px", background: "#0f172a", border: `2px solid ${color}44`, borderRadius: 20, cursor: "pointer", marginBottom: 12, textAlign: "left" }}>
+    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 16, width: "100%", padding: "20px 18px", background: "var(--card)", border: `2px solid ${color}44`, borderRadius: 20, cursor: "pointer", marginBottom: 12, textAlign: "left" }}>
       <div style={{ fontSize: 44, flexShrink: 0 }}>{icon}</div>
       <div>
         <div style={{ fontSize: 19, fontWeight: 700, color: "#e2e8f0" }}>{label}</div>
@@ -10693,7 +10693,7 @@ function SeniorTab({ setSeniorMode }) {
           <div style={{ fontSize: 22, fontWeight: 800, color: "#e2e8f0" }}>{guide.title}</div>
         </div>
 
-        <div style={{ background: "#0f172a", borderRadius: 18, border: `1px solid ${guide.color}33`, padding: 20, marginBottom: 16 }}>
+        <div style={{ background: "var(--card)", borderRadius: 18, border: `1px solid ${guide.color}33`, padding: 20, marginBottom: 16 }}>
           {guide.steps.map(step => <GUIDE_STEP key={step.num} {...step} />)}
         </div>
 
@@ -10769,7 +10769,7 @@ function SeniorTab({ setSeniorMode }) {
             { icon: "🧾", label: "Skatt", desc: "Beräkna din skatt och avdrag", tip: "Gå till Ekonomi → Skatt" },
             { icon: "📊", label: "Min ekonomiska profil", desc: "En samlad bild av din ekonomi", tip: "Gå till Trygghet → Min Profil" },
           ].map((item, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
                 <span style={{ fontSize: 32 }}>{item.icon}</span>
                 <div>
@@ -10777,7 +10777,7 @@ function SeniorTab({ setSeniorMode }) {
                   <div style={{ fontSize: 13, color: "#64748b" }}>{item.desc}</div>
                 </div>
               </div>
-              <div style={{ background: "#1e293b", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#10b981" }}>
+              <div style={{ background: "var(--border2)", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#10b981" }}>
                 📍 {item.tip}
               </div>
             </div>
@@ -10799,7 +10799,7 @@ function SeniorTab({ setSeniorMode }) {
             { icon: "👴", label: "Pensionsmyndigheten", num: "0771-776 776", desc: "Frågor om pension" },
             { icon: "🆘", label: "Bankbedrägeri", num: "020-10 60 00", desc: "Polisens bedrägerijouren — ring direkt om du blivit lurad!" },
           ].map((item, i) => (
-            <div key={i} style={{ background: "#0f172a", borderRadius: 14, border: item.label === "Bankbedrägeri" ? "2px solid #ef444444" : "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+            <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: item.label === "Bankbedrägeri" ? "2px solid #ef444444" : "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ fontSize: 28 }}>{item.icon}</span>
@@ -10828,7 +10828,7 @@ function SeniorTab({ setSeniorMode }) {
 
       {/* Stäng av senior-läge */}
       <button onClick={() => { setSeniorMode(false); try { localStorage.setItem("kapital_senior", "false"); } catch {} }}
-        style={{ width: "100%", padding: "14px", background: "none", border: "1px solid #334155", borderRadius: 14, color: "#64748b", fontSize: 14, cursor: "pointer", marginTop: 16 }}>
+        style={{ width: "100%", padding: "14px", background: "none", border: "1px solid var(--border2)", borderRadius: 14, color: "#64748b", fontSize: 14, cursor: "pointer", marginTop: 16 }}>
         Stäng av senior-läge
       </button>
     </div>
@@ -10849,12 +10849,16 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
   const currencyObj = (currencies || []).find(c => c.code === currency) || { flag: "🇸🇪", name: "Svensk krona" };
 
   const THEMES = [
-    { id: "dark", label: "Marinblå", emoji: "🌙", desc: "Rogivande mörkt standard", bg: "#0a0f1e", accent: "#10b981" },
-    { id: "darker", label: "Kolsvart", emoji: "⬛", desc: "Maximalt mörkt", bg: "#050508", accent: "#10b981" },
-    { id: "slate", label: "Skiffergrå", emoji: "🩶", desc: "Neutral och proffsig", bg: "#0a0d14", accent: "#94a3b8" },
-    { id: "green", label: "Skogsgrön", emoji: "🌿", desc: "Lugnande naturgrön", bg: "#060f0a", accent: "#34d399" },
-    { id: "blue", label: "Djupblå", emoji: "🔵", desc: "Klassisk och trygg", bg: "#060a14", accent: "#60a5fa" },
-    { id: "purple", label: "Midnattslila", emoji: "🌌", desc: "Elegant och modern", bg: "#08060f", accent: "#a78bfa" },
+    { id: "dark", label: "Marinblå", emoji: "🌙", desc: "Standard — rogivande mörkt" },
+    { id: "darker", label: "Kolsvart", emoji: "⬛", desc: "Maximalt mörkt" },
+    { id: "slate", label: "Skiffergrå", emoji: "🩶", desc: "Neutral & proffsig" },
+    { id: "green", label: "Skogsgrön", emoji: "🌿", desc: "Lugnande naturgrön" },
+    { id: "blue", label: "Djupblå", emoji: "🔵", desc: "Klassisk & trygg" },
+    { id: "purple", label: "Midnattslila", emoji: "🌌", desc: "Elegant & modern" },
+    { id: "gold", label: "Guld Pro", emoji: "⭐", desc: "Premium — exklusivt guld" },
+    { id: "rose", label: "Djuprosa", emoji: "🌹", desc: "Varm & unik" },
+    { id: "light", label: "Ljust", emoji: "☀️", desc: "Ljust & luftigt" },
+    { id: "sepia", label: "Sepia", emoji: "📜", desc: "Varmt & ögonvänligt" },
   ];
 
   const resetData = (key, label) => {
@@ -10898,7 +10902,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
           </div>
 
           {/* Email */}
-          <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "12px 16px", marginBottom: 10 }}>
+          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 16px", marginBottom: 10 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>📧 E-post</div>
             <input value={email} onChange={e => saveEmail(e.target.value)} placeholder="din@email.se"
               style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 15, color: "#e2e8f0" }} />
@@ -10930,8 +10934,8 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
             { icon: "📤", label: "Dela Kapital", desc: "Bjud in vänner", action: () => { if (navigator.share) navigator.share({ title: "Kapital", text: "Testa Sveriges smartaste ekonomiapp!", url: window.location.href }); } },
           ].map(({ icon, label, desc, action }) => (
             <button key={label} onClick={action}
-              style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "#0f172a", border: "1px solid #1e293b", borderRadius: 14, padding: 16, cursor: "pointer", marginBottom: 10, textAlign: "left" }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{icon}</div>
+              style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 14, padding: 16, cursor: "pointer", marginBottom: 10, textAlign: "left" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--border2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{icon}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{label}</div>
                 <div style={{ fontSize: 12, color: "#475569" }}>{desc}</div>
@@ -10941,7 +10945,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
           ))}
 
           {showLangs && (
-            <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+            <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                 {LANGUAGES.map(l => (
                   <button key={l.code} onClick={() => { changeLang(l.code); setShowLangs(false); }}
@@ -10955,7 +10959,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
           )}
 
           {showCurrencies && (
-            <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 10 }}>
+            <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                 {(currencies || []).map(c => (
                   <button key={c.code} onClick={() => { changeCurrency(c.code); setShowCurrencies(false); }}
@@ -10977,7 +10981,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
       {/* UTSEENDE */}
       {section === "utseende" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 14 }}>🎨 Tema & Färger</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
               {THEMES.map(th => (
@@ -10992,7 +10996,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
             </div>
           </div>
 
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 14 }}>📱 Visningsinställningar</div>
             {[
               { label: "Kompakt vy", desc: "Visa mer info på skärmen", key: "kompakt" },
@@ -11004,7 +11008,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
               const raw = (() => { try { return localStorage.getItem("kapital_" + s.key); } catch { return null; } })();
               const val = s.invert ? raw !== "true" : raw !== "false";
               return (
-                <div key={s.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid #1e293b" }}>
+                <div key={s.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
                   <div>
                     <div style={{ fontSize: 14, color: "#e2e8f0" }}>{s.label}</div>
                     <div style={{ fontSize: 12, color: "#475569" }}>{s.desc}</div>
@@ -11034,7 +11038,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
       {/* DATA */}
       {section === "data" && (
         <div>
-          <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 14 }}>
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 4 }}>📊 Din data</div>
             <div style={{ fontSize: 12, color: "#64748b", marginBottom: 14 }}>All data sparas lokalt i din webbläsare. Vi säljer aldrig din data.</div>
             {[
@@ -11053,7 +11057,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
               ["kapital_news_cache", "📰 Nyheter"],
             ].map(([key, label]) => (
               <button key={key} onClick={() => resetData(key, label)}
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "10px 0", background: "none", border: "none", borderBottom: "1px solid #1e293b", cursor: "pointer" }}>
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", padding: "10px 0", background: "none", border: "none", borderBottom: "1px solid var(--border)", cursor: "pointer" }}>
                 <span style={{ fontSize: 13, color: "#94a3b8" }}>{label}</span>
                 <span style={{ fontSize: 12, color: "#ef4444" }}>Rensa</span>
               </button>
@@ -11128,10 +11132,10 @@ function RiktigKalender() {
       {/* Month nav */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <button onClick={() => setViewDate(new Date(year, month-1, 1))}
-          style={{ background: "#1e293b", border: "none", borderRadius: 10, color: "#e2e8f0", fontSize: 18, width: 40, height: 40, cursor: "pointer" }}>‹</button>
+          style={{ background: "var(--border2)", border: "none", borderRadius: 10, color: "#e2e8f0", fontSize: 18, width: 40, height: 40, cursor: "pointer" }}>‹</button>
         <div style={{ fontSize: 18, fontWeight: 800, color: "#e2e8f0" }}>{monthNames[month]} {year}</div>
         <button onClick={() => setViewDate(new Date(year, month+1, 1))}
-          style={{ background: "#1e293b", border: "none", borderRadius: 10, color: "#e2e8f0", fontSize: 18, width: 40, height: 40, cursor: "pointer" }}>›</button>
+          style={{ background: "var(--border2)", border: "none", borderRadius: 10, color: "#e2e8f0", fontSize: 18, width: 40, height: 40, cursor: "pointer" }}>›</button>
       </div>
 
       {/* Day names */}
@@ -11167,7 +11171,7 @@ function RiktigKalender() {
 
       {/* Selected day events */}
       {selectedDay && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14, marginBottom: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#e2e8f0" }}>
               {selectedDay} {monthNames[month]}
@@ -11180,7 +11184,7 @@ function RiktigKalender() {
           {selectedEvents.length === 0 ? (
             <div style={{ fontSize: 13, color: "#334155", textAlign: "center", padding: "10px 0" }}>Inga händelser denna dag</div>
           ) : selectedEvents.map((e, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: i < selectedEvents.length-1 ? "1px solid #1e293b" : "none", alignItems: "flex-start" }}>
+            <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: i < selectedEvents.length-1 ? "1px solid var(--border)" : "none", alignItems: "flex-start" }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: typColor(e.typ), marginTop: 5, flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, color: "#e2e8f0", fontWeight: 600 }}>{e.titel}</div>
@@ -11195,27 +11199,27 @@ function RiktigKalender() {
 
       {/* Add event form */}
       {adding && (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #10b98133", padding: 16, marginBottom: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: 16, marginBottom: 14 }}>
           <input value={newEvent.titel} onChange={e => setNewEvent(n => ({...n, titel: e.target.value}))} placeholder="Titel"
-            style={{ width: "100%", padding: "10px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+            style={{ width: "100%", padding: "10px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             <input type="date" value={newEvent.datum} onChange={e => setNewEvent(n => ({...n, datum: e.target.value}))}
-              style={{ padding: "8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", outline: "none", fontSize: 13 }} />
+              style={{ padding: "8px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", outline: "none", fontSize: 13 }} />
             <input type="time" value={newEvent.tid} onChange={e => setNewEvent(n => ({...n, tid: e.target.value}))}
-              style={{ padding: "8px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", outline: "none", fontSize: 13 }} />
+              style={{ padding: "8px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", outline: "none", fontSize: 13 }} />
           </div>
           <select value={newEvent.typ} onChange={e => setNewEvent(n => ({...n, typ: e.target.value}))}
-            style={{ width: "100%", padding: "8px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", marginBottom: 8 }}>
+            style={{ width: "100%", padding: "8px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", marginBottom: 8 }}>
             {[["mal","🎯 Sparmål"],["betalning","💳 Betalning"],["forsakring","🛡️ Försäkring"],["rapport","📊 Rapport"],["mote","📅 Möte"],["ovrigt","📌 Övrigt"]].map(([v,l]) => (
-              <option key={v} value={v} style={{ background: "#0f172a" }}>{l}</option>
+              <option key={v} value={v} style={{ background: "var(--card)" }}>{l}</option>
             ))}
           </select>
           <input value={newEvent.notering} onChange={e => setNewEvent(n => ({...n, notering: e.target.value}))} placeholder="Notering (valfritt)"
-            style={{ width: "100%", padding: "8px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
+            style={{ width: "100%", padding: "8px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newEvent.titel && newEvent.datum) { save([...events, newEvent]); setAdding(false); setNewEvent({ titel: "", datum: "", tid: "09:00", typ: "ovrigt", notering: "" }); }}}
               style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       )}
@@ -11225,7 +11229,7 @@ function RiktigKalender() {
       {allEvents.filter(e => e.datum && e.datum.startsWith(`${year}-${String(month+1).padStart(2,"0")}`))
         .sort((a, b) => a.datum.localeCompare(b.datum))
         .slice(0, 5).map((e, i) => (
-        <div key={i} style={{ display: "flex", gap: 12, background: "#0f172a", borderRadius: 10, padding: "10px 14px", marginBottom: 6, alignItems: "center" }}>
+        <div key={i} style={{ display: "flex", gap: 12, background: "var(--card)", borderRadius: 10, padding: "10px 14px", marginBottom: 6, alignItems: "center" }}>
           <div style={{ width: 36, height: 36, borderRadius: 8, background: typColor(e.typ) + "22", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: typColor(e.typ) }} />
           </div>
@@ -11236,7 +11240,7 @@ function RiktigKalender() {
         </div>
       ))}
       {!adding && (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginTop: 8 }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer", marginTop: 8 }}>
           + Lägg till händelse
         </button>
       )}
@@ -11296,7 +11300,7 @@ function ProfilKalender() {
         const days = daysUntil(e.datum);
         const urgent = days <= 7 && days >= 0;
         return (
-          <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: `1px solid ${urgent ? "#f59e0b44" : typColor(e.typ) + "22"}`, padding: 14, marginBottom: 8 }}>
+          <div key={i} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${urgent ? "#f59e0b44" : typColor(e.typ) + "22"}`, padding: 14, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 22 }}>{typIcon(e.typ)}</span>
@@ -11320,40 +11324,40 @@ function ProfilKalender() {
 
       {/* Add event */}
       {adding ? (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", marginBottom: 10 }}>Lägg till händelse</div>
           <input value={newEvent.titel} onChange={e => setNewEvent(n => ({ ...n, titel: e.target.value }))} placeholder="Titel"
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             <div>
               <div style={{ fontSize: 10, color: "#64748b", marginBottom: 3 }}>Datum</div>
               <input type="date" value={newEvent.datum} onChange={e => setNewEvent(n => ({ ...n, datum: e.target.value }))}
-                style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
             </div>
             <div>
               <div style={{ fontSize: 10, color: "#64748b", marginBottom: 3 }}>Tid</div>
               <input type="time" value={newEvent.tid} onChange={e => setNewEvent(n => ({ ...n, tid: e.target.value }))}
-                style={{ width: "100%", padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
             </div>
           </div>
           <select value={newEvent.typ} onChange={e => setNewEvent(n => ({ ...n, typ: e.target.value }))}
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
-            <option value="mal" style={{ background: "#0f172a" }}>🎯 Sparmål</option>
-            <option value="betalning" style={{ background: "#0f172a" }}>💳 Betalning</option>
-            <option value="forsakring" style={{ background: "#0f172a" }}>🛡️ Försäkring</option>
-            <option value="rapport" style={{ background: "#0f172a" }}>📊 Rapport/Möte</option>
-            <option value="ovrigt" style={{ background: "#0f172a" }}>📅 Övrigt</option>
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8 }}>
+            <option value="mal" style={{ background: "var(--card)" }}>🎯 Sparmål</option>
+            <option value="betalning" style={{ background: "var(--card)" }}>💳 Betalning</option>
+            <option value="forsakring" style={{ background: "var(--card)" }}>🛡️ Försäkring</option>
+            <option value="rapport" style={{ background: "var(--card)" }}>📊 Rapport/Möte</option>
+            <option value="ovrigt" style={{ background: "var(--card)" }}>📅 Övrigt</option>
           </select>
           <input value={newEvent.notering} onChange={e => setNewEvent(n => ({ ...n, notering: e.target.value }))} placeholder="Notering (valfritt)"
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newEvent.titel && newEvent.datum) { save([...events, newEvent]); setAdding(false); setNewEvent({ titel: "", datum: "", tid: "09:00", typ: "mal", notering: "" }); } }}
               style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lägg till</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginBottom: 14 }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer", marginBottom: 14 }}>
           + Lägg till händelse
         </button>
       )}
@@ -11363,7 +11367,7 @@ function ProfilKalender() {
         <div>
           <div style={{ fontSize: 12, color: "#334155", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>Passerade</div>
           {past.map((e, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid #1e293b", opacity: 0.5 }}>
+            <div key={i} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid var(--border)", opacity: 0.5 }}>
               <span style={{ fontSize: 16 }}>{typIcon(e.typ)}</span>
               <div>
                 <div style={{ fontSize: 13, color: "#64748b", textDecoration: "line-through" }}>{e.titel}</div>
@@ -11421,7 +11425,7 @@ function ProfilNotiser() {
       {/* Built-in notifications */}
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Notiserinställningar</div>
       {notiser.map(n => (
-        <div key={n.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: "14px 16px", marginBottom: 8 }}>
+        <div key={n.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "14px 16px", marginBottom: 8 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <span style={{ fontSize: 22 }}>{n.icon}</span>
             <div>
@@ -11439,7 +11443,7 @@ function ProfilNotiser() {
       {/* Custom notifications */}
       <div style={{ fontSize: 12, color: "#64748b", marginTop: 16, marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Egna påminnelser</div>
       {schemalagda.map((s, i) => (
-        <div key={i} style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 14, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div key={i} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 14, marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{s.titel}</div>
             <div style={{ fontSize: 12, color: "#64748b" }}>{s.datum} · {s.tid} {s.upprepning !== "ingen" ? "· Upprepa: " + s.upprepning : ""}</div>
@@ -11450,32 +11454,32 @@ function ProfilNotiser() {
       ))}
 
       {adding ? (
-        <div style={{ background: "#0f172a", borderRadius: 12, border: "1px solid #1e293b", padding: 16, marginBottom: 12 }}>
+        <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
           <input value={newN.titel} onChange={e => setNewN(n => ({ ...n, titel: e.target.value }))} placeholder="Påminnelse-titel"
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
             <input type="date" value={newN.datum} onChange={e => setNewN(n => ({ ...n, datum: e.target.value }))}
-              style={{ padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+              style={{ padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
             <input type="time" value={newN.tid} onChange={e => setNewN(n => ({ ...n, tid: e.target.value }))}
-              style={{ padding: "8px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
+              style={{ padding: "8px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none" }} />
           </div>
           <select value={newN.upprepning} onChange={e => setNewN(n => ({ ...n, upprepning: e.target.value }))}
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", marginBottom: 8 }}>
-            <option value="ingen" style={{ background: "#0f172a" }}>Ingen upprepning</option>
-            <option value="dagligen" style={{ background: "#0f172a" }}>Dagligen</option>
-            <option value="veckovis" style={{ background: "#0f172a" }}>Veckovis</option>
-            <option value="månadsvis" style={{ background: "#0f172a" }}>Månadsvis</option>
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", marginBottom: 8 }}>
+            <option value="ingen" style={{ background: "var(--card)" }}>Ingen upprepning</option>
+            <option value="dagligen" style={{ background: "var(--card)" }}>Dagligen</option>
+            <option value="veckovis" style={{ background: "var(--card)" }}>Veckovis</option>
+            <option value="månadsvis" style={{ background: "var(--card)" }}>Månadsvis</option>
           </select>
           <input value={newN.meddelande} onChange={e => setNewN(n => ({ ...n, meddelande: e.target.value }))} placeholder="Meddelande (valfritt)"
-            style={{ width: "100%", padding: "9px 12px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
+            style={{ width: "100%", padding: "9px 12px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#e2e8f0", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 10 }} />
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={() => { if (newN.titel && newN.datum) { saveSchema([...schemalagda, newN]); setAdding(false); setNewN({ titel: "", datum: "", tid: "09:00", upprepning: "ingen", meddelande: "" }); } }}
               style={{ flex: 1, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Spara</button>
-            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
+            <button onClick={() => setAdding(false)} style={{ padding: "10px 16px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>Avbryt</button>
           </div>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "#0f172a", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+        <button onClick={() => setAdding(true)} style={{ width: "100%", padding: "12px", background: "var(--card)", border: "1px dashed #334155", borderRadius: 12, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
           + Lägg till påminnelse
         </button>
       )}
@@ -11770,17 +11774,168 @@ function Kapital() {
 
   // Apply theme colors
   const themeColors = {
-    dark:    { bg: "#0a0f1e", card: "#0f172a", border: "#1e293b", accent: "#10b981" },
-    darker:  { bg: "#050508", card: "#0a0a10", border: "#18181b", accent: "#10b981" },
-    slate:   { bg: "#0a0d14", card: "#0f1520", border: "#1e2535", accent: "#94a3b8" },
-    green:   { bg: "#060f0a", card: "#0a1a0f", border: "#1a3020", accent: "#34d399" },
-    blue:    { bg: "#060a14", card: "#0a1020", border: "#1a2540", accent: "#60a5fa" },
-    purple:  { bg: "#08060f", card: "#100a1e", border: "#2a1a40", accent: "#a78bfa" },
+    dark:    { bg: "#0a0f1e", bg2: "#080c18", card: "#0f172a", card2: "#0a0f1e", border: "#1e293b", border2: "#334155", accent: "#10b981", accent2: "#0ea5e9", text: "#e2e8f0", textMuted: "#64748b", textSub: "#94a3b8", textHint: "#475569", name: "Marinblå", light: false },
+    darker:  { bg: "#000000", bg2: "#050508", card: "#0a0a0f", card2: "#050508", border: "#18181b", border2: "#27272a", accent: "#10b981", accent2: "#0ea5e9", text: "#f4f4f5", textMuted: "#71717a", textSub: "#a1a1aa", textHint: "#52525b", name: "Kolsvart", light: false },
+    slate:   { bg: "#0a0d14", bg2: "#080b12", card: "#0f1520", card2: "#0a0f1a", border: "#1e2535", border2: "#2d3748", accent: "#94a3b8", accent2: "#cbd5e1", text: "#e2e8f0", textMuted: "#64748b", textSub: "#94a3b8", textHint: "#475569", name: "Skiffergrå", light: false },
+    green:   { bg: "#030a05", bg2: "#041208", card: "#071510", card2: "#041008", border: "#0d2d18", border2: "#1a4a2a", accent: "#22c55e", accent2: "#4ade80", text: "#e2fce8", textMuted: "#4ade80", textSub: "#86efac", textHint: "#166534", name: "Skogsgrön", light: false },
+    blue:    { bg: "#020610", bg2: "#030914", card: "#050e1e", card2: "#030914", border: "#0f2040", border2: "#1a3560", accent: "#3b82f6", accent2: "#60a5fa", text: "#e2eeff", textMuted: "#60a5fa", textSub: "#93c5fd", textHint: "#1d4ed8", name: "Djupblå", light: false },
+    purple:  { bg: "#060410", bg2: "#080615", card: "#0e0820", card2: "#080615", border: "#1e1040", border2: "#2d1a5a", accent: "#8b5cf6", accent2: "#a78bfa", text: "#f0e8ff", textMuted: "#a78bfa", textSub: "#c4b5fd", textHint: "#5b21b6", name: "Midnattslila", light: false },
+    gold:    { bg: "#0f0900", bg2: "#150d00", card: "#1a1100", card2: "#0f0900", border: "#3d2800", border2: "#5c3a00", accent: "#f59e0b", accent2: "#fbbf24", text: "#fef3c7", textMuted: "#fbbf24", textSub: "#fcd34d", textHint: "#92400e", name: "Guld Pro ⭐", light: false },
+    rose:    { bg: "#100408", bg2: "#150508", card: "#1c0710", card2: "#100408", border: "#3d0d20", border2: "#5c1530", accent: "#f43f5e", accent2: "#fb7185", text: "#ffe4e6", textMuted: "#fb7185", textSub: "#fda4af", textHint: "#881337", name: "Djuprosa", light: false },
+    light:   { bg: "#f8fafc", bg2: "#f1f5f9", card: "#ffffff", card2: "#f8fafc", border: "#e2e8f0", border2: "#cbd5e1", accent: "#10b981", accent2: "#0ea5e9", text: "#0f172a", textMuted: "#475569", textSub: "#64748b", textHint: "#94a3b8", name: "Ljust", light: true },
+    sepia:   { bg: "#fdf8f2", bg2: "#f5ede0", card: "#fffdf9", card2: "#fdf8f2", border: "#e8d8c0", border2: "#d4b896", accent: "#b45309", accent2: "#d97706", text: "#1c1008", textMuted: "#78532a", textSub: "#92622f", textHint: "#c8956a", name: "Sepia", light: true },
   };
   const tc = themeColors[theme] || themeColors.dark;
 
+  // Inject CSS variables — works instantly on all elements
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--bg", tc.bg);
+    root.style.setProperty("--bg2", tc.bg2);
+    root.style.setProperty("--card", tc.card);
+    root.style.setProperty("--card2", tc.card2);
+    root.style.setProperty("--border", tc.border);
+    root.style.setProperty("--border2", tc.border2);
+    root.style.setProperty("--accent", tc.accent);
+    root.style.setProperty("--accent2", tc.accent2);
+    root.style.setProperty("--text", tc.text);
+    root.style.setProperty("--muted", tc.textMuted);
+    root.style.setProperty("--sub", tc.textSub);
+    root.style.setProperty("--hint", tc.textHint);
+    document.body.style.background = tc.bg;
+    document.body.style.color = tc.text;
+
+    // Full global theme stylesheet
+    let styleEl = document.getElementById("kapital-theme");
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "kapital-theme";
+      document.head.appendChild(styleEl);
+    }
+
+    styleEl.textContent = `
+      *, *::before, *::after { box-sizing: border-box; }
+
+      :root {
+        --bg: ${tc.bg};
+        --bg2: ${tc.bg2};
+        --card: ${tc.card};
+        --card2: ${tc.card2};
+        --border: ${tc.border};
+        --border2: ${tc.border2};
+        --accent: ${tc.accent};
+        --accent2: ${tc.accent2};
+        --text: ${tc.text};
+        --muted: ${tc.textMuted};
+        --sub: ${tc.textSub};
+        --hint: ${tc.textHint};
+      }
+
+      body {
+        background: ${tc.bg} !important;
+        color: ${tc.text} !important;
+      }
+
+      /* ── All dark backgrounds ── */
+      .kt-bg  { background: ${tc.bg} !important; }
+      .kt-card { background: ${tc.card} !important; }
+
+      /* Scrollbars */
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: ${tc.bg}; }
+      ::-webkit-scrollbar-thumb { background: ${tc.border2}; border-radius: 99px; }
+
+      /* Inputs and selects */
+      input, select, textarea {
+        background: ${tc.card} !important;
+        border-color: ${tc.border} !important;
+        color: ${tc.text} !important;
+        color-scheme: ${tc.light ? "light" : "dark"};
+      }
+      input::placeholder, textarea::placeholder {
+        color: ${tc.textMuted} !important;
+        opacity: 0.7;
+      }
+
+      /* Bottom nav */
+      #kapital-bottom-nav {
+        background: ${tc.card} !important;
+        border-top-color: ${tc.border} !important;
+      }
+
+      /* Top header */
+      #kapital-header {
+        background: ${tc.bg} !important;
+        border-bottom-color: ${tc.border} !important;
+      }
+
+      /* Accent gradient buttons */
+      .kt-btn-accent {
+        background: linear-gradient(135deg, ${tc.accent}, ${tc.accent2}) !important;
+      }
+
+      /* Selection */
+      ::selection {
+        background: ${tc.accent}44;
+        color: ${tc.text};
+      }
+
+      /* ── Override hardcoded dark panel backgrounds ── */
+      /* These cover the most common Tailwind-dark hex values baked into inline styles */
+      [style*="background: #0f172a"], [style*="background:#0f172a"],
+      [style*='background: "#0f172a"'] { background: ${tc.card} !important; }
+
+      [style*="background: #0a0f1e"], [style*="background:#0a0f1e"] { background: ${tc.bg} !important; }
+      [style*="background: #080c18"], [style*="background:#080c18"] { background: ${tc.bg2} !important; }
+      [style*="background: #1e293b"], [style*="background:#1e293b"] { background: ${tc.border} !important; }
+      [style*="background: #334155"], [style*="background:#334155"] { background: ${tc.border2} !important; }
+      [style*="background: #0a1f1a"], [style*="background:#0a1f1a"] { background: ${tc.bg2} !important; }
+      [style*="background: #0f1a2e"], [style*="background:#0f1a2e"] { background: ${tc.card} !important; }
+      [style*="background: #0a0f1e"], [style*="background:#0a0f1e"] { background: ${tc.bg} !important; }
+
+      /* Card-like surfaces */
+      [style*="background: #1e1a00"] { background: ${tc.card} !important; }
+
+      /* ── Text color overrides ── */
+      [style*="color: #e2e8f0"], [style*="color:#e2e8f0"] { color: ${tc.text} !important; }
+      [style*="color: #f4f4f5"], [style*="color:#f4f4f5"] { color: ${tc.text} !important; }
+      [style*="color: #94a3b8"], [style*="color:#94a3b8"] { color: ${tc.textSub} !important; }
+      [style*="color: #64748b"], [style*="color:#64748b"] { color: ${tc.textMuted} !important; }
+      [style*="color: #475569"], [style*="color:#475569"] { color: ${tc.textHint} !important; }
+      [style*="color: #334155"], [style*="color:#334155"] { color: ${tc.border2} !important; }
+
+      /* ── Border color overrides ── */
+      [style*="border: 1px solid #1e293b"], [style*="border:1px solid #1e293b"],
+      [style*="border-color: #1e293b"] { border-color: ${tc.border} !important; }
+      [style*="border: 1px solid #334155"], [style*="border:1px solid #334155"] { border-color: ${tc.border2} !important; }
+
+      /* Section labels */
+      [style*="color: #475569"][style*="textTransform"] { color: ${tc.textHint} !important; }
+
+      /* Shimmer skeleton on light themes */
+      ${tc.light ? `
+        [style*="backgroundImage"][style*="#1e293b"] {
+          background-image: linear-gradient(90deg, ${tc.border} 25%, ${tc.border2} 50%, ${tc.border} 75%) !important;
+        }
+      ` : ""}
+    `;
+
+    // Apply theme to all existing divs by walking the DOM
+    const applyTheme = () => {
+      document.querySelectorAll('[data-kt]').forEach(el => {
+        const type = el.getAttribute('data-kt');
+        if (type === 'bg') el.style.background = tc.bg;
+        else if (type === 'card') el.style.background = tc.card;
+        else if (type === 'border') el.style.borderColor = tc.border;
+        else if (type === 'accent') el.style.color = tc.accent;
+      });
+    };
+    applyTheme();
+
+  }, [theme]);
+
   return (
-    <div style={{ minHeight: "100vh", background: tc.bg, color: "#e2e8f0", fontFamily: "'Inter',-apple-system,sans-serif", paddingBottom: 80, direction: isRTL ? "rtl" : "ltr" }}>
+    <div style={{ minHeight: "100vh", background: tc.bg, color: tc.text, fontFamily: "'Inter',-apple-system,sans-serif", paddingBottom: 80, direction: isRTL ? "rtl" : "ltr" }}>
       {toast && <Toast msg={toast} />}
       <AchievementToast achievement={newAchievement} />
       <VoiceButton voiceControl={voiceControl} />
@@ -11794,7 +11949,7 @@ function Kapital() {
       {/* Language Picker */}
       {showLangPicker && (
         <div style={{ position: "fixed", inset: 0, background: "#000c", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => setShowLangPicker(false)}>
-          <div style={{ background: "#0f172a", borderRadius: "20px 20px 0 0", padding: "20px 16px 40px", maxWidth: 480, width: "100%", border: "1px solid #1e293b", maxHeight: "70vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "var(--card)", borderRadius: "20px 20px 0 0", padding: "20px 16px 40px", maxWidth: 480, width: "100%", border: "1px solid var(--border)", maxHeight: "70vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>🌍 {t.language}</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {LANGUAGES.map(l => (
@@ -11812,7 +11967,7 @@ function Kapital() {
       {/* More menu */}
       {showMore && (
         <div style={{ position: "fixed", inset: 0, background: "#000c", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={() => setShowMore(false)}>
-          <div style={{ background: "#0f172a", borderRadius: "20px 20px 0 0", padding: "20px 16px 40px", maxWidth: 480, width: "100%", border: "1px solid #1e293b" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "var(--card)", borderRadius: "20px 20px 0 0", padding: "20px 16px 40px", maxWidth: 480, width: "100%", border: "1px solid var(--border)" }} onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: "#e2e8f0" }}>⋯ Mer</div>
             {[
               { icon: "🗓", label: "Rapportkalender", action: () => { setSubTab("kalender"); setTab(1); setShowMore(false); } },
@@ -11821,7 +11976,7 @@ function Kapital() {
               { icon: LANGUAGES.find(l => l.code === lang)?.flag || "🌍", label: t.language, action: () => { setShowMore(false); setShowLangPicker(true); } },
               { icon: isPro ? "⭐" : "🚀", label: isPro ? "Kapital Pro — Aktiv" : "Uppgradera till Pro", action: () => { setShowMore(false); if (!isPro) setShowUpgrade(true); } },
             ].map(({ icon, label, action }) => (
-              <button key={label} onClick={action} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 4px", background: "none", border: "none", borderBottom: "1px solid #1e293b", color: "#e2e8f0", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
+              <button key={label} onClick={action} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 4px", background: "none", border: "none", borderBottom: "1px solid var(--border)", color: "#e2e8f0", fontSize: 15, cursor: "pointer", textAlign: "left" }}>
                 <span style={{ fontSize: 22, width: 32, textAlign: "center" }}>{icon}</span>
                 {label}
               </button>
@@ -11831,7 +11986,7 @@ function Kapital() {
       )}
 
       {/* TOP HEADER */}
-      <div style={{ background: "linear-gradient(180deg,#0f172a,#0a0f1e)", borderBottom: "1px solid #1e293b", padding: "16px 16px 12px", position: "sticky", top: 0, zIndex: 100 }}>
+      <div style={{ background: `linear-gradient(180deg,${tc.card},${tc.bg})`, borderBottom: "1px solid var(--border)", padding: "16px 16px 12px", position: "sticky", top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 34, height: 34, borderRadius: 9, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 12px #10b98144" }}>
@@ -11855,7 +12010,7 @@ function Kapital() {
               )}
               {/* Notification bell */}
               <NotificationBell onOpen={() => setShowNotifications(true)} />
-              <button onClick={() => setShowMore(true)} style={{ padding: "6px 10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 8, color: "#94a3b8", fontSize: 18, cursor: "pointer", lineHeight: 1 }}>
+              <button onClick={() => setShowMore(true)} style={{ padding: "6px 10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 8, color: "#94a3b8", fontSize: 18, cursor: "pointer", lineHeight: 1 }}>
                 ⋯
               </button>
             </div>
@@ -11901,7 +12056,7 @@ function Kapital() {
                     { id: "sparade", icon: "💾", label: "Sparade analyser", desc: "Tidigare analyser", color: "#06b6d4" },
                   ].map(card => (
                     <button key={card.id} onClick={() => setSubTab(card.id)}
-                      style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "18px 16px", background: "#0f172a", border: `1px solid ${card.color}33`, borderRadius: 18, cursor: "pointer", textAlign: "left", gridColumn: card.big ? "span 1" : "span 1" }}>
+                      style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "18px 16px", background: "var(--card)", border: `1px solid ${card.color}33`, borderRadius: 18, cursor: "pointer", textAlign: "left", gridColumn: card.big ? "span 1" : "span 1" }}>
                       <div style={{ width: 48, height: 48, borderRadius: 14, background: card.color + "22", border: `1px solid ${card.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 12 }}>
                         {card.icon}
                       </div>
@@ -11957,7 +12112,7 @@ function Kapital() {
         {tab === 4 && seniorMode && <SeniorTab setSeniorMode={setSeniorMode} />}
 
         {/* Legal footer */}
-        <div style={{ borderTop: "1px solid #1e293b", marginTop: 28, paddingTop: 16, paddingBottom: 20, fontSize: 11, color: "#334155", lineHeight: 1.8, textAlign: "center" }}>
+        <div style={{ borderTop: "1px solid var(--border)", marginTop: 28, paddingTop: 16, paddingBottom: 20, fontSize: 11, color: "#334155", lineHeight: 1.8, textAlign: "center" }}>
           <div style={{ marginBottom: 6, color: "#475569", fontWeight: 600 }}>{t.legalNote}</div>
           {t.legalText}
           <div style={{ marginTop: 8 }}>© 2026 Kapital · <span style={{ color: "#10b981" }}>Terms</span> · <span style={{ color: "#10b981" }}>Privacy</span></div>
@@ -11965,7 +12120,7 @@ function Kapital() {
       </div>
 
       {/* BOTTOM NAV */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0f172a", borderTop: "1px solid #1e293b", zIndex: 100, paddingBottom: "env(safe-area-inset-bottom)" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "var(--card)", borderTop: "1px solid var(--border)", zIndex: 100, paddingBottom: "env(safe-area-inset-bottom)" }}>
         <div style={{ maxWidth: 680, margin: "0 auto", display: "flex" }}>
           {[
             { icon: "🏠", label: "Hem", idx: 0 },
@@ -12080,13 +12235,13 @@ function ProfilByggare({ onClose }) {
 
   if (done) {
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 3000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div style={{ position: "fixed", inset: 0, background: "var(--bg2)", zIndex: 3000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
         <div style={{ fontSize: 28, fontWeight: 900, color: "#e2e8f0", marginBottom: 8, textAlign: "center" }}>Grym jobbat!</div>
         <div style={{ fontSize: 16, color: "#64748b", textAlign: "center", marginBottom: 24, lineHeight: 1.6 }}>
           Din profil är {pct}% klar. AI kan nu hjälpa dig bättre med din ekonomi!
         </div>
-        <div style={{ background: "#1e293b", borderRadius: 99, height: 12, width: "100%", marginBottom: 24, overflow: "hidden" }}>
+        <div style={{ background: "var(--border2)", borderRadius: 99, height: 12, width: "100%", marginBottom: 24, overflow: "hidden" }}>
           <div style={{ width: pct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99, transition: "width 1s" }} />
         </div>
         <button onClick={onClose} style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 16, color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 20px #10b98144" }}>
@@ -12097,7 +12252,7 @@ function ProfilByggare({ onClose }) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#0a0f1e", zIndex: 3000, display: "flex", flexDirection: "column", padding: "0 20px" }}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--bg2)", zIndex: 3000, display: "flex", flexDirection: "column", padding: "0 20px" }}>
       {/* Header */}
       <div style={{ paddingTop: "env(safe-area-inset-top,24px)", marginTop: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -12105,7 +12260,7 @@ function ProfilByggare({ onClose }) {
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#334155", fontSize: 13, cursor: "pointer" }}>Fortsätt senare →</button>
         </div>
         {/* Progress */}
-        <div style={{ background: "#1e293b", borderRadius: 99, height: 6, marginBottom: 6 }}>
+        <div style={{ background: "var(--border2)", borderRadius: 99, height: 6, marginBottom: 6 }}>
           <div style={{ width: ((step / totalSteps) * 100) + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99, transition: "width 0.3s" }} />
         </div>
         <div style={{ fontSize: 12, color: "#475569" }}>{step + 1} av {totalSteps} — profilen {Math.round((step/totalSteps)*100)}% klar</div>
@@ -12154,7 +12309,7 @@ function ProfilByggare({ onClose }) {
               placeholder={currentStep.placeholder}
               inputMode={currentStep.type === "number" ? "decimal" : "text"}
               autoFocus
-              style={{ width: "100%", padding: "18px 20px", background: "#0f172a", border: "1px solid #10b98155", borderRadius: 16, color: "#e2e8f0", fontSize: 22, fontWeight: 700, outline: "none", boxSizing: "border-box", textAlign: "center", marginBottom: 14 }}
+              style={{ width: "100%", padding: "18px 20px", background: "var(--card)", border: "1px solid #10b98155", borderRadius: 16, color: "#e2e8f0", fontSize: 22, fontWeight: 700, outline: "none", boxSizing: "border-box", textAlign: "center", marginBottom: 14 }}
             />
             <button onClick={() => saveAndNext()}
               style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
@@ -12206,20 +12361,20 @@ function MinEkonomi({ isPro, onUpgrade }) {
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
         {metrics.map(m => (
-          <div key={m.label} style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14 }}>
+          <div key={m.label} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14 }}>
             <div style={{ fontSize: 11, color: "#475569", marginBottom: 6 }}>{m.icon} {m.label}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: m.color }}>{m.value}</div>
           </div>
         ))}
       </div>
       {income === 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, textAlign: "center" }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #f59e0b33", padding: 16, textAlign: "center" }}>
           <div style={{ fontSize: 14, color: "#f59e0b", marginBottom: 8 }}>Fyll i din ekonomi för att se statistik</div>
           <div style={{ fontSize: 12, color: "#64748b" }}>Gå till Ekonomi → Budget & Utgifter → Översikt</div>
         </div>
       )}
       {goals.length > 0 && (
-        <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 14 }}>
+        <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14 }}>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>🎯 Sparmål</div>
           {goals.map((g, i) => {
             const pct = Math.min(100, (g.saved / g.target) * 100);
@@ -12229,7 +12384,7 @@ function MinEkonomi({ isPro, onUpgrade }) {
                   <span style={{ color: "#e2e8f0" }}>{g.emoji} {g.name}</span>
                   <span style={{ color: g.color || "#10b981" }}>{pct.toFixed(0)}%</span>
                 </div>
-                <div style={{ background: "#1e293b", borderRadius: 99, height: 6 }}>
+                <div style={{ background: "var(--border2)", borderRadius: 99, height: 6 }}>
                   <div style={{ width: pct + "%", height: "100%", background: g.color || "#10b981", borderRadius: 99 }} />
                 </div>
               </div>
@@ -12275,13 +12430,13 @@ function SmartGuide() {
 
       {/* Guide panel */}
       {open && (
-        <div style={{ position: "fixed", bottom: 80, right: 12, left: 12, background: "#0f172a", borderRadius: 18, border: "1px solid #10b98144", padding: 18, zIndex: 200, boxShadow: "0 8px 40px #00000088" }}>
+        <div style={{ position: "fixed", bottom: 80, right: 12, left: 12, background: "var(--card)", borderRadius: 18, border: "1px solid #10b98144", padding: 18, zIndex: 200, boxShadow: "0 8px 40px #00000088" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>💡 Smart guide</div>
             <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#64748b", fontSize: 20, cursor: "pointer" }}>✕</button>
           </div>
 
-          <div style={{ background: "#1e293b", borderRadius: 12, padding: 14, marginBottom: 12 }}>
+          <div style={{ background: "var(--border2)", borderRadius: 12, padding: 14, marginBottom: 12 }}>
             <div style={{ fontSize: 22, marginBottom: 6 }}>{tip.icon}</div>
             <div style={{ fontSize: 14, color: "#e2e8f0", lineHeight: 1.6 }}>{tip.text}</div>
           </div>
@@ -12313,7 +12468,7 @@ function CookieBanner() {
 
   return (
     <div style={{ position: "fixed", bottom: 70, left: 0, right: 0, zIndex: 999, padding: "0 12px" }}>
-      <div style={{ background: "#0f172a", border: "1px solid #334155", borderRadius: 16, padding: "16px 18px", maxWidth: 680, margin: "0 auto", boxShadow: "0 -4px 32px #00000066" }}>
+      <div style={{ background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 16, padding: "16px 18px", maxWidth: 680, margin: "0 auto", boxShadow: "0 -4px 32px #00000066" }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", marginBottom: 6 }}>🍪 Kapital använder lokal lagring</div>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
           Vi lagrar din data lokalt i din webbläsare för att appen ska fungera. Vi säljer aldrig din data och skickar den inte till tredje part. Läs vår <span style={{ color: "#10b981" }}>integritetspolicy</span> för mer info.
@@ -12324,7 +12479,7 @@ function CookieBanner() {
             Godkänn
           </button>
           <button onClick={() => { setAccepted(true); try { localStorage.setItem("kapital_cookies", "true"); } catch {} }}
-            style={{ flex: 1, padding: "10px", background: "#1e293b", border: "1px solid #334155", borderRadius: 10, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
+            style={{ flex: 1, padding: "10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
             Stäng
           </button>
         </div>
