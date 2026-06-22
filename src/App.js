@@ -11941,25 +11941,6 @@ function Kapital() {
             <ErbjudandenHubFull subTab={subTab} setSubTab={setSubTab} />
           </div>
         )}
-        {tab === 99 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-              {[["forsakring","🛡️","Försäkring"],["lan","🏦","Lån & Kredit"],["bedömning","🤖","AI-Lånebedömning"],["profil","📊","Min Profil"],["kalkyl","📐","Kalkylatorer"],["maklare","📈","Mäklare"]].map(([id, icon, label]) => (
-                <button key={id} onClick={() => setSubTab(id)}
-                  style={{ flex: "0 0 calc(33% - 4px)", display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "14px 8px", background: subTab === id ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#0f172a", border: `1px solid ${subTab === id ? "transparent" : "#1e293b"}`, borderRadius: 14, cursor: "pointer" }}>
-                  <span style={{ fontSize: 24 }}>{icon}</span>
-                  <span style={{ fontSize: 11, fontWeight: subTab === id ? 700 : 400, color: subTab === id ? "#fff" : "#64748b", whiteSpace: "nowrap" }}>{label}</span>
-                </button>
-              ))}
-            </div>
-            {subTab === "forsakring" && <ForsakringHub />}
-            {subTab === "lan" && <SmartLanAnsokan />}
-            {subTab === "bedömning" && <AILaneBedömning />}
-            {subTab === "profil" && <EkonomiskProfil />}
-            {(subTab === "kalkyl" || subTab !== "maklare" && subTab !== "forsakring" && subTab !== "lan" && subTab !== "profil") && subTab === "kalkyl" && <KalkylatornTab t={t} />}
-            {subTab === "maklare" && <MaklareTab t={t} />}
-          </div>
-        )}
-
         {/* PROFIL */}
         {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} splashEnabled={splashEnabled} toggleSplash={toggleSplash} />}
         {tab === 4 && seniorMode && <SeniorTab setSeniorMode={setSeniorMode} />}
