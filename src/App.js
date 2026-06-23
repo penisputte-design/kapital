@@ -116,6 +116,37 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+
+// ── Affiliate-länkhantering ───────────────────────────────────────────────
+// Byt ut länkarna här när du är godkänd hos Adrecord/Financeads.
+// Miljövariabel-format: REACT_APP_AFF_AVANZA=https://track.adrecord.com/?...
+// Fallback till direktlänk om miljövariabel saknas.
+const AFF = {
+  avanza:      process.env.REACT_APP_AFF_AVANZA      || AFF.avanza,
+  nordnet:     process.env.REACT_APP_AFF_NORDNET     || AFF.nordnet,
+  degiro:      process.env.REACT_APP_AFF_DEGIRO      || AFF.degiro,
+  zmarta:      process.env.REACT_APP_AFF_ZMARTA      || AFF.zmarta,
+  lendo:       process.env.REACT_APP_AFF_LENDO       || AFF.lendo,
+  sbab:        process.env.REACT_APP_AFF_SBAB        || AFF.sbab,
+  hypoteket:   process.env.REACT_APP_AFF_HYPOTEKET   || AFF.hypoteket,
+  insplanet:   process.env.REACT_APP_AFF_INSPLANET   || AFF.insplanet,
+  hedvig:      process.env.REACT_APP_AFF_HEDVIG      || AFF.hedvig,
+  tibber:      process.env.REACT_APP_AFF_TIBBER      || AFF.tibber,
+  revolut:     process.env.REACT_APP_AFF_REVOLUT     || AFF.revolut,
+  booking:     process.env.REACT_APP_AFF_BOOKING     || AFF.booking,
+  momondo:     process.env.REACT_APP_AFF_MOMONDO     || AFF.momondo,
+  skyscanner:  process.env.REACT_APP_AFF_SKYSCANNER  || AFF.skyscanner,
+  airbnb:      process.env.REACT_APP_AFF_AIRBNB      || AFF.airbnb,
+  expedia:     process.env.REACT_APP_AFF_EXPEDIA     || AFF.expedia,
+  tui:         process.env.REACT_APP_AFF_TUI         || AFF.tui,
+  agria:       process.env.REACT_APP_AFF_AGRIA       || AFF.agria,
+  santander:   process.env.REACT_APP_AFF_SANTANDER   || AFF.santander,
+  leasing:     process.env.REACT_APP_AFF_LEASING     || "https://www.leaseonline.se",
+  n26:         process.env.REACT_APP_AFF_N26         || AFF.n26,
+  omio:        process.env.REACT_APP_AFF_OMIO        || AFF.omio,
+  interrail:   process.env.REACT_APP_AFF_INTERRAIL   || AFF.interrail,
+};
+
 const API = "/api/claude";
 const MODEL = "claude-sonnet-4-6";
 const FAST_MODEL = "claude-haiku-4-5-20251001";
@@ -453,11 +484,11 @@ const T = {
 
 // ── Brokers with affiliate links ──────────────────────────────────────────
 const BROKERS = [
-  { name: "Avanza", logo: "🟠", minFee: 1, pctFee: 0.015, isk: 0.375, savings: true, note: "Bäst för småsparare", affiliate: "https://www.avanza.se", bonus: "Öppna konto — gratis" },
-  { name: "Nordnet", logo: "🔵", minFee: 0, pctFee: 0.015, isk: 0.375, savings: true, note: "Bra för fonder", affiliate: "https://www.nordnet.se", bonus: "Öppna konto — gratis" },
+  { name: "Avanza", logo: "🟠", minFee: 1, pctFee: 0.015, isk: 0.375, savings: true, note: "Bäst för småsparare", affiliate: AFF.avanza, bonus: "Öppna konto — gratis" },
+  { name: "Nordnet", logo: "🔵", minFee: 0, pctFee: 0.015, isk: 0.375, savings: true, note: "Bra för fonder", affiliate: AFF.nordnet, bonus: "Öppna konto — gratis" },
   { name: "Swedbank", logo: "🟡", minFee: 99, pctFee: 0.099, isk: 0.375, savings: false, note: "Dyrast courtage", affiliate: "https://www.swedbank.se", bonus: "Läs mer" },
   { name: "SEB", logo: "🟢", minFee: 69, pctFee: 0.065, isk: 0.375, savings: false, note: "Bra service", affiliate: "https://seb.se", bonus: "Läs mer" },
-  { name: "DEGIRO", logo: "🔴", minFee: 1, pctFee: 0.005, isk: false, savings: false, note: "Billigast utländska", affiliate: "https://www.degiro.se", bonus: "Öppna konto" },
+  { name: "DEGIRO", logo: "🔴", minFee: 1, pctFee: 0.005, isk: false, savings: false, note: "Billigast utländska", affiliate: AFF.degiro, bonus: "Öppna konto" },
   { name: "XTB", logo: "⚡", minFee: 0, pctFee: 0.0, isk: false, savings: false, note: "0% courtage upp till 100k€/mån", affiliate: "https://www.xtb.com/se", bonus: "Öppna konto — gratis" },
 ];
 
@@ -536,11 +567,11 @@ function ScoreBar({ score }) {
 
 // Bas-annons — roteras bland partners
 const BAS_ANNONSER = [
-  { text: "Öppna ett ISK-konto hos Avanza — Sveriges populäraste aktiespar", url: "https://www.avanza.se", badge: "ANNONS" },
-  { text: "Jämför bolåneräntor — spara tusentals kronor med Zmarta", url: "https://www.zmarta.se", badge: "ANNONS" },
-  { text: "Starta ditt sparande med Nordnet — från 0 kr i courtage", url: "https://www.nordnet.se", badge: "ANNONS" },
-  { text: "Hitta billigaste flyget med Momondo — prisalarm ingår", url: "https://www.momondo.se", badge: "ANNONS" },
-  { text: "Bästa hemförsäkringen — jämför 30+ bolag på Insplanet", url: "https://www.insplanet.se", badge: "ANNONS" },
+  { text: "Öppna ett ISK-konto hos Avanza — Sveriges populäraste aktiespar", url: AFF.avanza, badge: "ANNONS" },
+  { text: "Jämför bolåneräntor — spara tusentals kronor med Zmarta", url: AFF.zmarta, badge: "ANNONS" },
+  { text: "Starta ditt sparande med Nordnet — från 0 kr i courtage", url: AFF.nordnet, badge: "ANNONS" },
+  { text: "Hitta billigaste flyget med Momondo — prisalarm ingår", url: AFF.momondo, badge: "ANNONS" },
+  { text: "Bästa hemförsäkringen — jämför 30+ bolag på Insplanet", url: AFF.insplanet, badge: "ANNONS" },
 ];
 
 function BasAnnons() {
@@ -2076,14 +2107,14 @@ const LOAN_BANKS = [
     note: "Nordens största bank"
   },
   {
-    name: "SBAB", logo: "🏠", color: "#8b5cf6", affiliate: "https://www.sbab.se",
+    name: "SBAB", logo: "🏠", color: "#8b5cf6", affiliate: AFF.sbab,
     bolan: { rorlig: 4.42, fast1: 3.72, fast3: 3.62, fast5: 3.58 },
     blanko: { rate: null, maxBelopp: null, minBelopp: null },
     billan: { rate: null, maxBelopp: null },
     note: "Bäst på bolån"
   },
   {
-    name: "Avanza Bank", logo: "🟠", color: "#f97316", affiliate: "https://www.avanza.se",
+    name: "Avanza Bank", logo: "🟠", color: "#f97316", affiliate: AFF.avanza,
     bolan: { rorlig: 4.39, fast1: 3.69, fast3: 3.59, fast5: 3.55 },
     blanko: { rate: null, maxBelopp: null, minBelopp: null },
     billan: { rate: null, maxBelopp: null },
@@ -2097,7 +2128,7 @@ const LOAN_BANKS = [
     note: "Bra på konsumtionslån"
   },
   {
-    name: "Santander", logo: "🔴", color: "#ef4444", affiliate: "https://www.santander.se",
+    name: "Santander", logo: "🔴", color: "#ef4444", affiliate: AFF.santander,
     bolan: { rorlig: null, fast1: null, fast3: null, fast5: null },
     blanko: { rate: 9.95, maxBelopp: 350000, minBelopp: 5000 },
     billan: { rate: 4.95, maxBelopp: 800000 },
@@ -4986,8 +5017,8 @@ function LanAnsokan() {
       { name: "Handelsbanken", rate: 5.85, max: 700000, logo: "⚫", affiliate: "https://www.handelsbanken.se/privat/lana/billan", bonus: "Personlig rådgivare" },
     ],
     samla: [
-      { name: "Zmarta", rate: 6.95, max: 600000, logo: "⚡", affiliate: "https://www.zmarta.se/samla-lan", bonus: "Jämför 30+ banker" },
-      { name: "Lendo", rate: 7.45, max: 600000, logo: "🏆", affiliate: "https://www.lendo.se", bonus: "Sveriges största låneförmedlare" },
+      { name: "Zmarta", rate: 6.95, max: 600000, logo: "⚡", affiliate: AFF.zmarta + "/samla-lan", bonus: "Jämför 30+ banker" },
+      { name: "Lendo", rate: 7.45, max: 600000, logo: "🏆", affiliate: AFF.lendo, bonus: "Sveriges största låneförmedlare" },
       { name: "Advisa", rate: 7.95, max: 500000, logo: "📋", affiliate: "https://www.advisa.se", bonus: "Gratis och utan påverkan på UC" },
     ],
   };
@@ -6738,13 +6769,13 @@ function SmartLanAnsokan() {
       { name: "Nordea", rate: "6.10%", max: 900000, url: "https://www.nordea.se/privat/lana/billan.html" },
     ],
     bolan: [
-      { name: "Avanza Bank", rate: "3.55%", max: 5000000, url: "https://www.avanza.se/bolan" },
-      { name: "SBAB", rate: "3.58%", max: 5000000, url: "https://www.sbab.se" },
+      { name: "Avanza Bank", rate: "3.55%", max: 5000000, url: AFF.avanza + "/bolan" },
+      { name: "SBAB", rate: "3.58%", max: 5000000, url: AFF.sbab },
       { name: "Handelsbanken", rate: "3.72%", max: 10000000, url: "https://www.handelsbanken.se" },
     ],
     samla: [
-      { name: "Zmarta", rate: "Från 6.95%", max: 600000, url: "https://www.zmarta.se/samla-lan" },
-      { name: "Lendo", rate: "Från 7.45%", max: 600000, url: "https://www.lendo.se" },
+      { name: "Zmarta", rate: "Från 6.95%", max: 600000, url: AFF.zmarta + "/samla-lan" },
+      { name: "Lendo", rate: "Från 7.45%", max: 600000, url: AFF.lendo },
     ],
   };
 
@@ -8114,12 +8145,12 @@ function DagligSplash({ onClose, news, onDisable }) {
 
 // ── Annonsbar för Bas-användare ───────────────────────────────────────────
 const ANNONS_BAR_LISTA = [
-  { text: "Öppna ISK hos Avanza — Sveriges populäraste aktiespar", url: "https://www.avanza.se", emoji: "📈" },
-  { text: "Jämför bolåneräntor med Zmarta — spara tusentals kr", url: "https://www.zmarta.se", emoji: "🏠" },
-  { text: "Starta aktiesparandet med Nordnet — från 0 kr courtage", url: "https://www.nordnet.se", emoji: "💹" },
-  { text: "Hitta billigaste flyget — sök med Momondo", url: "https://www.momondo.se", emoji: "✈️" },
-  { text: "Jämför hemförsäkring — spara upp till 3 000 kr/år på Insplanet", url: "https://www.insplanet.se", emoji: "🛡️" },
-  { text: "Bästa valutakursen utomlands — skaffa Revolut gratis", url: "https://www.revolut.com", emoji: "💱" },
+  { text: "Öppna ISK hos Avanza — Sveriges populäraste aktiespar", url: AFF.avanza, emoji: "📈" },
+  { text: "Jämför bolåneräntor med Zmarta — spara tusentals kr", url: AFF.zmarta, emoji: "🏠" },
+  { text: "Starta aktiesparandet med Nordnet — från 0 kr courtage", url: AFF.nordnet, emoji: "💹" },
+  { text: "Hitta billigaste flyget — sök med Momondo", url: AFF.momondo, emoji: "✈️" },
+  { text: "Jämför hemförsäkring — spara upp till 3 000 kr/år på Insplanet", url: AFF.insplanet, emoji: "🛡️" },
+  { text: "Bästa valutakursen utomlands — skaffa Revolut gratis", url: AFF.revolut, emoji: "💱" },
 ];
 
 function BasAnnotionsBar() {
@@ -9030,9 +9061,9 @@ function ResaSmart() {
       { namn: "GoMore", desc: "Samåkning med privatpersoner — 50-70% billigare", url: "gomore.se", badge: "Spara mest" },
     ]},
     { title: "✈️ Flyg & Hotell", color: "#8b5cf6", items: [
-      { namn: "Skyscanner", desc: "Jämför alla flygbolag — sätt prisalarm", url: "skyscanner.se", badge: "Bäst jämförelse" },
-      { namn: "Airbnb", desc: "Privata boenden — ofta 30-50% billigare än hotell", url: "airbnb.se", badge: "★ Affiliate" },
-      { namn: "Booking.com", desc: "Hotell & lägenheter — gratis avbokning", url: "booking.com", badge: "★ Affiliate" },
+      { namn: "Skyscanner", desc: "Jämför alla flygbolag — sätt prisalarm", url: AFF.skyscanner, badge: "Bäst jämförelse" },
+      { namn: "Airbnb", desc: "Privata boenden — ofta 30-50% billigare än hotell", url: AFF.airbnb, badge: "★ Affiliate" },
+      { namn: "Booking.com", desc: "Hotell & lägenheter — gratis avbokning", url: AFF.booking, badge: "★ Affiliate" },
     ]},
   ];
 
@@ -9248,7 +9279,7 @@ function JamforForsakring() {
 
   const FORSAKRINGAR = {
     hem: [
-      { bolag: "Hedvig", pris: "99-149", betyg: 5, color: "#10b981", badge: "Populärast 🔥", tack: "Hemförsäkring + olycksfallsförsäkring ingår", skyddar: ["Brand & vattenskada","Stöld & inbrott","Ansvarsskydd","Rättsskydd","Allrisk (tillval)"], url: "hedvig.com" },
+      { bolag: "Hedvig", pris: "99-149", betyg: 5, color: "#10b981", badge: "Populärast 🔥", tack: "Hemförsäkring + olycksfallsförsäkring ingår", skyddar: ["Brand & vattenskada","Stöld & inbrott","Ansvarsskydd","Rättsskydd","Allrisk (tillval)"], url: AFF.hedvig },
       { bolag: "If", pris: "120-200", betyg: 5, color: "#3b82f6", badge: "Störst i Norden", tack: "Stor och trygg aktör", skyddar: ["Brand & explosion","Stöld & skadegörelse","Ansvarsskydd","Rättsskydd","Reseskydd"], url: "if.se" },
       { bolag: "Länsförsäkringar", pris: "130-220", betyg: 4, color: "#f59e0b", badge: null, tack: "Lokal närvaro & personlig service", skyddar: ["Brand & vattenskada","Stöld","Ansvar","Rättsskydd","Glasskada"], url: "lansforsakringar.se" },
       { bolag: "Folksam", pris: "115-180", betyg: 4, color: "#8b5cf6", badge: null, tack: "Kooperativt — återbäring till kunder", skyddar: ["Brand","Stöld","Ansvar","Rättsskydd"], url: "folksam.se" },
@@ -9256,24 +9287,24 @@ function JamforForsakring() {
     ],
     bil: [
       { bolag: "If Bilförsäkring", pris: "199-499", betyg: 5, color: "#3b82f6", badge: "Bäst i test 🏆", tack: "Toppbetyg i oberoende tester", skyddar: ["Vagnskada","Stöld","Brand","Ansvarsskydd","Rättsskydd","Nödbogsering"], url: "if.se" },
-      { bolag: "Hedvig", pris: "249-449", betyg: 5, color: "#10b981", badge: "Populär", tack: "Digital och enkel skadeanmälan", skyddar: ["Vagnskada","Stöld","Brand","Ansvar","Glasskada"], url: "hedvig.com" },
+      { bolag: "Hedvig", pris: "249-449", betyg: 5, color: "#10b981", badge: "Populär", tack: "Digital och enkel skadeanmälan", skyddar: ["Vagnskada","Stöld","Brand","Ansvar","Glasskada"], url: AFF.hedvig },
       { bolag: "Folksam Bil", pris: "179-420", betyg: 4, color: "#8b5cf6", badge: "Billigast", tack: "Konkurrenskraftigt pris", skyddar: ["Trafik (lag)","Halv-","Helförsäkring"], url: "folksam.se" },
       { bolag: "Länsförsäkringar", pris: "190-460", betyg: 4, color: "#f59e0b", badge: null, tack: "Lokal service vid skada", skyddar: ["Vagnskada","Stöld","Ansvar","Rättsskydd"], url: "lansforsakringar.se" },
       { bolag: "Trygg-Hansa", pris: "210-480", betyg: 4, color: "#ef4444", badge: null, tack: "Stark global aktör", skyddar: ["Vagnskada","Brand","Stöld","Ansvar"], url: "trygghansa.se" },
     ],
     hund: [
-      { bolag: "Agria", pris: "149-399", betyg: 5, color: "#e879f9", badge: "Störst & bäst 🐾", tack: "Specialiserad på djurförsäkring sedan 1890", skyddar: ["Veterinärvård upp till 1 Mkr","Operationer","Mediciner","Livsförsäkring","Ansvarsskydd"], url: "agria.se" },
-      { bolag: "Hedvig", pris: "179-349", betyg: 4, color: "#10b981", badge: "Digital", tack: "Smidig app och snabb skadereglering", skyddar: ["Veterinärvård","Operationer","Olycksfall"], url: "hedvig.com" },
+      { bolag: "Agria", pris: "149-399", betyg: 5, color: "#e879f9", badge: "Störst & bäst 🐾", tack: "Specialiserad på djurförsäkring sedan 1890", skyddar: ["Veterinärvård upp till 1 Mkr","Operationer","Mediciner","Livsförsäkring","Ansvarsskydd"], url: AFF.agria },
+      { bolag: "Hedvig", pris: "179-349", betyg: 4, color: "#10b981", badge: "Digital", tack: "Smidig app och snabb skadereglering", skyddar: ["Veterinärvård","Operationer","Olycksfall"], url: AFF.hedvig },
       { bolag: "Folksam Hund", pris: "129-299", betyg: 4, color: "#8b5cf6", badge: "Billigast", tack: "Bra grundskydd till lågt pris", skyddar: ["Veterinärvård","Ansvarsskydd","Livsförsäkring"], url: "folksam.se" },
       { bolag: "Länsförsäkringar", pris: "160-320", betyg: 4, color: "#f59e0b", badge: null, tack: "Lokal service och trygg aktör", skyddar: ["Veterinärvård","Operationer","Ansvar"], url: "lansforsakringar.se" },
     ],
     katt: [
-      { bolag: "Agria", pris: "99-249", betyg: 5, color: "#e879f9", badge: "Rekommenderas 🐈", tack: "Ledande inom kattförsäkring", skyddar: ["Veterinärvård upp till 500k","Operationer","Mediciner","Livsförsäkring"], url: "agria.se" },
-      { bolag: "Hedvig", pris: "119-219", betyg: 4, color: "#10b981", badge: null, tack: "Enkel digital hantering", skyddar: ["Veterinärvård","Operationer","Olycksfall"], url: "hedvig.com" },
+      { bolag: "Agria", pris: "99-249", betyg: 5, color: "#e879f9", badge: "Rekommenderas 🐈", tack: "Ledande inom kattförsäkring", skyddar: ["Veterinärvård upp till 500k","Operationer","Mediciner","Livsförsäkring"], url: AFF.agria },
+      { bolag: "Hedvig", pris: "119-219", betyg: 4, color: "#10b981", badge: null, tack: "Enkel digital hantering", skyddar: ["Veterinärvård","Operationer","Olycksfall"], url: AFF.hedvig },
       { bolag: "Folksam Katt", pris: "89-189", betyg: 4, color: "#8b5cf6", badge: "Billigast", tack: "Bra pris för grundskydd", skyddar: ["Veterinärvård","Livsförsäkring"], url: "folksam.se" },
     ],
     hast: [
-      { bolag: "Agria", pris: "799-1999", betyg: 5, color: "#e879f9", badge: "Specialiserad 🐴", tack: "Marknadsledare inom hästförsäkring", skyddar: ["Veterinärvård upp till 3 Mkr","Operationer","Livsförsäkring","Tävlingsavbrott","Ansvar"], url: "agria.se" },
+      { bolag: "Agria", pris: "799-1999", betyg: 5, color: "#e879f9", badge: "Specialiserad 🐴", tack: "Marknadsledare inom hästförsäkring", skyddar: ["Veterinärvård upp till 3 Mkr","Operationer","Livsförsäkring","Tävlingsavbrott","Ansvar"], url: AFF.agria },
       { bolag: "Länsförsäkringar Häst", pris: "699-1599", betyg: 4, color: "#f59e0b", badge: null, tack: "Stark lokal kunskap om hästar", skyddar: ["Veterinärvård","Livsförsäkring","Ansvar"], url: "lansforsakringar.se" },
       { bolag: "If Häst", pris: "899-1799", betyg: 4, color: "#3b82f6", badge: null, tack: "Bred täckning och hög ersättning", skyddar: ["Veterinärvård","Operationer","Livsförsäkring"], url: "if.se" },
     ],
@@ -9387,32 +9418,32 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
 
   const ERBJUDANDEN = {
     deals_lan: [
-      { namn: "SBAB Bolån", badge: "Lägst ränta 🏆", color: "#3b82f6", desc: "Bästa bolåneräntan just nu", detalj: "Rörlig: 3.55% · Fast 3 år: 3.89% · Max 85% belåning", url: "sbab.se", spara: "Spara upp till 15 000 kr/år" },
-      { namn: "Zmarta Lånejämförelse", badge: "Populärast ⭐", color: "#3b82f6", desc: "Jämför 30+ banker — ett svar, flera anbud", detalj: "Blankolån 5 000–600 000 kr · Ränta från 6.95%", url: "zmarta.se", spara: "Jämför och hitta bäst ränta" },
-      { namn: "Hypoteket", badge: null, color: "#3b82f6", desc: "Digitalt bolån utan möten", detalj: "Ränta från 3.58% · Svar inom 24h", url: "hypoteket.se", spara: null },
-      { namn: "Lendo", badge: null, color: "#3b82f6", desc: "En ansökan — flera banker svarar", detalj: "Privatlån upp till 600 000 kr", url: "lendo.se", spara: null },
+      { namn: "SBAB Bolån", badge: "Lägst ränta 🏆", color: "#3b82f6", desc: "Bästa bolåneräntan just nu", detalj: "Rörlig: 3.55% · Fast 3 år: 3.89% · Max 85% belåning", url: AFF.sbab, spara: "Spara upp till 15 000 kr/år" },
+      { namn: "Zmarta Lånejämförelse", badge: "Populärast ⭐", color: "#3b82f6", desc: "Jämför 30+ banker — ett svar, flera anbud", detalj: "Blankolån 5 000–600 000 kr · Ränta från 6.95%", url: AFF.zmarta, spara: "Jämför och hitta bäst ränta" },
+      { namn: "Hypoteket", badge: null, color: "#3b82f6", desc: "Digitalt bolån utan möten", detalj: "Ränta från 3.58% · Svar inom 24h", url: AFF.hypoteket, spara: null },
+      { namn: "Lendo", badge: null, color: "#3b82f6", desc: "En ansökan — flera banker svarar", detalj: "Privatlån upp till 600 000 kr", url: AFF.lendo, spara: null },
     ],
     deals_forsakring: [
-      { namn: "Insplanet", badge: "Spara mest 💰", color: "#10b981", desc: "Jämför hemförsäkring — 30+ bolag", detalj: "Hemförsäkring från 79 kr/mån · Bilförsäkring från 199 kr/mån", url: "insplanet.se", spara: "Spara upp till 3 000 kr/år" },
-      { namn: "Hedvig", badge: "Populär 🔥", color: "#10b981", desc: "Modern digital försäkring i appen", detalj: "Hemförsäkring från 99 kr/mån · Inkl. djurförsäkring", url: "hedvig.com", spara: null },
+      { namn: "Insplanet", badge: "Spara mest 💰", color: "#10b981", desc: "Jämför hemförsäkring — 30+ bolag", detalj: "Hemförsäkring från 79 kr/mån · Bilförsäkring från 199 kr/mån", url: AFF.insplanet, spara: "Spara upp till 3 000 kr/år" },
+      { namn: "Hedvig", badge: "Populär 🔥", color: "#10b981", desc: "Modern digital försäkring i appen", detalj: "Hemförsäkring från 99 kr/mån · Inkl. djurförsäkring", url: AFF.hedvig, spara: null },
       { namn: "Länsförsäkringar", badge: null, color: "#10b981", desc: "Störst i Sverige — lokal närvaro", detalj: "Hem, bil, djur, liv — ett bolag", url: "lansforsakringar.se", spara: null },
       { namn: "If Försäkring", badge: null, color: "#10b981", desc: "Skandinaviens största försäkringsbolag", detalj: "Hemförsäkring, villa, bostadsrätt", url: "if.se", spara: null },
     ],
     deals_leasing: [
       { namn: "Leaseonline.se", badge: "Bäst urval 🚗", color: "#f97316", desc: "Jämför privatleasing från alla märken", detalj: "Från 1 995 kr/mån · Inkl. service och vägskatt", url: "leaseonline.se", spara: "Spar tid — jämför direkt" },
-      { namn: "Santander Billån", badge: null, color: "#f97316", desc: "Billån med svar direkt", detalj: "Ränta från 4.95% · Max 800 000 kr · Löptid 1-7 år", url: "santander.se", spara: null },
+      { namn: "Santander Billån", badge: null, color: "#f97316", desc: "Billån med svar direkt", detalj: "Ränta från 4.95% · Max 800 000 kr · Löptid 1-7 år", url: AFF.santander, spara: null },
       { namn: "Sixt Biluthyrning", badge: "Bäst pris 💸", color: "#f97316", desc: "Hyr bil för dag, vecka eller längre", detalj: "Från 299 kr/dag · Helförsäkring tillval", url: "sixt.se", spara: null },
       { namn: "Volvo Financial Services", badge: null, color: "#f97316", desc: "Privatleasing direkt från Volvo", detalj: "Från 2 490 kr/mån · Allt inkl.", url: "volvocars.com/se", spara: null },
     ],
     deals_el: [
-      { namn: "Tibber", badge: "Bäst pris ⚡", color: "#f59e0b", desc: "Elpris per timme — spara 20-40%", detalj: "Inget bindningstid · Smart styrning av värme och laddbox", url: "tibber.com/se", spara: "Spara 3 000-8 000 kr/år på el" },
+      { namn: "Tibber", badge: "Bäst pris ⚡", color: "#f59e0b", desc: "Elpris per timme — spara 20-40%", detalj: "Inget bindningstid · Smart styrning av värme och laddbox", url: AFF.tibber, spara: "Spara 3 000-8 000 kr/år på el" },
       { namn: "Vattenfall El", badge: null, color: "#f59e0b", desc: "Fast eller rörligt elprisavtal", detalj: "Välj vad som passar din ekonomi och vardag", url: "vattenfall.se", spara: null },
       { namn: "Bredbandskollen", badge: "Jämför allt 📡", color: "#f59e0b", desc: "Hitta billigaste fibern i ditt område", detalj: "Jämför Telia, Telenor, Bahnhof m.fl.", url: "bredbandskollen.se", spara: "Spara upp till 2 400 kr/år" },
     ],
     deals_djur: [
-      { namn: "Agria Djurförsäkring", badge: "Rekommenderas 🐾", color: "#e879f9", desc: "Störst och bäst för hund, katt & häst", detalj: "Hund från 149 kr/mån · Katt från 99 kr/mån", url: "agria.se", spara: "Täcker veterinärvård upp till 1 Mkr" },
+      { namn: "Agria Djurförsäkring", badge: "Rekommenderas 🐾", color: "#e879f9", desc: "Störst och bäst för hund, katt & häst", detalj: "Hund från 149 kr/mån · Katt från 99 kr/mån", url: AFF.agria, spara: "Täcker veterinärvård upp till 1 Mkr" },
       { namn: "Folksam Djurförsäkring", badge: null, color: "#e879f9", desc: "Bra pris och bred täckning", detalj: "Veterinärvård, operationer och livsförsäkring", url: "folksam.se", spara: null },
-      { namn: "Hedvig Djurförsäkring", badge: "Digital 📱", color: "#e879f9", desc: "Skadeanmälan direkt i appen", detalj: "Katt och hund — enkelt och snabbt", url: "hedvig.com", spara: null },
+      { namn: "Hedvig Djurförsäkring", badge: "Digital 📱", color: "#e879f9", desc: "Skadeanmälan direkt i appen", detalj: "Katt och hund — enkelt och snabbt", url: AFF.hedvig, spara: null },
     ],
     deals_kort: [
       { namn: "SAS EuroBonus Mastercard", badge: "Populärast ✈️", color: "#8b5cf6", desc: "Samla poäng på alla köp — gratis flyg", detalj: "1 p per 15 kr · Välkomstbonus: 5 000 poäng", url: "sas.se/eurobonus", spara: "Tjäna gratis resor" },
@@ -9421,20 +9452,20 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
     ],
     deals_trygghet: [],
     deals_resa: [
-      { namn: "Momondo", badge: "Bäst pris ✈️", color: "#0ea5e9", desc: "Jämför flyg från 100+ bolag — hitta lägsta priset", detalj: "Sök och jämför tusentals flyglinjer globalt · Pris-alarm", url: "momondo.se", spara: "Spara upp till 40% på flygbiljetter" },
-      { namn: "Expedia", badge: "Allt i ett 🌍", color: "#0ea5e9", desc: "Flyg + hotell + bil — spara mer när du bokar ihop", detalj: "Paketresor · Hotell · Aktiviteter · Hyrbil", url: "expedia.se", spara: "Upp till 25% rabatt på paket" },
-      { namn: "Booking.com", badge: "Populärast 🏨", color: "#0ea5e9", desc: "Störst utbud av hotell och boenden i världen", detalj: "28 miljoner boenden · Gratis avbokning på de flesta", url: "booking.com", spara: "Genius-rabatter upp till 20%" },
-      { namn: "Airbnb", badge: "Unikt boende 🏠", color: "#0ea5e9", desc: "Hyr unika boenden direkt av värdar världen över", detalj: "Stugor, lägenheter, slott, husbåtar och mer", url: "airbnb.se", spara: null },
-      { namn: "TUI Sverige", badge: "Paketresor 🌴", color: "#0ea5e9", desc: "Charterflyg och paketresor till sol och värme", detalj: "Allt inkl., halvpension, eget boende", url: "tui.se", spara: "Tidigt-bokat rabatter upp till 30%" },
+      { namn: "Momondo", badge: "Bäst pris ✈️", color: "#0ea5e9", desc: "Jämför flyg från 100+ bolag — hitta lägsta priset", detalj: "Sök och jämför tusentals flyglinjer globalt · Pris-alarm", url: AFF.momondo, spara: "Spara upp till 40% på flygbiljetter" },
+      { namn: "Expedia", badge: "Allt i ett 🌍", color: "#0ea5e9", desc: "Flyg + hotell + bil — spara mer när du bokar ihop", detalj: "Paketresor · Hotell · Aktiviteter · Hyrbil", url: AFF.expedia, spara: "Upp till 25% rabatt på paket" },
+      { namn: "Booking.com", badge: "Populärast 🏨", color: "#0ea5e9", desc: "Störst utbud av hotell och boenden i världen", detalj: "28 miljoner boenden · Gratis avbokning på de flesta", url: AFF.booking, spara: "Genius-rabatter upp till 20%" },
+      { namn: "Airbnb", badge: "Unikt boende 🏠", color: "#0ea5e9", desc: "Hyr unika boenden direkt av värdar världen över", detalj: "Stugor, lägenheter, slott, husbåtar och mer", url: AFF.airbnb, spara: null },
+      { namn: "TUI Sverige", badge: "Paketresor 🌴", color: "#0ea5e9", desc: "Charterflyg och paketresor till sol och värme", detalj: "Allt inkl., halvpension, eget boende", url: AFF.tui, spara: "Tidigt-bokat rabatter upp till 30%" },
       { namn: "Ticket", badge: null, color: "#0ea5e9", desc: "Flyg, hotell och resepaket från Sverige", detalj: "Reserådgivning · Grupp- och företagsresor", url: "ticket.se", spara: null },
       { namn: "Globetrotter", badge: "Reseförsäkring 🛡️", color: "#0ea5e9", desc: "Reseförsäkring för hela världen", detalj: "Från 35 kr/dag · Familj, par, singel", url: "globetrotter.se", spara: null },
-      { namn: "Revolut", badge: "Bäst valuta 💱", color: "#0ea5e9", desc: "Bästa valutakursen på ditt kort utomlands", detalj: "Interbank-kurs · Inget påslag · 30+ valutor", url: "revolut.com", spara: "Spara 2-5% på alla utländska köp" },
-      { namn: "Skyscanner", badge: "Jämför flyg ✈️", color: "#0ea5e9", desc: "Hitta billigaste flyget — jämför hundratals bolag", detalj: "Pris-alarm · Flexibla datum · Hela världen", url: "skyscanner.se", spara: "Spara upp till 50% med flexibla datum" },
+      { namn: "Revolut", badge: "Bäst valuta 💱", color: "#0ea5e9", desc: "Bästa valutakursen på ditt kort utomlands", detalj: "Interbank-kurs · Inget påslag · 30+ valutor", url: AFF.revolut, spara: "Spara 2-5% på alla utländska köp" },
+      { namn: "Skyscanner", badge: "Jämför flyg ✈️", color: "#0ea5e9", desc: "Hitta billigaste flyget — jämför hundratals bolag", detalj: "Pris-alarm · Flexibla datum · Hela världen", url: AFF.skyscanner, spara: "Spara upp till 50% med flexibla datum" },
       { namn: "Hotels.com", badge: "Hotell 🏨", color: "#0ea5e9", desc: "Boka hotell — 10 nätter = 1 gratis", detalj: "Rewards-program · Gratis avbokning · 500 000+ hotell", url: "hotels.com", spara: "Tjäna gratis hotellinätter" },
-      { namn: "Omio", badge: "Tåg & Buss 🚂", color: "#0ea5e9", desc: "Jämför tåg, buss och flyg i ett — hela Europa", detalj: "SJ, Eurostar, FlixBus, Deutsche Bahn m.fl.", url: "omio.se", spara: "Hitta billigaste sträckan" },
-      { namn: "Interrail", badge: "Tågpass 🌍", color: "#0ea5e9", desc: "Obegränsat tågresande i 33 europeiska länder", detalj: "7 dagar från 211 EUR · 1 månad från 503 EUR", url: "interrail.eu", spara: "Perfekt för längre Europa-resor" },
+      { namn: "Omio", badge: "Tåg & Buss 🚂", color: "#0ea5e9", desc: "Jämför tåg, buss och flyg i ett — hela Europa", detalj: "SJ, Eurostar, FlixBus, Deutsche Bahn m.fl.", url: AFF.omio, spara: "Hitta billigaste sträckan" },
+      { namn: "Interrail", badge: "Tågpass 🌍", color: "#0ea5e9", desc: "Obegränsat tågresande i 33 europeiska länder", detalj: "7 dagar från 211 EUR · 1 månad från 503 EUR", url: AFF.interrail, spara: "Perfekt för längre Europa-resor" },
       { namn: "Hostelworld", badge: "Budget 🎒", color: "#0ea5e9", desc: "Världens största bokningssajt för vandrarhem", detalj: "Från 150 kr/natt · Socialt resande", url: "hostelworld.com", spara: "Spara 70% vs hotell" },
-      { namn: "N26", badge: "Resebank 🏦", color: "#0ea5e9", desc: "Bankkonto med gratis uttag utomlands", detalj: "Ingen valutapåslag · Gratis Mastercard · App-baserat", url: "n26.com/sv-se", spara: "Spara 2-5% på alla utländska köp" },
+      { namn: "N26", badge: "Resebank 🏦", color: "#0ea5e9", desc: "Bankkonto med gratis uttag utomlands", detalj: "Ingen valutapåslag · Gratis Mastercard · App-baserat", url: AFF.n26, spara: "Spara 2-5% på alla utländska köp" },
     ],
   };
 
@@ -9561,26 +9592,26 @@ function ErbjudandenHub() {
   const [expanded, setExpanded] = useState(null);
   const ERBJUDANDEN = [
     { kategori: "🏦 Lån & Bolån", color: "#3b82f6", items: [
-      { namn: "SBAB Bolån", desc: "Bästa bolåneräntan — från 3.55%", badge: "Lägst ränta", url: "sbab.se", detalj: "Rörlig: 3.55% · Fast 3 år: 3.89% · Max 85% belåning" },
-      { namn: "Zmarta Lånejämförelse", desc: "Jämför 30+ banker — ett svar, flera anbud", badge: "Populärast", url: "zmarta.se", detalj: "Blankolån 5 000–600 000 kr · Ränta från 6.95%" },
-      { namn: "Hypoteket", desc: "Digitalt bolån utan fysiska möten", badge: null, url: "hypoteket.se", detalj: "Ränta från 3.58% · Svar inom 24h" },
+      { namn: "SBAB Bolån", desc: "Bästa bolåneräntan — från 3.55%", badge: "Lägst ränta", url: AFF.sbab, detalj: "Rörlig: 3.55% · Fast 3 år: 3.89% · Max 85% belåning" },
+      { namn: "Zmarta Lånejämförelse", desc: "Jämför 30+ banker — ett svar, flera anbud", badge: "Populärast", url: AFF.zmarta, detalj: "Blankolån 5 000–600 000 kr · Ränta från 6.95%" },
+      { namn: "Hypoteket", desc: "Digitalt bolån utan fysiska möten", badge: null, url: AFF.hypoteket, detalj: "Ränta från 3.58% · Svar inom 24h" },
     ]},
     { kategori: "🛡️ Försäkring", color: "#10b981", items: [
-      { namn: "Insplanet", desc: "Jämför hemförsäkring från 30+ bolag", badge: "Spara mest", url: "insplanet.se", detalj: "Hemförsäkring från 79 kr/mån · Bilförsäkring från 199 kr/mån" },
-      { namn: "Hedvig", desc: "Modern digital försäkring i appen", badge: "Populär", url: "hedvig.com", detalj: "Hemförsäkring från 99 kr/mån · Inkl. djurförsäkring" },
+      { namn: "Insplanet", desc: "Jämför hemförsäkring från 30+ bolag", badge: "Spara mest", url: AFF.insplanet, detalj: "Hemförsäkring från 79 kr/mån · Bilförsäkring från 199 kr/mån" },
+      { namn: "Hedvig", desc: "Modern digital försäkring i appen", badge: "Populär", url: AFF.hedvig, detalj: "Hemförsäkring från 99 kr/mån · Inkl. djurförsäkring" },
       { namn: "Länsförsäkringar", desc: "Störst i Sverige — lokal närvaro", badge: null, url: "lansforsakringar.se", detalj: "Hem, bil, djur, liv — ett bolag för allt" },
     ]},
     { kategori: "🚗 Leasing & Bil", color: "#f97316", items: [
       { namn: "Leaseonline.se", desc: "Jämför privatleasing från alla märken", badge: "Bäst urval", url: "leaseonline.se", detalj: "Från 1 995 kr/mån · Inkl. service och vägskatt" },
-      { namn: "Santander Billån", desc: "Billån med svar direkt", badge: null, url: "santander.se", detalj: "Ränta från 4.95% · Löptid 1-7 år · Max 800 000 kr" },
+      { namn: "Santander Billån", desc: "Billån med svar direkt", badge: null, url: AFF.santander, detalj: "Ränta från 4.95% · Löptid 1-7 år · Max 800 000 kr" },
       { namn: "Sixt / Europcar", desc: "Hyr bil för dag eller längre resa", badge: null, url: "sixt.se", detalj: "Från 299 kr/dag · Helförsäkring tillval" },
     ]},
     { kategori: "⚡ El & Bredband", color: "#f59e0b", items: [
-      { namn: "Tibber", desc: "Elpris per timme — spara 20-40%", badge: "Bäst pris", url: "tibber.com/se", detalj: "Ingen bindningstid · Smart styrning av värme och laddbox" },
+      { namn: "Tibber", desc: "Elpris per timme — spara 20-40%", badge: "Bäst pris", url: AFF.tibber, detalj: "Ingen bindningstid · Smart styrning av värme och laddbox" },
       { namn: "Bredbandskollen", desc: "Jämför alla bredbandsleverantörer", badge: null, url: "bredbandskollen.se", detalj: "Hitta billigaste fibern i ditt område" },
     ]},
     { kategori: "🐾 Djurförsäkring", color: "#e879f9", items: [
-      { namn: "Agria Djurförsäkring", desc: "Störst och bäst för hund, katt & häst", badge: "Rekommenderas", url: "agria.se", detalj: "Hund från 149 kr/mån · Katt från 99 kr/mån" },
+      { namn: "Agria Djurförsäkring", desc: "Störst och bäst för hund, katt & häst", badge: "Rekommenderas", url: AFF.agria, detalj: "Hund från 149 kr/mån · Katt från 99 kr/mån" },
       { namn: "Folksam Djurförsäkring", desc: "Bra pris och bred täckning", badge: null, url: "folksam.se", detalj: "Veterinärvård, operationer och livsförsäkring" },
     ]},
     { kategori: "💳 Kreditkort & Bonus", color: "#8b5cf6", items: [
@@ -10592,9 +10623,9 @@ function UtlandGuide() {
   );
 
   const BROKERS = [
-    { name: "Avanza", flag: "🇸🇪", courtage: "0 kr (USA/Europa under 50k)", valuta: "Automatisk", marknader: "USA, Europa, Norden", etf: true, isk: true, url: "avanza.se", betyg: 5, desc: "Bäst för svenska sparare — störst utbud och lägst courtage" },
-    { name: "Nordnet", flag: "🇸🇪", courtage: "0 kr (USA/Europa under 50k)", valuta: "Automatisk", marknader: "USA, Europa, Norden, Asien", etf: true, isk: true, url: "nordnet.se", betyg: 5, desc: "Lika bra som Avanza — bra för Nordiska aktier" },
-    { name: "DEGIRO", flag: "🇳🇱", courtage: "1-2 EUR/affär", valuta: "Automatisk", marknader: "50+ börser globalt", etf: true, isk: false, url: "degiro.se", betyg: 4, desc: "Lägst courtage globalt — men ingen ISK-möjlighet" },
+    { name: "Avanza", flag: "🇸🇪", courtage: "0 kr (USA/Europa under 50k)", valuta: "Automatisk", marknader: "USA, Europa, Norden", etf: true, isk: true, url: AFF.avanza, betyg: 5, desc: "Bäst för svenska sparare — störst utbud och lägst courtage" },
+    { name: "Nordnet", flag: "🇸🇪", courtage: "0 kr (USA/Europa under 50k)", valuta: "Automatisk", marknader: "USA, Europa, Norden, Asien", etf: true, isk: true, url: AFF.nordnet, betyg: 5, desc: "Lika bra som Avanza — bra för Nordiska aktier" },
+    { name: "DEGIRO", flag: "🇳🇱", courtage: "1-2 EUR/affär", valuta: "Automatisk", marknader: "50+ börser globalt", etf: true, isk: false, url: AFF.degiro, betyg: 4, desc: "Lägst courtage globalt — men ingen ISK-möjlighet" },
     { name: "Interactive Brokers", flag: "🇺🇸", courtage: "0.005 USD/aktie", valuta: "Manuell/automatisk", marknader: "135+ börser globalt", etf: true, isk: false, url: "interactivebrokers.com", betyg: 4, desc: "För aktiva handlare — störst utbud men mer komplex" },
   ];
 
@@ -13409,7 +13440,7 @@ Max 180 ord. Konkret och specifik för ${resa.destination}.` }]
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>✈️ Flyg</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[{ namn: "Momondo", url: "momondo.se", badge: "Bäst pris" }, { namn: "Skyscanner", url: "skyscanner.se", badge: null }, { namn: "Google Flights", url: "google.com/flights", badge: null }].map(s => (
+            {[{ namn: "Momondo", url: AFF.momondo, badge: "Bäst pris" }, { namn: "Skyscanner", url: AFF.skyscanner, badge: null }, { namn: "Google Flights", url: "google.com/flights", badge: null }].map(s => (
               <a key={s.namn} href={`https://${s.url}`} target="_blank" rel="noopener noreferrer"
                 style={{ padding: "7px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, color: "#0ea5e9", fontSize: 12, textDecoration: "none", fontWeight: 600 }}>
                 {s.namn} {s.badge && <span style={{ fontSize: 10, color: "#10b981" }}>· {s.badge}</span>} ↗
@@ -13422,7 +13453,7 @@ Max 180 ord. Konkret och specifik för ${resa.destination}.` }]
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>🏨 Hotell & Boende</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[{ namn: "Booking.com", url: "booking.com", badge: "Störst urval" }, { namn: "Hotels.com", url: "hotels.com", badge: null }, { namn: "Airbnb", url: "airbnb.se", badge: "Unikt boende" }, { namn: "Hostelworld", url: "hostelworld.com", badge: "Budget" }].map(s => (
+            {[{ namn: "Booking.com", url: AFF.booking, badge: "Störst urval" }, { namn: "Hotels.com", url: "hotels.com", badge: null }, { namn: "Airbnb", url: AFF.airbnb, badge: "Unikt boende" }, { namn: "Hostelworld", url: "hostelworld.com", badge: "Budget" }].map(s => (
               <a key={s.namn} href={`https://${s.url}`} target="_blank" rel="noopener noreferrer"
                 style={{ padding: "7px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, color: "#f59e0b", fontSize: 12, textDecoration: "none", fontWeight: 600 }}>
                 {s.namn} {s.badge && <span style={{ fontSize: 10, color: "#10b981" }}>· {s.badge}</span>} ↗
@@ -13435,7 +13466,7 @@ Max 180 ord. Konkret och specifik för ${resa.destination}.` }]
         <div style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>🚂 Tåg & Buss</div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {[{ namn: "Omio", url: "omio.se", badge: "Jämför allt" }, { namn: "SJ", url: "sj.se", badge: "Sverige" }, { namn: "Interrail", url: "interrail.eu", badge: "Europa" }, { namn: "FlixBus", url: "flixbus.se", badge: "Billigast" }].map(s => (
+            {[{ namn: "Omio", url: AFF.omio, badge: "Jämför allt" }, { namn: "SJ", url: "sj.se", badge: "Sverige" }, { namn: "Interrail", url: AFF.interrail, badge: "Europa" }, { namn: "FlixBus", url: "flixbus.se", badge: "Billigast" }].map(s => (
               <a key={s.namn} href={`https://${s.url}`} target="_blank" rel="noopener noreferrer"
                 style={{ padding: "7px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, color: "#10b981", fontSize: 12, textDecoration: "none", fontWeight: 600 }}>
                 {s.namn} {s.badge && <span style={{ fontSize: 10, color: "#10b981" }}>· {s.badge}</span>} ↗
@@ -13449,10 +13480,10 @@ Max 180 ord. Konkret och specifik för ${resa.destination}.` }]
           <div style={{ fontSize: 12, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>💡 Ekonomisk resehjälp</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
-              { emoji: "💱", label: "Bästa valuta", desc: "Revolut — interbankkurs utan påslag", url: "revolut.com" },
+              { emoji: "💱", label: "Bästa valuta", desc: "Revolut — interbankkurs utan påslag", url: AFF.revolut },
               { emoji: "🛡️", label: "Reseförsäkring", desc: "Från 35 kr/dag — jämför nu", url: "globetrotter.se" },
               { emoji: "✈️", label: "Handbagage-tips", desc: "Undvik bagageavgifter — packa smart", url: "ryanair.com/se/sv/bra-att-veta/handbagage" },
-              { emoji: "🏦", label: "Resekontonummer", desc: "N26 & Revolut — avgiftsfria uttag", url: "n26.com/sv-se" },
+              { emoji: "🏦", label: "Resekontonummer", desc: "N26 & Revolut — avgiftsfria uttag", url: AFF.n26 },
             ].map(item => (
               <a key={item.label} href={`https://${item.url}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "var(--card)", borderRadius: 10, padding: "10px 12px", border: "1px solid var(--border)", display: "block" }}>
                 <div style={{ fontSize: 18, marginBottom: 4 }}>{item.emoji}</div>
