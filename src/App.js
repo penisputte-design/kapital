@@ -13716,14 +13716,7 @@ function MinEkonomi({ isPro, onUpgrade }) {
 function SmartGuide({ isPro, onUpgrade }) {
   const [open, setOpen] = useState(false);
   const [meddelanden, setMeddelanden] = useState([
-    { roll: "assistant", text: "Hej! 👋 Jag är din AI-ekonomicoach. Jag kan hjälpa dig med:
-
-• Frågor om appen och hur du använder den
-• Ekonomiska råd och budgettips
-• Förklara finansiella begrepp
-• Guida dig att fylla i all information
-
-Vad vill du veta?" }
+    { roll: "assistant", text: "Hej! 👋 Jag är din AI-ekonomicoach. Jag kan hjälpa dig med:\n\n• Frågor om appen och hur du använder den\n• Ekonomiska råd och budgettips\n• Förklara finansiella begrepp\n• Guida dig att fylla i all information\n\nVad vill du veta?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
