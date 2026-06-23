@@ -13713,8 +13713,10 @@ function MinEkonomi({ isPro, onUpgrade }) {
 }
 
 // ── Smart Guide Button ────────────────────────────────────────────────────
-function SmartGuide({ isPro, onUpgrade }) {
+function SmartGuide() {
   const [open, setOpen] = useState(false);
+  const isPro = (() => { try { return localStorage.getItem("kapital_pro") === "true"; } catch { return false; } })();
+  const onUpgrade = () => { try { window.dispatchEvent(new CustomEvent("kapital_upgrade")); } catch {} setOpen(false); };
   const [meddelanden, setMeddelanden] = useState([
     { roll: "assistant", text: "Hej! 👋 Jag är din AI-ekonomicoach. Jag kan hjälpa dig med:\n\n• Frågor om appen och hur du använder den\n• Ekonomiska råd och budgettips\n• Förklara finansiella begrepp\n• Guida dig att fylla i all information\n\nVad vill du veta?" }
   ]);
@@ -14251,9 +14253,11 @@ export default function KapitalApp() {
   return (
     <ErrorBoundary>
       <Kapital />
-      <SmartGuide isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />
+      <SmartGuide />
       <CookieBanner />
       <FeedbackKnapp />
     </ErrorBoundary>
   );
 }
+
+  
