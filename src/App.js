@@ -8004,7 +8004,7 @@ function VoiceButton({ voiceControl }) {
         onTouchStart={e => { e.preventDefault(); startListening(); }}
         onTouchEnd={e => { e.preventDefault(); stopListening(); }}
         style={{
-          position: "fixed", bottom: 90, right: 16, width: 52, height: 52,
+          position: "fixed", bottom: 220, right: 16, width: 52, height: 52,
           borderRadius: "50%", border: "none", cursor: "pointer", zIndex: 200,
           background: listening
             ? "linear-gradient(135deg,#ef4444,#f97316)"
@@ -13952,7 +13952,7 @@ OBS: Du ger allmänna råd, inte personlig finansiell rådgivning. Uppmana allti
       {/* Floating button */}
       {!open && (
         <button onClick={() => setOpen(true)}
-          style={{ position: "fixed", bottom: 82, right: 16, width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", zIndex: 200, boxShadow: "0 4px 20px #10b98166", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          style={{ position: "fixed", bottom: 155, right: 16, width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", zIndex: 200, boxShadow: "0 4px 20px #10b98166", display: "flex", alignItems: "center", justifyContent: "center" }}>
           🤖
         </button>
       )}
@@ -14085,7 +14085,7 @@ function FeedbackKnapp() {
   return (
     <>
       {/* Feedback-knapp */}
-      <button onClick={() => setOpen(true)} style={{ position: "fixed", right: 0, bottom: 100, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: "12px 0 0 12px", color: "#fff", fontSize: 12, fontWeight: 700, padding: "10px 8px", cursor: "pointer", zIndex: 998, writingMode: "vertical-rl", textOrientation: "mixed", letterSpacing: 1 }}>
+      <button onClick={() => setOpen(true)} style={{ position: "fixed", right: 0, bottom: 82, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: "12px 0 0 12px", color: "#fff", fontSize: 12, fontWeight: 700, padding: "10px 8px", cursor: "pointer", zIndex: 998, writingMode: "vertical-rl", textOrientation: "mixed", letterSpacing: 1 }}>
         Feedback
       </button>
 
