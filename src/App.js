@@ -19,17 +19,93 @@ function navigate(path) {
 }
 
 class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, skickat: false, meddelande: "", skickar: false };
+  }
+
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
+
+  componentDidCatch(error, info) {
+    // Auto-rapportera felet till feedback-API
+    try {
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          typ: "fel",
+          meddelande: `AUTO-RAPPORTERAT FEL:\n${error?.message || "Okänt fel"}\n\nStack: ${error?.stack?.slice(0, 500) || ""}\n\nKomponent: ${info?.componentStack?.slice(0, 300) || ""}`,
+          sida: window.location.pathname,
+          version: "1.0",
+        }),
+      });
+    } catch {}
+  }
+
+  async skickaFeedback() {
+    if (!this.state.meddelande.trim()) return;
+    this.setState({ skickar: true });
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          typ: "fel",
+          meddelande: `ANVÄNDARRAPPORT:\n${this.state.meddelande}\n\nFelmeddelande: ${this.state.error?.message || ""}`,
+          sida: window.location.pathname,
+          version: "1.0",
+        }),
+      });
+      this.setState({ skickat: true, skickar: false });
+    } catch {
+      this.setState({ skickar: false });
+    }
+  }
+
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: "100vh", background: "var(--bg2)", color: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "sans-serif" }}>
-          <div style={{ textAlign: "center", maxWidth: 400 }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
-            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Något gick fel</div>
-            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>{this.state.error?.message}</div>
-            <button onClick={() => window.location.reload()} style={{ padding: "12px 24px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, cursor: "pointer" }}>
+        <div style={{ minHeight: "100vh", background: "#0a0f1e", color: "#e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "sans-serif" }}>
+          <div style={{ maxWidth: 400, width: "100%" }}>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>⚠️</div>
+              <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Något gick fel</div>
+              <div style={{ fontSize: 13, color: "#64748b", marginBottom: 4 }}>Vi har automatiskt rapporterat felet.</div>
+              {this.state.error?.message && (
+                <div style={{ fontSize: 11, color: "#334155", background: "#0f172a", borderRadius: 8, padding: "8px 12px", marginTop: 8, fontFamily: "monospace", textAlign: "left", overflowX: "auto" }}>
+                  {this.state.error.message}
+                </div>
+              )}
+            </div>
+
+            {/* Användar-feedback */}
+            {!this.state.skickat ? (
+              <div style={{ background: "#0f172a", borderRadius: 14, border: "1px solid #1e293b", padding: 16, marginBottom: 16 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0", marginBottom: 8 }}>💬 Berätta vad du gjorde</div>
+                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10 }}>Hjälp oss fixa felet snabbare — vad hände precis innan?</div>
+                <textarea
+                  value={this.state.meddelande}
+                  onChange={e => this.setState({ meddelande: e.target.value })}
+                  placeholder="t.ex. Jag tryckte på Analysera och sedan..."
+                  rows={3}
+                  style={{ width: "100%", padding: "10px 12px", background: "#080c18", border: "1px solid #1e293b", borderRadius: 10, color: "#e2e8f0", fontSize: 13, resize: "none", outline: "none", boxSizing: "border-box", fontFamily: "sans-serif" }}
+                />
+                <button
+                  onClick={() => this.skickaFeedback()}
+                  disabled={this.state.skickar || !this.state.meddelande.trim()}
+                  style={{ width: "100%", marginTop: 8, padding: "10px", background: this.state.meddelande.trim() ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#1e293b", border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 600, cursor: this.state.meddelande.trim() ? "pointer" : "default" }}>
+                  {this.state.skickar ? "Skickar..." : "Skicka rapport →"}
+                </button>
+              </div>
+            ) : (
+              <div style={{ background: "#10b98111", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 16, textAlign: "center" }}>
+                <div style={{ fontSize: 24, marginBottom: 6 }}>🙏</div>
+                <div style={{ fontSize: 14, color: "#10b981", fontWeight: 600 }}>Tack! Vi fixar det.</div>
+              </div>
+            )}
+
+            <button onClick={() => window.location.reload()}
+              style={{ width: "100%", padding: "12px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
               Ladda om appen
             </button>
           </div>
@@ -6914,7 +6990,7 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
 
         {/* Always free banner */}
         <div style={{ background: "#10b98111", borderRadius: 14, border: "1px solid #10b98133", padding: 14, marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 10 }}>✓ Alltid gratis — ingen kreditkort krävs</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 10 }}>✓ Bas är alltid gratis — inget kreditkort krävs</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
             {FREE_FEATURES.map((f, i) => (
               <div key={i} style={{ fontSize: 11, color: "#64748b" }}>{f}</div>
@@ -8035,6 +8111,30 @@ function DagligSplash({ onClose, news, onDisable }) {
   );
 }
 
+
+// ── Annonsbar för Bas-användare ───────────────────────────────────────────
+const ANNONS_BAR_LISTA = [
+  { text: "Öppna ISK hos Avanza — Sveriges populäraste aktiespar", url: "https://www.avanza.se", emoji: "📈" },
+  { text: "Jämför bolåneräntor med Zmarta — spara tusentals kr", url: "https://www.zmarta.se", emoji: "🏠" },
+  { text: "Starta aktiesparandet med Nordnet — från 0 kr courtage", url: "https://www.nordnet.se", emoji: "💹" },
+  { text: "Hitta billigaste flyget — sök med Momondo", url: "https://www.momondo.se", emoji: "✈️" },
+  { text: "Jämför hemförsäkring — spara upp till 3 000 kr/år på Insplanet", url: "https://www.insplanet.se", emoji: "🛡️" },
+  { text: "Bästa valutakursen utomlands — skaffa Revolut gratis", url: "https://www.revolut.com", emoji: "💱" },
+];
+
+function BasAnnotionsBar() {
+  const [idx] = useState(() => Math.floor(Date.now() / (1000 * 60 * 20)) % ANNONS_BAR_LISTA.length);
+  const annons = ANNONS_BAR_LISTA[idx];
+  return (
+    <a href={annons.url} target="_blank" rel="noopener noreferrer sponsored"
+      style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 14px", marginBottom: 12 }}>
+      <span style={{ fontSize: 20, flexShrink: 0 }}>{annons.emoji}</span>
+      <span style={{ fontSize: 12, color: "#94a3b8", flex: 1, lineHeight: 1.4 }}>{annons.text}</span>
+      <span style={{ fontSize: 9, color: "#475569", background: "var(--bg2)", padding: "2px 6px", borderRadius: 4, flexShrink: 0 }}>ANNONS</span>
+    </a>
+  );
+}
+
 function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, onUpgrade, setTab, setSubTab, onCompare, t, onNewsLoaded, onBuildProfile, profilPct }) {
   const [showGuide, setShowGuide] = useState(false);
   const { unlocked, points, level, levelProgress, nextLevelPoints, unlock, newAchievement } = useGamification();
@@ -8107,6 +8207,9 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
   return (
     <div>
       <AchievementToast achievement={newAchievement} />
+
+      {/* Annonsbar för Bas-användare */}
+      {!isPro && <BasAnnotionsBar />}
 
       {/* Greeting */}
       <div style={{ marginBottom: 16 }}>
@@ -8225,7 +8328,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
 
       {/* Always free badge */}
       <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98122", padding: "12px 16px", textAlign: "center" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>✓ Kapital är alltid gratis</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>✓ Bas är alltid gratis</div>
         <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.5 }}>
           Budget, kalkylatorer, juridisk AI, försäkringsjämförelse, lånejämförelse och mer — helt gratis för alltid. Pro ger obegränsade AI-analyser.
         </div>
@@ -9378,7 +9481,7 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
       <div style={{ background: "linear-gradient(135deg,#1a1000,#0f172a)", borderRadius: 18, border: "1px solid #f59e0b55", padding: 20, marginBottom: 16, textAlign: "center" }}>
         <div style={{ fontSize: 42, marginBottom: 8 }}>🤝</div>
         <div style={{ fontSize: 20, fontWeight: 900, background: "linear-gradient(90deg,#f59e0b,#f97316)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Erbjudanden & Partners</div>
-        <div style={{ fontSize: 13, color: "#64748b", marginTop: 6, lineHeight: 1.5 }}>Sparade pengar direkt i fickan. Kurerade partners — aldrig slumpmässig reklam.</div>
+        <div style={{ fontSize: 13, color: "#64748b", marginTop: 6, lineHeight: 1.5 }}>Sparade pengar direkt i fickan. Noggrant utvalda partners vi tror på — vi tjänar provision vid köp, alltid tydligt märkt som annons.</div>
       </div>
 
       {/* Category grid — ikonkort, ingen sidomeny */}
@@ -14259,5 +14362,3 @@ export default function KapitalApp() {
     </ErrorBoundary>
   );
 }
-
-  
