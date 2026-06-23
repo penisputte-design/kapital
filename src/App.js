@@ -7404,6 +7404,8 @@ function Onboarding({ onDone }) {
   const [step, setStep] = useState(0);
   const [interests, setInterests] = useState([]);
   const [name, setName] = useState("");
+  const [ekonomi, setEkonomi] = useState({ inkomst: "", hyra: "", mat: "", transport: "", ovrigt: "", sparande: "", buffer: "" });
+  const updEkonomi = (k, v) => setEkonomi(p => ({ ...p, [k]: v }));
 
   const INTERESTS = [
     { id: "aktier", icon: "📈", label: "Aktier & analys" },
@@ -7425,6 +7427,29 @@ function Onboarding({ onDone }) {
       localStorage.setItem("kapital_onboarded", "true");
       if (name) localStorage.setItem("kapital_name", name);
       localStorage.setItem("kapital_interests", JSON.stringify(interests));
+      // Spara ekonomisk data direkt till localStorage
+      if (ekonomi.inkomst) localStorage.setItem("kapital_income", ekonomi.inkomst);
+      if (ekonomi.hyra || ekonomi.mat || ekonomi.transport) {
+        const expenses = {};
+        if (ekonomi.hyra) expenses.Hyra = ekonomi.hyra;
+        if (ekonomi.mat) expenses.Mat = ekonomi.mat;
+        if (ekonomi.transport) expenses.Transport = ekonomi.transport;
+        if (ekonomi.ovrigt) expenses.Övrigt = ekonomi.ovrigt;
+        localStorage.setItem("kapital_expenses", JSON.stringify(expenses));
+      }
+      if (ekonomi.sparande) {
+        const goals = [{ name: "Generellt sparande", emoji: "💰", target: parseFloat(ekonomi.sparande) * 12, saved: 0, monthly: parseFloat(ekonomi.sparande) }];
+        localStorage.setItem("kapital_goals", JSON.stringify(goals));
+      }
+      // Spara hälsokoll-data
+      const halsaData = {
+        inkomst: ekonomi.inkomst,
+        utgifter: String(parseFloat(ekonomi.hyra||0) + parseFloat(ekonomi.mat||0) + parseFloat(ekonomi.transport||0)),
+        rorliga: ekonomi.ovrigt || "0",
+        sparande: ekonomi.sparande,
+        buffer: ekonomi.buffer,
+      };
+      localStorage.setItem("kapital_halsa_data", JSON.stringify(halsaData));
     } catch {}
     onDone();
   };
@@ -7481,11 +7506,59 @@ function Onboarding({ onDone }) {
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Ditt förnamn..."
         style={{ width: "100%", padding: "14px 16px", background: "var(--card)", border: "2px solid #1e293b", borderRadius: 14, color: "#e2e8f0", fontSize: 18, outline: "none", textAlign: "center", boxSizing: "border-box", marginBottom: 24 }} />
       <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, textAlign: "left" }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ 3 gratis analyser per dag</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ 3 Bas-analyser per dag</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Kurslarm och bevakningar</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Budget & sparmål</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Skatteberäkning K4, ISK & ROT/RUT</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981" }}>✓ FIRE, pension & lånekalkylator</div>
+      </div>
+    </div>,
+
+    // Step 3 — Ekonomisk profil
+    <div key="ekonomi">
+      <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 6 }}>💰 Din ekonomiska profil</div>
+      <div style={{ fontSize: 14, color: "#64748b", marginBottom: 20, lineHeight: 1.5 }}>Valfritt — men ju mer du fyller i, desto bättre fungerar Ekonomisk Hälsokoll, budget och AI-coachen.</div>
+
+      {[
+        { key: "inkomst", label: "💰 Månadsinkomst efter skatt", placeholder: "t.ex. 35 000", suffix: "kr/mån" },
+        { key: "hyra", label: "🏠 Hyra / boendekostnad", placeholder: "t.ex. 8 500", suffix: "kr/mån" },
+        { key: "mat", label: "🛒 Mat & dagligvaror", placeholder: "t.ex. 3 500", suffix: "kr/mån" },
+        { key: "transport", label: "🚗 Transport & kollektivtrafik", placeholder: "t.ex. 1 200", suffix: "kr/mån" },
+        { key: "ovrigt", label: "📦 Övriga rörliga utgifter", placeholder: "t.ex. 2 000", suffix: "kr/mån" },
+        { key: "sparande", label: "🏦 Hur mycket sparar du per månad?", placeholder: "t.ex. 3 000", suffix: "kr/mån" },
+        { key: "buffer", label: "🛡️ Buffert på sparkonto", placeholder: "t.ex. 25 000", suffix: "kr" },
+      ].map(f => (
+        <div key={f.key} style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>{f.label}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="number" value={ekonomi[f.key]} onChange={e => updEkonomi(f.key, e.target.value)}
+              placeholder={f.placeholder}
+              style={{ flex: 1, padding: "11px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 15, outline: "none" }} />
+            <span style={{ fontSize: 13, color: "#475569", flexShrink: 0 }}>{f.suffix}</span>
+          </div>
+        </div>
+      ))}
+
+      {ekonomi.inkomst && (
+        <div style={{ background: "#10b98111", borderRadius: 12, border: "1px solid #10b98133", padding: 14, marginTop: 16 }}>
+          <div style={{ fontSize: 13, color: "#10b981", fontWeight: 600, marginBottom: 4 }}>📊 Din ekonomi i korthet</div>
+          {(() => {
+            const ink = parseFloat(ekonomi.inkomst) || 0;
+            const utg = (parseFloat(ekonomi.hyra)||0) + (parseFloat(ekonomi.mat)||0) + (parseFloat(ekonomi.transport)||0) + (parseFloat(ekonomi.ovrigt)||0);
+            const kvar = ink - utg;
+            const sparkvot = ink > 0 ? ((parseFloat(ekonomi.sparande)||0) / ink * 100).toFixed(0) : 0;
+            return (
+              <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.8 }}>
+                <div>Kvar efter utgifter: <strong style={{ color: kvar >= 0 ? "#10b981" : "#ef4444" }}>{Math.round(kvar).toLocaleString("sv-SE")} kr/mån</strong></div>
+                {ekonomi.sparande && <div>Sparkvot: <strong style={{ color: "#10b981" }}>{sparkvot}%</strong></div>}
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      <div style={{ fontSize: 12, color: "#475569", marginTop: 12, lineHeight: 1.5 }}>
+        🔒 All data sparas bara lokalt i din webbläsare — aldrig på våra servrar.
       </div>
     </div>
   ];
@@ -7512,8 +7585,14 @@ function Onboarding({ onDone }) {
             </button>
           )}
           <button onClick={() => step < steps.length - 1 ? setStep(s => s + 1) : finish()} style={{ flex: 1, padding: "14px", background: step === 1 && interests.length === 0 ? "#1e293b" : "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
-            {step === steps.length - 1 ? "🚀 Kom igång!" : "Nästa →"}
+            {step === steps.length - 1 ? "🚀 Starta Kapital!" : step === steps.length - 2 ? "Nästa — Ekonomi →" : "Nästa →"}
           </button>
+        </div>
+        {step === steps.length - 1 && (
+          <button onClick={finish} style={{ width: "100%", padding: "10px", background: "none", border: "none", color: "#475569", fontSize: 13, cursor: "pointer", marginTop: 8 }}>
+            Hoppa över — fyll i ekonomin senare
+          </button>
+        )}
         </div>
       </div>
     </div>
@@ -12972,15 +13051,20 @@ function AchievementBubble({ text, onDone }) {
 // ── Profilbyggare ─────────────────────────────────────────────────────────
 const PROFIL_STEPS = [
   { id: "namn", label: "Ditt namn", icon: "👤", key: "kapital_name", type: "text", placeholder: "Förnamn Efternamn" },
-  { id: "inkomst", label: "Månadsinkomst (netto)", icon: "💰", key: "kapital_income", type: "number", placeholder: "35000" },
-  { id: "boende", label: "Boendekostnad/mån", icon: "🏠", key: "kapital_rent", type: "number", placeholder: "8000" },
-  { id: "mat", label: "Matkostnader/mån", icon: "🛒", key: "kapital_food", type: "number", placeholder: "4000" },
+  { id: "inkomst", label: "Månadsinkomst (netto efter skatt)", icon: "💰", key: "kapital_income", type: "number", placeholder: "35000" },
+  { id: "boende", label: "Hyra / boendekostnad per månad", icon: "🏠", key: "kapital_rent", type: "number", placeholder: "8000" },
+  { id: "mat", label: "Mat & dagligvaror per månad", icon: "🛒", key: "kapital_food", type: "number", placeholder: "4000" },
+  { id: "transport", label: "Transport & kollektivtrafik per månad", icon: "🚗", key: "kapital_transport", type: "number", placeholder: "1200" },
+  { id: "sparande", label: "Hur mycket sparar du per månad?", icon: "🏦", key: "kapital_monthly_savings", type: "number", placeholder: "3000" },
+  { id: "buffer", label: "Buffert på sparkonto (totalt)", icon: "🛡️", key: "kapital_buffer", type: "number", placeholder: "25000" },
+  { id: "pension_spar", label: "Pensionssparande per månad", icon: "👴", key: "kapital_pension_monthly", type: "number", placeholder: "2000" },
   { id: "sparmal", label: "Ditt första sparmål", icon: "🎯", key: "kapital_firstgoal", type: "text", placeholder: "t.ex. Semester, Bil, Buffert" },
   { id: "aktier", label: "Äger du aktier?", icon: "📈", key: "kapital_has_stocks", type: "choice", options: ["Ja", "Nej", "Vill börja"] },
   { id: "krypto", label: "Äger du krypto?", icon: "₿", key: "kapital_has_crypto", type: "choice", options: ["Ja", "Nej", "Vill börja"] },
-  { id: "pension", label: "Har du kollat din pension?", icon: "👴", key: "kapital_checked_pension", type: "choice", options: ["Ja", "Nej"] },
+  { id: "pension", label: "Har du kollat din pension?", icon: "🏖️", key: "kapital_checked_pension", type: "choice", options: ["Ja", "Nej"] },
   { id: "forsakring", label: "Har du hemförsäkring?", icon: "🛡️", key: "kapital_has_insurance", type: "choice", options: ["Ja", "Nej", "Vet ej"] },
   { id: "skulder", label: "Har du lån eller skulder?", icon: "💳", key: "kapital_has_debts", type: "choice", options: ["Ja", "Nej"] },
+  { id: "lon_trend", label: "Hur har din inkomst förändrats senaste 2 åren?", icon: "📊", key: "kapital_lon_trend", type: "choice", options: ["Ökat", "Oförändrad", "Minskat"] },
 ];
 
 function ProfilByggare({ onClose }) {
@@ -13007,9 +13091,51 @@ function ProfilByggare({ onClose }) {
     const newAnswers = { ...answers, [currentStep.id]: v };
     setAnswers(newAnswers);
     try { localStorage.setItem(currentStep.key, v); } catch {}
-    // Special handling
-    if (currentStep.id === "inkomst") try { localStorage.setItem("kapital_income", v); } catch {}
-    if (currentStep.id === "namn") try { localStorage.setItem("kapital_name", v); } catch {}
+
+    // Synka med kapital_income och kapital_expenses + kapital_halsa_data
+    if (currentStep.id === "inkomst") {
+      try { localStorage.setItem("kapital_income", v); } catch {}
+    }
+    if (currentStep.id === "namn") {
+      try { localStorage.setItem("kapital_name", v); } catch {}
+    }
+
+    // Bygg upp expenses och halsa_data från alla svar
+    const allAnswers = { ...newAnswers };
+    try {
+      // Synka kapital_expenses (Budget-fliken)
+      const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+      if (allAnswers.boende) expenses["Hyra/Boende"] = allAnswers.boende;
+      if (allAnswers.mat) expenses["Mat"] = allAnswers.mat;
+      if (allAnswers.transport) expenses["Transport"] = allAnswers.transport;
+      localStorage.setItem("kapital_expenses", JSON.stringify(expenses));
+
+      // Synka kapital_halsa_data (Ekonomisk Hälsokoll)
+      const halsaRaw = localStorage.getItem("kapital_halsa_data");
+      const halsa = halsaRaw ? JSON.parse(halsaRaw) : {};
+      if (allAnswers.inkomst) halsa.inkomst = allAnswers.inkomst;
+      if (allAnswers.boende) halsa.utgifter = allAnswers.boende;
+      if (allAnswers.mat || allAnswers.transport) halsa.rorliga = String(
+        (parseFloat(allAnswers.mat) || 0) + (parseFloat(allAnswers.transport) || 0)
+      );
+      if (allAnswers.sparande) halsa.sparande = allAnswers.sparande;
+      if (allAnswers.buffer) halsa.buffer = allAnswers.buffer;
+      if (allAnswers.pension_spar) halsa.pension = allAnswers.pension_spar;
+      if (allAnswers.lon_trend) halsa.lon_trend = allAnswers.lon_trend;
+      if (allAnswers.skulder === "Ja") halsa.betalningsanmarkningar = halsa.betalningsanmarkningar || "Nej";
+      localStorage.setItem("kapital_halsa_data", JSON.stringify(halsa));
+
+      // Sparmål om ifyllt
+      if (allAnswers.sparmal && allAnswers.sparmal !== "Ja" && allAnswers.sparmal !== "Nej") {
+        const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
+        const exists = goals.find(g => g.name === allAnswers.sparmal);
+        if (!exists) {
+          goals.push({ name: allAnswers.sparmal, emoji: "🎯", target: 10000, saved: 0, monthly: 500 });
+          localStorage.setItem("kapital_goals", JSON.stringify(goals));
+        }
+      }
+    } catch {}
+
     if (step < totalSteps - 1) { setStep(step + 1); setCurrent(""); }
     else setDone(true);
   };
