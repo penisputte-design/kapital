@@ -8176,7 +8176,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Populära aktier</div>
       <div style={{ overflowX: "auto", display: "flex", gap: 10, paddingBottom: 4, marginBottom: 20, scrollbarWidth: "none" }}>
         {Object.values(QUICK_ITEMS).flat().slice(0, 10).map(s => {
-          const p = await fetchKurs(s.ticker);
+          const p = mockPrice(s.ticker);
           const up = p.chgPct >= 0;
           return (
             <button key={s.name} onClick={() => { setQuery(s.name); analyze(s.name); setTab(1); setSubTab("analys"); unlock("first_analysis"); }}
