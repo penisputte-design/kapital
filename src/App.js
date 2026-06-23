@@ -55,21 +55,52 @@ async function startStripeCheckout(plan, onUpgrade) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "create-checkout", plan })
     });
-    if (!resp.ok) throw new Error("API not available");
+    if (!resp.ok) throw new Error("Stripe API not available");
     const data = await resp.json();
     if (data.url) {
       window.location.href = data.url;
     } else {
-      throw new Error("No URL returned");
+      throw new Error("No checkout URL returned");
     }
-  } catch {
-    // In test mode — activate Pro locally
+  } catch (err) {
+    console.warn("Stripe checkout failed:", err.message);
+    // Fallback: activate Pro locally (test mode / dev)
     if (onUpgrade) {
       onUpgrade();
     } else {
       try { localStorage.setItem("kapital_pro", "true"); } catch {}
       window.location.reload();
     }
+  }
+}
+
+// Verify Stripe session on return from checkout
+async function verifyStripeSession(sessionId) {
+  try {
+    const resp = await fetch("/api/stripe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "verify-session", session_id: sessionId })
+    });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch {
+    return null;
+  }
+}
+
+// Open Stripe customer portal to manage subscription
+async function openCustomerPortal(customerId) {
+  try {
+    const resp = await fetch("/api/stripe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "customer-portal", customerId })
+    });
+    const data = await resp.json();
+    if (data.url) window.location.href = data.url;
+  } catch (err) {
+    console.error("Portal error:", err);
   }
 }
 
@@ -136,9 +167,9 @@ const T = {
     analyzing: "Analyserar",
     placeholder: "Bolagsnamn t.ex. Volvo, Apple...",
     tabs: ["📊 Analys", "⭐ Bevakningar", "💼 Portfölj", "📐 Kalkyl", "🏦 Mäklare", "🗓 Kalender", "💡 Spara", "📤 Dela"],
-    freeLeft: (n) => `${n} gratis analyser kvar`,
+    freeLeft: (n) => `${n} Bas-analyser kvar`,
     freeDone: "✕ Gräns nådd",
-    freeLabel: "Gratis analyser",
+    freeLabel: "Bas-analyser",
     cached: "⚡ Hämtad från cache",
     steps: ["Hämtar bolagsdata...", "Analyserar nyhetsflöde...", "Beräknar riskprofil...", "Sammanställer analys..."],
     sections: ["Svenska storbolag", "Globala jättar", "Råvaror & Krypto"],
@@ -149,8 +180,8 @@ const T = {
     emptyState: "Sök på ett bolag för att starta",
     legalNote: "⚠ Viktig information",
     legalText: "Kapital är ett informations- och analysverktyg och utgör inte investeringsrådgivning enligt lag (2007:528) om värdepappersmarknaden. AI-genererade analyser är inte personliga köp- eller säljrekommendationer. Historisk avkastning är ingen garanti för framtida resultat. Investeringar innebär alltid risk — du kan förlora hela ditt investerade kapital.",
-    proTitle: "Du har använt dina 3 gratis analyser",
-    proDesc: "Uppgradera till Pro för obegränsad analys, portföljspårning och mer.",
+    proTitle: "Du har använt dina 3 Bas-analyser",
+    proDesc: "Bas-versionen ger 3 analyser. Pro ger obegränsat + AI-coach, Hälsokoll och exklusiva funktioner.",
     proMonth: "Pro — 49 kr/mån", proYear: "399 kr/år", proCancel: "✓ Avsluta när som helst",
     language: "Språk",
   },
@@ -188,7 +219,7 @@ const T = {
     tabs: ["📊 Analyse", "💼 Portefølje", "📐 Kalkulator", "🏦 Meglere", "🗓 Kalender", "📤 Del"],
     freeLeft: (n) => `${n} gratis analyser igjen`,
     freeDone: "✕ Grense nådd",
-    freeLabel: "Gratis analyser",
+    freeLabel: "Bas-analyser",
     cached: "⚡ Hentet fra hurtigbuffer",
     steps: ["Henter selskapsdata...", "Analyserer nyhetsstrøm...", "Beregner risikoprofil...", "Sammenstiller analyse..."],
     sections: ["Norske storselskaper", "Globale giganter", "Råvarer & Krypto"],
@@ -213,7 +244,7 @@ const T = {
     tabs: ["📊 Analyse", "💼 Portefølje", "📐 Kalkulator", "🏦 Mæglere", "🗓 Kalender", "📤 Del"],
     freeLeft: (n) => `${n} gratis analyser tilbage`,
     freeDone: "✕ Grænse nået",
-    freeLabel: "Gratis analyser",
+    freeLabel: "Bas-analyser",
     cached: "⚡ Hentet fra cache",
     steps: ["Henter virksomhedsdata...", "Analyserer nyhedsstrøm...", "Beregner risikoprofil...", "Sammensætter analyse..."],
     sections: ["Danske storselskaber", "Globale giganter", "Råvarer & Krypto"],
@@ -427,21 +458,59 @@ function ScoreBar({ score }) {
   );
 }
 
+// Bas-annons — roteras bland partners
+const BAS_ANNONSER = [
+  { text: "Öppna ett ISK-konto hos Avanza — Sveriges populäraste aktiespar", url: "https://www.avanza.se", badge: "ANNONS" },
+  { text: "Jämför bolåneräntor — spara tusentals kronor med Zmarta", url: "https://www.zmarta.se", badge: "ANNONS" },
+  { text: "Starta ditt sparande med Nordnet — från 0 kr i courtage", url: "https://www.nordnet.se", badge: "ANNONS" },
+  { text: "Hitta billigaste flyget med Momondo — prisalarm ingår", url: "https://www.momondo.se", badge: "ANNONS" },
+  { text: "Bästa hemförsäkringen — jämför 30+ bolag på Insplanet", url: "https://www.insplanet.se", badge: "ANNONS" },
+];
+
+function BasAnnons() {
+  const annons = BAS_ANNONSER[Math.floor(Date.now() / (1000 * 60 * 30)) % BAS_ANNONSER.length];
+  return (
+    <a href={annons.url} target="_blank" rel="noopener noreferrer sponsored" style={{ display: "block", textDecoration: "none", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, padding: "12px 14px", marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5, flex: 1 }}>{annons.text} →</div>
+        <span style={{ fontSize: 9, color: "#475569", background: "var(--bg2)", padding: "2px 6px", borderRadius: 4, flexShrink: 0, marginTop: 2 }}>{annons.badge}</span>
+      </div>
+    </a>
+  );
+}
+
 function ProGate({ onUpgrade, t }) {
   return (
-    <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f1a)", borderRadius: 16, border: "1px solid #10b98133", padding: 28, textAlign: "center", marginBottom: 16 }}>
-      <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
-      <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{t.proTitle}</div>
-      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 24, lineHeight: 1.7 }}>{t.proDesc}</div>
-      <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 14 }}>
-        <button onClick={onUpgrade} style={{ padding: "13px 28px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px #10b98144" }}>
-          {t.proMonth}
-        </button>
-        <button onClick={onUpgrade} style={{ padding: "13px 20px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
-          {t.proYear}
-        </button>
+    <div style={{ marginBottom: 16 }}>
+      {/* Bas-annons */}
+      <BasAnnons />
+
+      <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f1a)", borderRadius: 16, border: "1px solid #10b98133", padding: 24, textAlign: "center" }}>
+        <div style={{ fontSize: 36, marginBottom: 10 }}>⭐</div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, padding: "3px 10px", background: "#33415544", borderRadius: 20, color: "#64748b" }}>Bas</span>
+          <span style={{ fontSize: 12, padding: "3px 10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 20, color: "#fff", fontWeight: 700 }}>Pro ✨</span>
+        </div>
+        <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 6, color: "var(--text, #e2e8f0)" }}>{t.proTitle}</div>
+        <div style={{ fontSize: 13, color: "#64748b", marginBottom: 16, lineHeight: 1.7 }}>{t.proDesc}</div>
+
+        {/* Pro features list */}
+        <div style={{ textAlign: "left", background: "var(--bg2, #080c18)", borderRadius: 12, padding: "12px 16px", marginBottom: 16 }}>
+          {["✅ Obegränsade AI-analyser", "✅ AI-ekonomicoach (fråga vad som helst)", "✅ Ekonomisk Hälsokoll", "✅ Drömrese-planeraren", "✅ Inga annonser", "✅ Prioriterad support"].map(f => (
+            <div key={f} style={{ fontSize: 13, color: "#94a3b8", padding: "4px 0" }}>{f}</div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 12 }}>
+          <button onClick={onUpgrade} style={{ padding: "13px 28px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 20px #10b98144" }}>
+            {t.proMonth}
+          </button>
+          <button onClick={onUpgrade} style={{ padding: "13px 20px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 12, color: "#94a3b8", fontSize: 14, cursor: "pointer" }}>
+            {t.proYear}
+          </button>
+        </div>
+        <div style={{ fontSize: 11, color: "#334155" }}>{t.proCancel}</div>
       </div>
-      <div style={{ fontSize: 11, color: "#334155" }}>{t.proCancel}</div>
     </div>
   );
 }
@@ -502,6 +571,43 @@ function mockPrice(ticker) {
   return { price, chgPct };
 }
 
+
+// ── Live kurs-hämtning via proxy ─────────────────────────────────────────
+const kursCache = {};
+const kursCacheTime = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minuter
+
+async function fetchKurs(ticker) {
+  const now = Date.now();
+  if (kursCache[ticker] && now - (kursCacheTime[ticker] || 0) < CACHE_TTL) {
+    return kursCache[ticker];
+  }
+  try {
+    const resp = await fetch(`/api/kurs?ticker=${encodeURIComponent(ticker)}`);
+    if (!resp.ok) throw new Error("Ingen data");
+    const data = await resp.json();
+    if (data.pris) {
+      const result = { price: data.pris, chgPct: parseFloat(data.andringProcent), kalla: data.kalla, hog: data.hog, lag: data.lag, oppning: data.oppning };
+      kursCache[ticker] = result;
+      kursCacheTime[ticker] = now;
+      return result;
+    }
+  } catch {}
+  // Fallback till mockPrice om API saknas/misslyckas
+  return mockPrice(ticker);
+}
+
+async function fetchKursHistorik(ticker) {
+  try {
+    const resp = await fetch(`/api/kurs?ticker=${encodeURIComponent(ticker)}&type=history`);
+    if (!resp.ok) throw new Error("Ingen historik");
+    const data = await resp.json();
+    return data.punkter || null;
+  } catch {
+    return null;
+  }
+}
+
 function PriceChip({ chgPct }) {
   const up = chgPct >= 0;
   return (
@@ -524,23 +630,24 @@ function QuickGrid({ onSelect }) {
   const { checkAlerts } = useAlerts();
 
   useEffect(() => {
-    // Ladda priser — i produktion: fetch Yahoo Finance API här
-    const all = {};
-    Object.values(QUICK_ITEMS).flat().forEach(s => {
-      all[s.ticker] = mockPrice(s.ticker);
-    });
-    setTimeout(() => { setPrices(all); setPriceLoading(false); checkAlerts(all); }, 600);
-
-    // Uppdatera var 30:e sekund (simulerat flicker)
-    const interval = setInterval(() => {
-      const updated = {};
-      Object.values(QUICK_ITEMS).flat().forEach(s => {
-        const cur = all[s.ticker] || mockPrice(s.ticker);
-        const micro = (Math.random() - 0.5) * 0.1;
-        updated[s.ticker] = { price: cur.price * (1 + micro / 100), chgPct: cur.chgPct + micro };
-      });
-      setPrices(prev => ({ ...prev, ...updated }));
-    }, 30000);
+    // Ladda live-priser via proxy (Finnhub → Alpha Vantage fallback)
+    async function laddaPriser() {
+      setPriceLoading(true);
+      const tickers = [...new Set(Object.values(QUICK_ITEMS).flat().map(s => s.ticker))];
+      const results = {};
+      // Hämta i parallell med begränsning
+      await Promise.allSettled(
+        tickers.map(async ticker => {
+          results[ticker] = await fetchKurs(ticker);
+        })
+      );
+      setPrices(results);
+      setPriceLoading(false);
+      checkAlerts(results);
+    }
+    laddaPriser();
+    // Uppdatera var 5:e minut (respekterar API rate limits)
+    const interval = setInterval(laddaPriser, 5 * 60 * 1000);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -595,7 +702,7 @@ function QuickGrid({ onSelect }) {
         </div>
       ))}
       <div style={{ fontSize: 10, color: "#1e293b", textAlign: "right", marginTop: 4 }}>
-        Priser är simulerade · Koppla Yahoo Finance API för riktiga kurser
+        Priser via Finnhub/Alpha Vantage · Fördröjda ~15 min · Ej finansiell rådgivning
       </div>
     </div>
   );
@@ -820,14 +927,301 @@ function NotificationBell({ onOpen }) {
 }
 
 // ── Analysis Tab ─────────────────────────────────────────────────────────
+
+// ── Börsbolag databas för autocomplete ───────────────────────────────────
+const BORSLISTA = [
+  { namn: "AAK", ticker: "AAK", marknad: "Nasdaq Stockholm" },
+  { namn: "ABB", ticker: "ABB", marknad: "Nasdaq Stockholm" },
+  { namn: "Addnode Group", ticker: "ANO B", marknad: "Nasdaq Stockholm" },
+  { namn: "AddTech", ticker: "ADDTB", marknad: "Nasdaq Stockholm" },
+  { namn: "Alfa Laval", ticker: "ALFA", marknad: "Nasdaq Stockholm" },
+  { namn: "Alleima", ticker: "ALLEI", marknad: "Nasdaq Stockholm" },
+  { namn: "Ambea", ticker: "AMBEA", marknad: "Nasdaq Stockholm" },
+  { namn: "Arjo", ticker: "ARJO B", marknad: "Nasdaq Stockholm" },
+  { namn: "AstraZeneca", ticker: "AZN", marknad: "Nasdaq Stockholm" },
+  { namn: "Atlas Copco", ticker: "ATCO A", marknad: "Nasdaq Stockholm" },
+  { namn: "Atrium Ljungberg", ticker: "ATRLJ B", marknad: "Nasdaq Stockholm" },
+  { namn: "Autoliv", ticker: "ALIV SDB", marknad: "Nasdaq Stockholm" },
+  { namn: "Avanza Bank", ticker: "AZA", marknad: "Nasdaq Stockholm" },
+  { namn: "Axfood", ticker: "AXFO", marknad: "Nasdaq Stockholm" },
+  { namn: "B3 Consulting", ticker: "B3", marknad: "Nasdaq Stockholm" },
+  { namn: "Balder", ticker: "BALD B", marknad: "Nasdaq Stockholm" },
+  { namn: "Beijer Alma", ticker: "BEIA B", marknad: "Nasdaq Stockholm" },
+  { namn: "Beijer Electronics", ticker: "BELE", marknad: "Nasdaq Stockholm" },
+  { namn: "Beijer Ref", ticker: "BEIA", marknad: "Nasdaq Stockholm" },
+  { namn: "Betsson", ticker: "BETS B", marknad: "Nasdaq Stockholm" },
+  { namn: "BillerudKorsnäs", ticker: "BILB", marknad: "Nasdaq Stockholm" },
+  { namn: "Bilia", ticker: "BIL A", marknad: "Nasdaq Stockholm" },
+  { namn: "Boliden", ticker: "BOL", marknad: "Nasdaq Stockholm" },
+  { namn: "Bonava", ticker: "BONA B", marknad: "Nasdaq Stockholm" },
+  { namn: "Bravida", ticker: "BRAV", marknad: "Nasdaq Stockholm" },
+  { namn: "BTS Group", ticker: "BTS B", marknad: "Nasdaq Stockholm" },
+  { namn: "Castellum", ticker: "CAST", marknad: "Nasdaq Stockholm" },
+  { namn: "Clas Ohlson", ticker: "CLAS B", marknad: "Nasdaq Stockholm" },
+  { namn: "Cloetta", ticker: "CLA B", marknad: "Nasdaq Stockholm" },
+  { namn: "Concentric", ticker: "COCC", marknad: "Nasdaq Stockholm" },
+  { namn: "Creades", ticker: "CRED A", marknad: "Nasdaq Stockholm" },
+  { namn: "Dometic", ticker: "DOM", marknad: "Nasdaq Stockholm" },
+  { namn: "Dustin", ticker: "DUST", marknad: "Nasdaq Stockholm" },
+  { namn: "Elanders", ticker: "ELAN B", marknad: "Nasdaq Stockholm" },
+  { namn: "Electrolux", ticker: "ELUX B", marknad: "Nasdaq Stockholm" },
+  { namn: "Electrolux Professional", ticker: "EPRO B", marknad: "Nasdaq Stockholm" },
+  { namn: "Embracer Group", ticker: "EMBRAC B", marknad: "Nasdaq Stockholm" },
+  { namn: "Epiroc", ticker: "EPI A", marknad: "Nasdaq Stockholm" },
+  { namn: "EQT", ticker: "EQT", marknad: "Nasdaq Stockholm" },
+  { namn: "Ericsson", ticker: "ERIC B", marknad: "Nasdaq Stockholm" },
+  { namn: "Essity", ticker: "ESSITY B", marknad: "Nasdaq Stockholm" },
+  { namn: "Evolution", ticker: "EVO", marknad: "Nasdaq Stockholm" },
+  { namn: "Fabege", ticker: "FABG", marknad: "Nasdaq Stockholm" },
+  { namn: "Fingerprint Cards", ticker: "FING B", marknad: "Nasdaq Stockholm" },
+  { namn: "Fortnox", ticker: "FNOX", marknad: "Nasdaq Stockholm" },
+  { namn: "Getinge", ticker: "GETI B", marknad: "Nasdaq Stockholm" },
+  { namn: "Granges", ticker: "GRNG", marknad: "Nasdaq Stockholm" },
+  { namn: "H&M", ticker: "HM B", marknad: "Nasdaq Stockholm" },
+  { namn: "Handelsbanken", ticker: "SHB A", marknad: "Nasdaq Stockholm" },
+  { namn: "Hexagon", ticker: "HEXA B", marknad: "Nasdaq Stockholm" },
+  { namn: "Hoist Finance", ticker: "HOFI", marknad: "Nasdaq Stockholm" },
+  { namn: "Holmen", ticker: "HOLM B", marknad: "Nasdaq Stockholm" },
+  { namn: "Hufvudstaden", ticker: "HUFV A", marknad: "Nasdaq Stockholm" },
+  { namn: "Husqvarna", ticker: "HUSQ B", marknad: "Nasdaq Stockholm" },
+  { namn: "ICA Gruppen", ticker: "ICA", marknad: "Nasdaq Stockholm" },
+  { namn: "Indutrade", ticker: "INDT", marknad: "Nasdaq Stockholm" },
+  { namn: "Instalco", ticker: "INSTAL", marknad: "Nasdaq Stockholm" },
+  { namn: "Intrum", ticker: "INTRUM", marknad: "Nasdaq Stockholm" },
+  { namn: "Investor", ticker: "INVE B", marknad: "Nasdaq Stockholm" },
+  { namn: "JM", ticker: "JM", marknad: "Nasdaq Stockholm" },
+  { namn: "Kinvik", ticker: "KINV B", marknad: "Nasdaq Stockholm" },
+  { namn: "Lagercrantz", ticker: "LAGR B", marknad: "Nasdaq Stockholm" },
+  { namn: "Latour", ticker: "LATO B", marknad: "Nasdaq Stockholm" },
+  { namn: "Lifco", ticker: "LIFCO B", marknad: "Nasdaq Stockholm" },
+  { namn: "Lime Technologies", ticker: "LIME", marknad: "Nasdaq Stockholm" },
+  { namn: "Lindab", ticker: "LIAB", marknad: "Nasdaq Stockholm" },
+  { namn: "Loomis", ticker: "LOOM B", marknad: "Nasdaq Stockholm" },
+  { namn: "Lundbergföretagen", ticker: "LUND B", marknad: "Nasdaq Stockholm" },
+  { namn: "Medicover", ticker: "MCOV B", marknad: "Nasdaq Stockholm" },
+  { namn: "Mekonomen", ticker: "MEKO", marknad: "Nasdaq Stockholm" },
+  { namn: "Modern Times Group", ticker: "MTG B", marknad: "Nasdaq Stockholm" },
+  { namn: "Nibe", ticker: "NIBE B", marknad: "Nasdaq Stockholm" },
+  { namn: "Nobia", ticker: "NOBI", marknad: "Nasdaq Stockholm" },
+  { namn: "Nordea", ticker: "NDA SE", marknad: "Nasdaq Stockholm" },
+  { namn: "Pandox", ticker: "PNDX B", marknad: "Nasdaq Stockholm" },
+  { namn: "Paradox Interactive", ticker: "PDX", marknad: "Nasdaq Stockholm" },
+  { namn: "Peab", ticker: "PEAB B", marknad: "Nasdaq Stockholm" },
+  { namn: "Ratos", ticker: "RATO B", marknad: "Nasdaq Stockholm" },
+  { namn: "Resurs Holding", ticker: "RESURS", marknad: "Nasdaq Stockholm" },
+  { namn: "Saab", ticker: "SAAB B", marknad: "Nasdaq Stockholm" },
+  { namn: "Sagax", ticker: "SAGA B", marknad: "Nasdaq Stockholm" },
+  { namn: "Sandvik", ticker: "SAND", marknad: "Nasdaq Stockholm" },
+  { namn: "SCA", ticker: "SCA B", marknad: "Nasdaq Stockholm" },
+  { namn: "Scandic Hotels", ticker: "SCAND", marknad: "Nasdaq Stockholm" },
+  { namn: "SEB", ticker: "SEB A", marknad: "Nasdaq Stockholm" },
+  { namn: "Securitas", ticker: "SECU B", marknad: "Nasdaq Stockholm" },
+  { namn: "Sinch", ticker: "SINCH", marknad: "Nasdaq Stockholm" },
+  { namn: "SKF", ticker: "SKF B", marknad: "Nasdaq Stockholm" },
+  { namn: "Skandia", ticker: "SKAND", marknad: "Nasdaq Stockholm" },
+  { namn: "Skanska", ticker: "SKA B", marknad: "Nasdaq Stockholm" },
+  { namn: "SSAB", ticker: "SSAB A", marknad: "Nasdaq Stockholm" },
+  { namn: "Sweco", ticker: "SWEC B", marknad: "Nasdaq Stockholm" },
+  { namn: "Swedbank", ticker: "SWED A", marknad: "Nasdaq Stockholm" },
+  { namn: "Swedish Match", ticker: "SWMA", marknad: "Nasdaq Stockholm" },
+  { namn: "Swedish Orphan Biovitrum", ticker: "SOBI", marknad: "Nasdaq Stockholm" },
+  { namn: "Tele2", ticker: "TEL2 B", marknad: "Nasdaq Stockholm" },
+  { namn: "Telia", ticker: "TELIA", marknad: "Nasdaq Stockholm" },
+  { namn: "Thule Group", ticker: "THULE", marknad: "Nasdaq Stockholm" },
+  { namn: "Trelleborg", ticker: "TREL B", marknad: "Nasdaq Stockholm" },
+  { namn: "Vitrolife", ticker: "VITR", marknad: "Nasdaq Stockholm" },
+  { namn: "Volvo", ticker: "VOLV B", marknad: "Nasdaq Stockholm" },
+  { namn: "Volvo Cars", ticker: "VOLCAR B", marknad: "Nasdaq Stockholm" },
+  { namn: "Wallenstam", ticker: "WALL B", marknad: "Nasdaq Stockholm" },
+  { namn: "Wihlborgs", ticker: "WIHL", marknad: "Nasdaq Stockholm" },
+  { namn: "Bahnhof", ticker: "BAHN B", marknad: "Nasdaq First North" },
+  { namn: "Bonesupport", ticker: "BONE", marknad: "Nasdaq First North" },
+  { namn: "Catena Media", ticker: "CTM", marknad: "Nasdaq First North" },
+  { namn: "Cint Group", ticker: "CINT", marknad: "Nasdaq First North" },
+  { namn: "Enea", ticker: "ENEA", marknad: "Nasdaq First North" },
+  { namn: "Eolus Vind", ticker: "EOLU B", marknad: "Nasdaq First North" },
+  { namn: "Ferronordic", ticker: "FNM", marknad: "Nasdaq First North" },
+  { namn: "G5 Entertainment", ticker: "G5EN", marknad: "Nasdaq First North" },
+  { namn: "Garo", ticker: "GARO", marknad: "Nasdaq First North" },
+  { namn: "Hanza", ticker: "HANZA", marknad: "Nasdaq First North" },
+  { namn: "Hemnet", ticker: "HEM", marknad: "Nasdaq First North" },
+  { namn: "Hexatronic", ticker: "HTRO", marknad: "Nasdaq First North" },
+  { namn: "IAR Systems", ticker: "IAR B", marknad: "Nasdaq First North" },
+  { namn: "Invisio", ticker: "IVSO", marknad: "Nasdaq First North" },
+  { namn: "Jetpak Top Holding", ticker: "JETPAK", marknad: "Nasdaq First North" },
+  { namn: "Kahoot", ticker: "KAHOT", marknad: "Nasdaq First North" },
+  { namn: "Kindred Group", ticker: "KIND SDB", marknad: "Nasdaq First North" },
+  { namn: "Knowit", ticker: "KNOW", marknad: "Nasdaq First North" },
+  { namn: "Midsona", ticker: "MID B", marknad: "Nasdaq First North" },
+  { namn: "Nordic Waterproofing", ticker: "NWG", marknad: "Nasdaq First North" },
+  { namn: "Ovzon", ticker: "OVZON", marknad: "Nasdaq First North" },
+  { namn: "Platzer Fastigheter", ticker: "PLAZ B", marknad: "Nasdaq First North" },
+  { namn: "Powercell Sweden", ticker: "PCELL", marknad: "Nasdaq First North" },
+  { namn: "Probi", ticker: "PROB", marknad: "Nasdaq First North" },
+  { namn: "RaySearch Laboratories", ticker: "RAY B", marknad: "Nasdaq First North" },
+  { namn: "Readly International", ticker: "READ", marknad: "Nasdaq First North" },
+  { namn: "Scandinavian Enviro Systems", ticker: "SENS", marknad: "Nasdaq First North" },
+  { namn: "Sedana Medical", ticker: "SEDA", marknad: "Nasdaq First North" },
+  { namn: "Sleep Cycle", ticker: "SLEEP", marknad: "Nasdaq First North" },
+  { namn: "Smart Eye", ticker: "SEYE", marknad: "Nasdaq First North" },
+  { namn: "Surgical Science", ticker: "SUS", marknad: "Nasdaq First North" },
+  { namn: "Tobii", ticker: "TOBII", marknad: "Nasdaq First North" },
+  { namn: "Truecaller", ticker: "TRUE B", marknad: "Nasdaq First North" },
+  { namn: "Vimian Group", ticker: "VIMIAN", marknad: "Nasdaq First North" },
+  { namn: "Vitec Software", ticker: "VIT B", marknad: "Nasdaq First North" },
+  { namn: "Volati", ticker: "VOLA", marknad: "Nasdaq First North" },
+  { namn: "Novo Nordisk", ticker: "NOVO B", marknad: "Köpenhamnsbörsen" },
+  { namn: "Mærsk", ticker: "MAERSK B", marknad: "Köpenhamnsbörsen" },
+  { namn: "Vestas Wind Systems", ticker: "VWS", marknad: "Köpenhamnsbörsen" },
+  { namn: "Orsted", ticker: "ORSTED", marknad: "Köpenhamnsbörsen" },
+  { namn: "DSV", ticker: "DSV", marknad: "Köpenhamnsbörsen" },
+  { namn: "Carlsberg", ticker: "CARL B", marknad: "Köpenhamnsbörsen" },
+  { namn: "Coloplast", ticker: "COLO B", marknad: "Köpenhamnsbörsen" },
+  { namn: "Genmab", ticker: "GMAB", marknad: "Köpenhamnsbörsen" },
+  { namn: "Pandora", ticker: "PNDORA", marknad: "Köpenhamnsbörsen" },
+  { namn: "Equinor", ticker: "EQNR", marknad: "Oslo Børs" },
+  { namn: "DNB", ticker: "DNB", marknad: "Oslo Børs" },
+  { namn: "Yara", ticker: "YAR", marknad: "Oslo Børs" },
+  { namn: "Mowi", ticker: "MOWI", marknad: "Oslo Børs" },
+  { namn: "Kongsberg", ticker: "KOG", marknad: "Oslo Børs" },
+  { namn: "Telenor", ticker: "TEL", marknad: "Oslo Børs" },
+  { namn: "Orkla", ticker: "ORK", marknad: "Oslo Børs" },
+  { namn: "Aker BP", ticker: "AKRBP", marknad: "Oslo Børs" },
+  { namn: "Nordic Semiconductor", ticker: "NOD", marknad: "Oslo Børs" },
+  { namn: "Tomra Systems", ticker: "TOM", marknad: "Oslo Børs" },
+  { namn: "Salmar", ticker: "SALM", marknad: "Oslo Børs" },
+  { namn: "Nokia", ticker: "NOKIA", marknad: "Helsingfors" },
+  { namn: "Kone", ticker: "KNEBV", marknad: "Helsingfors" },
+  { namn: "Fortum", ticker: "FORTUM", marknad: "Helsingfors" },
+  { namn: "Neste", ticker: "NESTE", marknad: "Helsingfors" },
+  { namn: "UPM-Kymmene", ticker: "UPM", marknad: "Helsingfors" },
+  { namn: "Stora Enso", ticker: "STERV", marknad: "Helsingfors" },
+  { namn: "Wartsila", ticker: "WRT1V", marknad: "Helsingfors" },
+  { namn: "Sampo", ticker: "SAMPO", marknad: "Helsingfors" },
+  { namn: "Elisa", ticker: "ELISA", marknad: "Helsingfors" },
+  { namn: "Apple", ticker: "AAPL", marknad: "Nasdaq US" },
+  { namn: "Microsoft", ticker: "MSFT", marknad: "Nasdaq US" },
+  { namn: "Nvidia", ticker: "NVDA", marknad: "Nasdaq US" },
+  { namn: "Alphabet", ticker: "GOOGL", marknad: "Nasdaq US" },
+  { namn: "Amazon", ticker: "AMZN", marknad: "Nasdaq US" },
+  { namn: "Meta", ticker: "META", marknad: "Nasdaq US" },
+  { namn: "Tesla", ticker: "TSLA", marknad: "Nasdaq US" },
+  { namn: "Netflix", ticker: "NFLX", marknad: "Nasdaq US" },
+  { namn: "AMD", ticker: "AMD", marknad: "Nasdaq US" },
+  { namn: "Intel", ticker: "INTC", marknad: "Nasdaq US" },
+  { namn: "Qualcomm", ticker: "QCOM", marknad: "Nasdaq US" },
+  { namn: "Salesforce", ticker: "CRM", marknad: "NYSE" },
+  { namn: "Adobe", ticker: "ADBE", marknad: "Nasdaq US" },
+  { namn: "Broadcom", ticker: "AVGO", marknad: "Nasdaq US" },
+  { namn: "Palantir", ticker: "PLTR", marknad: "NYSE" },
+  { namn: "Snowflake", ticker: "SNOW", marknad: "NYSE" },
+  { namn: "Spotify", ticker: "SPOT", marknad: "NYSE" },
+  { namn: "Berkshire Hathaway", ticker: "BRK.B", marknad: "NYSE" },
+  { namn: "JPMorgan Chase", ticker: "JPM", marknad: "NYSE" },
+  { namn: "Visa", ticker: "V", marknad: "NYSE" },
+  { namn: "Mastercard", ticker: "MA", marknad: "NYSE" },
+  { namn: "Goldman Sachs", ticker: "GS", marknad: "NYSE" },
+  { namn: "Bank of America", ticker: "BAC", marknad: "NYSE" },
+  { namn: "Johnson & Johnson", ticker: "JNJ", marknad: "NYSE" },
+  { namn: "Procter & Gamble", ticker: "PG", marknad: "NYSE" },
+  { namn: "Coca-Cola", ticker: "KO", marknad: "NYSE" },
+  { namn: "McDonald's", ticker: "MCD", marknad: "NYSE" },
+  { namn: "Walt Disney", ticker: "DIS", marknad: "NYSE" },
+  { namn: "Nike", ticker: "NKE", marknad: "NYSE" },
+  { namn: "Walmart", ticker: "WMT", marknad: "NYSE" },
+  { namn: "ExxonMobil", ticker: "XOM", marknad: "NYSE" },
+  { namn: "Pfizer", ticker: "PFE", marknad: "NYSE" },
+  { namn: "Moderna", ticker: "MRNA", marknad: "Nasdaq US" },
+  { namn: "ASML", ticker: "ASML", marknad: "Euronext Amsterdam" },
+  { namn: "LVMH", ticker: "MC", marknad: "Euronext Paris" },
+  { namn: "Nestlé", ticker: "NESN", marknad: "SIX Swiss" },
+  { namn: "Roche", ticker: "ROG", marknad: "SIX Swiss" },
+  { namn: "SAP", ticker: "SAP", marknad: "Frankfurt" },
+  { namn: "Siemens", ticker: "SIE", marknad: "Frankfurt" },
+  { namn: "Volkswagen", ticker: "VOW3", marknad: "Frankfurt" },
+  { namn: "BMW", ticker: "BMW", marknad: "Frankfurt" },
+  { namn: "Shell", ticker: "SHEL", marknad: "London" },
+  { namn: "Unilever", ticker: "ULVR", marknad: "London" },
+  { namn: "Rio Tinto", ticker: "RIO", marknad: "London" },
+  { namn: "Samsung", ticker: "005930", marknad: "KRX" },
+  { namn: "TSMC", ticker: "TSM", marknad: "NYSE ADR" },
+  { namn: "Toyota", ticker: "TM", marknad: "NYSE ADR" },
+  { namn: "Alibaba", ticker: "BABA", marknad: "NYSE" },
+];
+
+function SearchWithAutocomplete({ query, setQuery, analyze, loading, placeholder }) {
+  const [open, setOpen] = React.useState(false);
+  const [highlighted, setHighlighted] = React.useState(0);
+  const inputRef = React.useRef(null);
+  const listRef = React.useRef(null);
+
+  const filtered = React.useMemo(() => {
+    if (!query || query.length < 1) return [];
+    const q = query.toLowerCase();
+    return BORSLISTA.filter(b =>
+      b.namn.toLowerCase().includes(q) || b.ticker.toLowerCase().includes(q)
+    ).slice(0, 8);
+  }, [query]);
+
+  React.useEffect(() => {
+    setOpen(filtered.length > 0);
+    setHighlighted(0);
+  }, [filtered]);
+
+  function select(bolag) {
+    setQuery(bolag.namn);
+    setOpen(false);
+    setTimeout(() => analyze(bolag.namn), 50);
+  }
+
+  function handleKey(e) {
+    if (!open) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setHighlighted(h => Math.min(h + 1, filtered.length - 1)); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setHighlighted(h => Math.max(h - 1, 0)); }
+    if (e.key === "Enter") { if (filtered[highlighted]) { e.preventDefault(); select(filtered[highlighted]); } }
+    if (e.key === "Escape") setOpen(false);
+  }
+
+  return (
+    <div style={{ position: "relative", flex: 1 }}>
+      <input
+        ref={inputRef}
+        value={query}
+        onChange={e => { setQuery(e.target.value); }}
+        onKeyDown={e => { handleKey(e); if (e.key === "Enter" && !filtered[highlighted]) analyze(); }}
+        onFocus={() => { if (filtered.length > 0) setOpen(true); }}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder={placeholder}
+        style={{ width: "100%", padding: "11px 14px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 15, outline: "none", boxSizing: "border-box" }}
+      />
+      {open && filtered.length > 0 && (
+        <div ref={listRef} style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, marginTop: 4, zIndex: 999, overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.4)" }}>
+          {filtered.map((b, i) => (
+            <div key={b.ticker} onMouseDown={() => select(b)}
+              style={{ padding: "10px 14px", cursor: "pointer", background: i === highlighted ? "var(--border2)" : "transparent", borderBottom: i < filtered.length - 1 ? "1px solid var(--border)" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "background 0.1s" }}
+              onMouseEnter={() => setHighlighted(i)}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text, #e2e8f0)" }}>{b.namn}</div>
+                <div style={{ fontSize: 11, color: "#64748b", marginTop: 1 }}>{b.marknad}</div>
+              </div>
+              <div style={{ fontSize: 12, color: "#10b981", fontWeight: 700, background: "#10b98122", padding: "2px 8px", borderRadius: 6 }}>{b.ticker}</div>
+            </div>
+          ))}
+          <div style={{ padding: "8px 14px", fontSize: 11, color: "#475569", borderTop: "1px solid var(--border)" }}>
+            ↑↓ navigera · Enter välj · Esc stäng
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, analyze, history, setResult, isPro, usageCount, onUpgrade, t, onGoMaklare, onGoKalender, onCompare }) {
   const remaining = FREE_LIMIT - usageCount;
   return (
     <div>
       <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-        <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && analyze()}
-          placeholder={t.placeholder}
-          style={{ flex: 1, padding: "11px 14px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "#e2e8f0", fontSize: 15, outline: "none" }} />
+        <SearchWithAutocomplete query={query} setQuery={setQuery} analyze={analyze} loading={loading} placeholder={t.placeholder} />
         <button onClick={() => analyze()} disabled={loading || !query.trim()} style={{
           padding: "11px 18px", background: loading ? "#1e293b" : "linear-gradient(135deg,#10b981,#0ea5e9)",
           border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer"
@@ -3909,7 +4303,7 @@ function KreditScore({ inc }) {
       {/* Gauge */}
       <div style={{ background: "var(--card)", borderRadius: 16, border: `1px solid ${color}33`, padding: 20, marginBottom: 16, textAlign: "center" }}>
         <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>Din uppskattade kreditscore</div>
-        <svg viewBox="0 0 200 110" style={{ width: "100%", maxWidth: 280, height: "auto", display: "block", margin: "0 auto" }}>
+        <svg viewBox="0 0 200 155" style={{ width: "100%", maxWidth: 280, height: "auto", display: "block", margin: "0 auto" }}>
           {/* Background arc */}
           <path d="M 30 90 A 70 70 0 0 1 170 90" fill="none" stroke="#1e293b" strokeWidth="12" strokeLinecap="round" />
           {/* Colored arc segments */}
@@ -3920,13 +4314,13 @@ function KreditScore({ inc }) {
           {/* Needle */}
           <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#fff" strokeWidth="3" strokeLinecap="round" />
           <circle cx={cx} cy={cy} r="5" fill={color} />
-          {/* Score text */}
-          <text x={cx} y={cy + 28} textAnchor="middle" fill={color} fontSize="28" fontWeight="900">{score}</text>
-          <text x={cx} y={cy + 45} textAnchor="middle" fill="#64748b" fontSize="11">{label}</text>
+          {/* Score text — inside viewBox */}
+          <text x={cx} y={cy + 30} textAnchor="middle" fill={color} fontSize="30" fontWeight="900">{score}</text>
+          <text x={cx} y={cy + 48} textAnchor="middle" fill="#64748b" fontSize="12">{label}</text>
           {/* Scale labels */}
-          <text x="28" y="108" fill="#475569" fontSize="9">300</text>
-          <text x="88" y="18" fill="#475569" fontSize="9">575</text>
-          <text x="160" y="108" fill="#475569" fontSize="9">850</text>
+          <text x="26" y="106" fill="#475569" fontSize="9">300</text>
+          <text x="86" y="18" fill="#475569" fontSize="9">575</text>
+          <text x="158" y="106" fill="#475569" fontSize="9">850</text>
         </svg>
 
         {/* Rating bar */}
@@ -7339,98 +7733,98 @@ function useVoiceControl({ setTab, setSubTab, setQuery, analyze, income, leftove
     const t = text.toLowerCase().trim();
     setTranscript(text);
 
-    // Navigation commands
-    if (t.includes("hem") || t.includes("startsida")) {
-      setTab(0);
-      speak("Visar startsidan");
-    } else if (t.includes("aktier") || t.includes("börsen")) {
-      setTab(1); setSubTab("analys");
-      speak("Öppnar aktier");
-    } else if (t.includes("ekonomi") || t.includes("budget")) {
-      setTab(2);
-      speak("Öppnar ekonomi");
-    } else if (t.includes("trygghet") || t.includes("försäkring")) {
-      setTab(3); setSubTab("forsakring");
-      speak("Öppnar trygghet");
-    } else if (t.includes("profil")) {
-      setTab(4);
-      speak("Öppnar profil");
-    }
+    // ── Hälsning ──────────────────────────────────────────────────────
+    if (t.includes("hej") || t.includes("hallå") || t.includes("god morgon") || t.includes("god dag")) {
+      speak("Hej! Vad kan jag hjälpa dig med idag? Säg hjälp för att höra alla kommandon.");
 
-    // Analysis commands
-    else if (t.includes("analysera") || t.includes("analys")) {
-      const companies = ["ericsson", "volvo", "h&m", "spotify", "nokia", "apple", "tesla", "nvidia", "microsoft", "amazon", "google", "meta", "ssab", "astrazeneca", "investor", "atlas copco", "sinch", "evolution"];
+    // ── Navigation ────────────────────────────────────────────────────
+    } else if (t.includes("hem") || t.includes("startsida") || t.includes("tillbaka")) {
+      setTab(0); speak("Visar startsidan");
+    } else if (t.includes("aktier") || t.includes("börsen") || t.includes("aktie")) {
+      setTab(1); setSubTab("analys"); speak("Öppnar aktier och analys");
+    } else if (t.includes("ekonomi") || t.includes("budget") || t.includes("mina pengar")) {
+      setTab(2); speak("Öppnar ekonomi");
+    } else if ((t.includes("trygghet") || t.includes("försäkring")) && !t.includes("öppna försäkring")) {
+      setTab(3); setSubTab("forsakring"); speak("Öppnar trygghet och försäkringar");
+    } else if (t.includes("profil") || t.includes("inställningar")) {
+      setTab(4); speak("Öppnar profil");
+    } else if (t.includes("senior") || t.includes("hjälpläge") || t.includes("stor text")) {
+      setTab(4); speak("Öppnar senior-läge under profil");
+
+    // ── Aktieanalys ───────────────────────────────────────────────────
+    } else if (t.includes("analysera") || t.includes("analys av") || t.includes("kolla aktie")) {
+      const companies = ["ericsson","volvo","h&m","spotify","nokia","apple","tesla","nvidia","microsoft","amazon","google","meta","ssab","astrazeneca","investor","atlas copco","sinch","evolution","sandvik","hexagon","investor","telia","handelsbanken","seb","nordea","swedbank","boliden","nibe","getinge","electrolux","husqvarna","skanska","peab","castellum","fabege","sagax"];
       const found = companies.find(c => t.includes(c));
       if (found) {
         const name = found.charAt(0).toUpperCase() + found.slice(1);
-        setQuery(name);
-        analyze(name);
-        setTab(1); setSubTab("analys");
-        speak(`Analyserar ${name}, vänta lite`);
-      } else {
-        speak("Vilket bolag vill du analysera?");
-      }
-    }
+        setQuery(name); analyze(name); setTab(1); setSubTab("analys");
+        speak(`Analyserar ${name}, ett ögonblick`);
+      } else { speak("Vilket bolag vill du analysera? Säg till exempel: analysera Volvo"); }
 
-    // Budget/economy questions
-    else if (t.includes("sparkvot") || t.includes("hur mycket sparar")) {
-      if (income > 0) {
-        speak(`Din sparkvot är ${Math.round(savingsRate)} procent av din inkomst`);
-      } else {
-        speak("Du har inte fyllt i din inkomst ännu. Gå till ekonomi för att komma igång.");
-      }
-    }
-    else if (t.includes("kvar") && (t.includes("månad") || t.includes("mån"))) {
-      if (income > 0) {
-        speak(`Du har ${Math.round(leftover).toLocaleString("sv-SE")} kronor kvar denna månad`);
-      } else {
-        speak("Fyll i din budget under ekonomifliken för att se vad du har kvar");
-      }
-    }
-    else if (t.includes("inkomst") || t.includes("lön") && t.includes("vad")) {
-      if (income > 0) {
-        speak(`Din registrerade inkomst är ${Math.round(income).toLocaleString("sv-SE")} kronor per månad`);
-      } else {
-        speak("Du har inte lagt in din inkomst ännu");
-      }
-    }
+    // ── Ekonomi-frågor ────────────────────────────────────────────────
+    } else if (t.includes("sparkvot") || t.includes("hur mycket sparar jag")) {
+      speak(income > 0 ? `Din sparkvot är ${Math.round(savingsRate)} procent av din inkomst` : "Fyll i din inkomst under ekonomi för att se din sparkvot");
+    } else if ((t.includes("kvar") || t.includes("över")) && (t.includes("månad") || t.includes("mån"))) {
+      speak(income > 0 ? `Du har ${Math.round(leftover).toLocaleString("sv-SE")} kronor kvar denna månad` : "Fyll i din budget under ekonomifliken");
+    } else if (t.includes("min lön") || t.includes("min inkomst") || t.includes("vad tjänar jag")) {
+      speak(income > 0 ? `Din registrerade inkomst är ${Math.round(income).toLocaleString("sv-SE")} kronor per månad` : "Du har inte lagt in din inkomst ännu. Gå till ekonomi.");
+    } else if (t.includes("pension")) {
+      setTab(2); speak("Öppnar pensionskalkylatorn under ekonomi");
+    } else if (t.includes("skatt") || t.includes("deklarera") || t.includes("deklaration")) {
+      setTab(2); speak("Öppnar skattekalkylatorn under ekonomi");
+    } else if (t.includes("fire") || t.includes("ekonomisk frihet") || t.includes("ekonomiskt fri")) {
+      setTab(2); speak("Öppnar FIRE-kalkylatorn för ekonomisk frihet");
+    } else if (t.includes("budget") || t.includes("utgifter") || t.includes("kostnader")) {
+      setTab(2); speak("Öppnar budget och utgifter under ekonomi");
+    } else if (t.includes("sparande") || t.includes("spara pengar")) {
+      setTab(2); speak("Öppnar sparkalkylatorn");
+    } else if (t.includes("resa") || t.includes("semestern") || t.includes("semester")) {
+      setTab(2); speak("Öppnar reseplaneraren under ekonomi");
 
-    // Tool commands
-    else if (t.includes("fire") || t.includes("ekonomisk fri")) {
-      setTab(2);
-      speak("Öppnar FIRE-kalkylatorn under ekonomi");
-    }
-    else if (t.includes("skatt") || t.includes("deklarera")) {
-      setTab(2);
-      speak("Öppnar skattekalkylatorn under ekonomi");
-    }
-    else if (t.includes("juridisk") || t.includes("avtal") || t.includes("juridik")) {
-      setTab(2);
-      speak("Öppnar juridisk AI-assistent");
-    }
-    else if (t.includes("pension")) {
-      setTab(2);
-      speak("Öppnar pensionskalkylatorn");
-    }
-    else if (t.includes("lån") || t.includes("ansök")) {
-      setTab(3); setSubTab("lan");
-      speak("Öppnar låneansökan");
-    }
-    else if (t.includes("jämför") && t.includes("aktie")) {
-      setTab(1);
-      speak("Öppnar aktiejämförelsen");
-    }
-    else if (t.includes("hjälp") || t.includes("vad kan du")) {
-      speak("Du kan säga: Analysera Ericsson, Visa min budget, Vad är min sparkvot, Öppna skatt, Juridisk AI, Ansök om lån, eller navigera till Hem, Aktier, Ekonomi, Trygghet och Profil");
-    }
+    // ── Trygghet ──────────────────────────────────────────────────────
+    } else if (t.includes("lån") || t.includes("bolån") || t.includes("ansök om lån")) {
+      setTab(3); setSubTab("lan"); speak("Öppnar lån och bolån");
+    } else if (t.includes("öppna försäkring") || t.includes("mina försäkringar") || t.includes("försäkringar")) {
+      setTab(3); setSubTab("forsakring"); speak("Öppnar dina försäkringar");
+    } else if (t.includes("erbjudanden") || t.includes("deals") || t.includes("rabatter")) {
+      setTab(3); speak("Öppnar erbjudanden");
 
-    // Greetings
-    else if (t.includes("hej") || t.includes("hallå")) {
-      speak("Hej! Vad kan jag hjälpa dig med? Säg hjälp för att höra vad jag kan göra.");
-    }
+    // ── Juridik & AI ──────────────────────────────────────────────────
+    } else if (t.includes("juridisk") || t.includes("avtal") || t.includes("juridik")) {
+      setTab(2); speak("Öppnar juridisk AI-assistent");
+    } else if (t.includes("jämför aktier") || t.includes("jämför bolag")) {
+      setTab(1); speak("Öppnar aktiejämförelsen");
 
-    else {
-      speak("Förstod inte kommandot. Säg hjälp för att höra vad du kan göra.");
+    // ── Nödnummer & hjälp ─────────────────────────────────────────────
+    } else if (t.includes("1177") || t.includes("sjukvård") || t.includes("läkare") || t.includes("sjuk")) {
+      speak("Sjukvårdsrådgivningen nås på 1177. De är öppna dygnet runt och kan svara på frågor om hälsa.");
+    } else if (t.includes("112") || t.includes("ambulans") || t.includes("brand") || t.includes("polis") || t.includes("nöd")) {
+      speak("Nödnummer 112. Ring 112 vid nödsituationer som kräver ambulans, polis eller brandkår.");
+    } else if (t.includes("bedrägeri") || t.includes("lurad") || t.includes("bluffat") || t.includes("svindel")) {
+      speak("Om du misstänker bedrägeri, ring din bank direkt. Polisens bedrägerijouren nås på 020 10 60 00. Lägg aldrig ut pengar eller BankID-kod till någon som ringer dig.");
+    } else if (t.includes("swish hjälp") || t.includes("swish fungerar inte")) {
+      speak("Swish kundtjänst nås på 020 12 44 88. De kan hjälpa dig med problem med Swish.");
+    } else if (t.includes("bankid hjälp") || t.includes("bankid fungerar inte") || t.includes("kom in i bankid")) {
+      speak("Ring din bank för hjälp med BankID. Swedbank 0771 22 11 22, Nordea 0771 22 44 88, Handelsbanken 0771 77 88 99, SEB 0771 62 10 00.");
+    } else if (t.includes("pensionsmyndigheten") || t.includes("min pension")) {
+      speak("Pensionsmyndigheten nås på 0771 776 776. De kan svara på alla frågor om din pension.");
+    } else if (t.includes("skatteverket")) {
+      speak("Skatteverket nås på 0771 567 567. De hjälper med deklaration och skattefrågor.");
+
+    // ── Inställningar ─────────────────────────────────────────────────
+    } else if (t.includes("öka text") || t.includes("större text") || t.includes("större bokstäver")) {
+      setTab(4); speak("Gå till profil och aktivera senior-läge för större text och enklare gränssnitt");
+    } else if (t.includes("mörkt") || t.includes("mörkt läge") || t.includes("ändra tema")) {
+      setTab(4); speak("Du kan byta tema under profil. Välj mellan flera färglägen.");
+    } else if (t.includes("logga ut") || t.includes("radera") || t.includes("ta bort data")) {
+      setTab(4); speak("Under profil kan du radera all din data. Välj Profil och scrolla ner till Data.");
+
+    // ── Hjälp ─────────────────────────────────────────────────────────
+    } else if (t.includes("hjälp") || t.includes("vad kan du") || t.includes("vad säger jag") || t.includes("kommandon")) {
+      speak("Du kan säga: Hem, Aktier, Ekonomi, Pension, Skatt, Budget, Lån, Försäkring, Resa, Analysera Volvo, Vad är min sparkvot, Vad har jag kvar den här månaden, 1177, 112, Bedrägeri-hjälp, eller Senior-läge.");
+
+    } else {
+      speak("Förstod inte. Säg hjälp för att höra alla kommandon. Du kan till exempel säga: hem, ekonomi, pension, eller analysera Volvo.");
     }
   };
 
@@ -7782,7 +8176,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
       <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Populära aktier</div>
       <div style={{ overflowX: "auto", display: "flex", gap: 10, paddingBottom: 4, marginBottom: 20, scrollbarWidth: "none" }}>
         {Object.values(QUICK_ITEMS).flat().slice(0, 10).map(s => {
-          const p = mockPrice(s.ticker);
+          const p = await fetchKurs(s.ticker);
           const up = p.chgPct >= 0;
           return (
             <button key={s.name} onClick={() => { setQuery(s.name); analyze(s.name); setTab(1); setSubTab("analys"); unlock("first_analysis"); }}
@@ -8876,6 +9270,7 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
 
   const KATEGORIER = [
     { id: "deals_hem", icon: "🌟", label: "Alla" },
+    { id: "deals_resa", icon: "✈️", label: "Resor" },
     { id: "deals_jamfor_lan", icon: "🏠", label: "Jämför Lån" },
     { id: "deals_jamfor_forsakring", icon: "🛡️", label: "Jämför Försäkring" },
     { id: "deals_lan", icon: "🏦", label: "Lån & Bolån" },
@@ -8922,6 +9317,22 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
       { namn: "American Express Gold", badge: "Premium 💎", color: "#8b5cf6", desc: "Resförsäkring + lounge-tillgång", detalj: "400 kr årsavgift · Reseskyddsförsäkring inkl.", url: "americanexpress.se", spara: null },
     ],
     deals_trygghet: [],
+    deals_resa: [
+      { namn: "Momondo", badge: "Bäst pris ✈️", color: "#0ea5e9", desc: "Jämför flyg från 100+ bolag — hitta lägsta priset", detalj: "Sök och jämför tusentals flyglinjer globalt · Pris-alarm", url: "momondo.se", spara: "Spara upp till 40% på flygbiljetter" },
+      { namn: "Expedia", badge: "Allt i ett 🌍", color: "#0ea5e9", desc: "Flyg + hotell + bil — spara mer när du bokar ihop", detalj: "Paketresor · Hotell · Aktiviteter · Hyrbil", url: "expedia.se", spara: "Upp till 25% rabatt på paket" },
+      { namn: "Booking.com", badge: "Populärast 🏨", color: "#0ea5e9", desc: "Störst utbud av hotell och boenden i världen", detalj: "28 miljoner boenden · Gratis avbokning på de flesta", url: "booking.com", spara: "Genius-rabatter upp till 20%" },
+      { namn: "Airbnb", badge: "Unikt boende 🏠", color: "#0ea5e9", desc: "Hyr unika boenden direkt av värdar världen över", detalj: "Stugor, lägenheter, slott, husbåtar och mer", url: "airbnb.se", spara: null },
+      { namn: "TUI Sverige", badge: "Paketresor 🌴", color: "#0ea5e9", desc: "Charterflyg och paketresor till sol och värme", detalj: "Allt inkl., halvpension, eget boende", url: "tui.se", spara: "Tidigt-bokat rabatter upp till 30%" },
+      { namn: "Ticket", badge: null, color: "#0ea5e9", desc: "Flyg, hotell och resepaket från Sverige", detalj: "Reserådgivning · Grupp- och företagsresor", url: "ticket.se", spara: null },
+      { namn: "Globetrotter", badge: "Reseförsäkring 🛡️", color: "#0ea5e9", desc: "Reseförsäkring för hela världen", detalj: "Från 35 kr/dag · Familj, par, singel", url: "globetrotter.se", spara: null },
+      { namn: "Revolut", badge: "Bäst valuta 💱", color: "#0ea5e9", desc: "Bästa valutakursen på ditt kort utomlands", detalj: "Interbank-kurs · Inget påslag · 30+ valutor", url: "revolut.com", spara: "Spara 2-5% på alla utländska köp" },
+      { namn: "Skyscanner", badge: "Jämför flyg ✈️", color: "#0ea5e9", desc: "Hitta billigaste flyget — jämför hundratals bolag", detalj: "Pris-alarm · Flexibla datum · Hela världen", url: "skyscanner.se", spara: "Spara upp till 50% med flexibla datum" },
+      { namn: "Hotels.com", badge: "Hotell 🏨", color: "#0ea5e9", desc: "Boka hotell — 10 nätter = 1 gratis", detalj: "Rewards-program · Gratis avbokning · 500 000+ hotell", url: "hotels.com", spara: "Tjäna gratis hotellinätter" },
+      { namn: "Omio", badge: "Tåg & Buss 🚂", color: "#0ea5e9", desc: "Jämför tåg, buss och flyg i ett — hela Europa", detalj: "SJ, Eurostar, FlixBus, Deutsche Bahn m.fl.", url: "omio.se", spara: "Hitta billigaste sträckan" },
+      { namn: "Interrail", badge: "Tågpass 🌍", color: "#0ea5e9", desc: "Obegränsat tågresande i 33 europeiska länder", detalj: "7 dagar från 211 EUR · 1 månad från 503 EUR", url: "interrail.eu", spara: "Perfekt för längre Europa-resor" },
+      { namn: "Hostelworld", badge: "Budget 🎒", color: "#0ea5e9", desc: "Världens största bokningssajt för vandrarhem", detalj: "Från 150 kr/natt · Socialt resande", url: "hostelworld.com", spara: "Spara 70% vs hotell" },
+      { namn: "N26", badge: "Resebank 🏦", color: "#0ea5e9", desc: "Bankkonto med gratis uttag utomlands", detalj: "Ingen valutapåslag · Gratis Mastercard · App-baserat", url: "n26.com/sv-se", spara: "Spara 2-5% på alla utländska köp" },
+    ],
   };
 
   const allTopDeals = Object.values(ERBJUDANDEN).flat().filter(d => d.badge);
@@ -10777,6 +11188,71 @@ function SeniorTab({ setSeniorMode }) {
         { num: 6, text: "Välj 'ROT/RUT' om du haft hantverkare hemma — du kan ha rätt till avdrag!", tip: "ROT-avdrag kan ge dig tillbaka upp till 50 000 kr på renoveringsarbeten!" },
       ]
     },
+    bedrägeri: {
+      title: "Skydda dig mot bedrägerier",
+      icon: "🚨",
+      color: "#ef4444",
+      steps: [
+        { num: 1, text: "Din bank ringer ALDRIG och ber dig uppge PIN-kod, BankID-kod eller flytta pengar. Lägg alltid på!", tip: "Om du är osäker — lägg på och ring din bank på det officiella numret på baksidan av ditt kort." },
+        { num: 2, text: "Godkänn ALDRIG BankID om du inte själv startade inloggningen. Bedragare kan ringa och be dig godkänna.", tip: "Ser du en BankID-ruta utan att du loggat in? Avbryt omedelbart och ring din bank." },
+        { num: 3, text: "Skicka ALDRIG pengar via Swish till någon du inte känner personligen — även om de säger att de är din familj eller polis." },
+        { num: 4, text: "Falska SMS och mejl ser ofta äkta ut. Klicka aldrig på länkar i meddelanden om pengar eller banker.", tip: "Om du fått ett misstänkt SMS — gå direkt till bankens hemsida istället för att klicka på länken." },
+        { num: 5, text: "Om du blivit lurad — ring din bank DIREKT för att spärra kortet och kontot. Polisens bedrägerijouren: 020-10 60 00.", tip: "Ju snabbare du reagerar, desto större chans att pengarna kan stoppas." },
+        { num: 6, text: "Berätta för en familjemedlem eller vän om du är osäker på något. Det är aldrig fel att fråga!" },
+      ]
+    },
+    medicin: {
+      title: "Håll koll på dina mediciner",
+      icon: "💊",
+      color: "#10b981",
+      steps: [
+        { num: 1, text: "Gå till 1177.se och logga in med BankID för att se alla dina recept digitalt.", tip: "På 1177.se under 'Mina recept' ser du alla dina aktiva recept och när de löper ut." },
+        { num: 2, text: "Du kan förnya recept direkt på 1177.se utan att behöva ringa doktorn." },
+        { num: 3, text: "Apotekens app 'Mitt Apotek' visar dina recept och meddelar när det är dags att hämta ut medicin.", tip: "Ladda ner 'Mitt Apotek' från App Store eller Google Play — helt gratis." },
+        { num: 4, text: "Skriv upp dina mediciner på en lapp och ha den i plånboken — viktigt om du behöver akut vård." },
+        { num: 5, text: "Ring 1177 om du undrar hur du ska ta en medicin eller om du fått biverkningar. De kan svara på medicinska frågor dygnet runt." },
+        { num: 6, text: "Dosett (pillerbox för veckan) hjälper dig komma ihåg att ta rätt medicin varje dag.", tip: "Apoteket kan hjälpa dig med dosett — fråga farmaceuten." },
+      ]
+    },
+    fullmakt: {
+      title: "Fullmakt och framtidsplanering",
+      icon: "📋",
+      color: "#8b5cf6",
+      steps: [
+        { num: 1, text: "En framtidsfullmakt ger en person du litar på rätt att sköta dina bankärenden och ekonomi om du skulle bli sjuk.", tip: "Framtidsfullmakt är viktigare än vanlig fullmakt — den gäller även om du förlorar förmågan att fatta beslut." },
+        { num: 2, text: "Du kan skriva en framtidsfullmakt själv. Den måste bevittnas av två personer som inte är fullmaktshavaren.", tip: "Ladda ner en mall på riksdagen.se eller be Konsumentverket om hjälp." },
+        { num: 3, text: "Berätta för dina närmaste var viktig information finns: bankkonton, försäkringar, lösenord, testamente." },
+        { num: 4, text: "Ett testamente säkerställer att dina tillgångar går till rätt person. Det ska vara handskrivet och bevittnat.", tip: "Kontakta en jurist eller Notarius Publicus för att skriva testamente — kostar vanligtvis 1 000-3 000 kr." },
+        { num: 5, text: "Kolla att dina försäkringar har rätt förmånstagare (vem som får pengarna). Ring ditt försäkringsbolag och kontrollera." },
+        { num: 6, text: "Digitalt arv: berätta för en familjemedlem om dina e-postkonton och sociala medier, eller skriv ner det i ett säkert kuvert." },
+      ]
+    },
+    sjukvard: {
+      title: "1177 och sjukvård",
+      icon: "🏥",
+      color: "#3b82f6",
+      steps: [
+        { num: 1, text: "Ring 1177 för sjukvårdsrådgivning dygnet runt — gratis och anonymt.", tip: "1177 kan ofta svara direkt och spara dig ett onödigt besök på akuten." },
+        { num: 2, text: "Gå till 1177.se och logga in med BankID för att boka tid hos läkare, se recept och läkaranteckningar." },
+        { num: 3, text: "E-tjänsten 'Alltid öppet' på 1177.se låter dig chatta med sjukvårdsrådgivare utan att ringa.", tip: "Perfekt om du har svårt att höra eller föredrar att skriva istället för att ringa." },
+        { num: 4, text: "Beställ en 'Mina vårdkontakter'-inloggning på din vårdcentral för att boka tider direkt i appen." },
+        { num: 5, text: "Tandvård: ansök om tandvårdsbidrag på Försäkringskassan — alla 65+ får 600 kr/år i bidrag.", tip: "Pensionärer 85+ får 1 200 kr/år i tandvårdsbidrag." },
+        { num: 6, text: "Hjälpmedel: kontakta din kommun eller region om du behöver rollator, hörapparat eller andra hjälpmedel.", tip: "Syn- och hörselbokningar görs ofta via 1177." },
+      ]
+    },
+    digitalt: {
+      title: "Kom igång digitalt",
+      icon: "📱",
+      color: "#06b6d4",
+      steps: [
+        { num: 1, text: "Wifi hemma: säkerställ att du har internet hemma. Ring din operatör (Telia, Tele2, Telenor) om du behöver hjälp.", tip: "Bredbandskollen.se hjälper dig hitta billigaste internetet i ditt område." },
+        { num: 2, text: "Uppdatera din telefon: gå till Inställningar → Allmänt → Programuppdatering. Uppdateringar fixar säkerhetsproblem.", tip: "Sätt på automatiska uppdateringar så slipper du tänka på det." },
+        { num: 3, text: "Ladda inte ner appar från okända källor. Använd bara App Store (iPhone) eller Google Play (Android)." },
+        { num: 4, text: "Skapa starka lösenord: använd minst 8 tecken med siffror och bokstäver. Använd inte samma lösenord överallt." },
+        { num: 5, text: "Digipostens app samlar dina brev digitalt — fakturor, läkarintyg, myndighetspost. Aktiveras på digipost.se.", tip: "Digipost är gratis och minskar papperspost." },
+        { num: 6, text: "Ring Digidelcentret på din kommuns bibliotek — de ger gratis hjälp med digitala tjänster för seniorer!", tip: "Hitta närmaste Digidelcenter på digidel.se" },
+      ]
+    },
   };
 
   // Show guide
@@ -10835,9 +11311,27 @@ function SeniorTab({ setSeniorMode }) {
             <div style={{ fontSize: 16, color: "#64748b", lineHeight: 1.7 }}>Här hittar du enkla guider för att sköta din ekonomi digitalt. Välj en guide nedan eller navigera med flikarna ovan.</div>
           </div>
 
+          {/* Röststyrning info */}
+          <div style={{ background: "#10b98111", borderRadius: 16, border: "1px solid #10b98133", padding: 16, marginBottom: 16 }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>🎤 Röststyrning</div>
+            <div style={{ fontSize: 15, color: "#94a3b8", lineHeight: 1.7, marginBottom: 10 }}>Tryck på mikrofon-knappen (🎤) längst ner i appen och säg vad du vill göra.</div>
+            <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.9 }}>
+              <b style={{ color: "#e2e8f0" }}>Exempel på vad du kan säga:</b><br />
+              • "Visa min budget"<br />
+              • "Analysera Volvo"<br />
+              • "Öppna pension"<br />
+              • "Vad har jag kvar den här månaden?"<br />
+              • "Ring 1177" (svarar med numret)<br />
+              • "Bedrägeri-hjälp"<br />
+              • "Öppna resor"
+            </div>
+          </div>
+
           <div style={{ fontSize: 15, color: "#64748b", marginBottom: 12, fontWeight: 600 }}>Snabbval</div>
+          <BIG_BTN icon="🚨" label="Skydda mot bedrägerier" desc="Viktigt! Läs detta" color="#ef4444" onClick={() => setGuideKey("bedrägeri")} />
           <BIG_BTN icon="🔐" label="BankID — kom igång" desc="Lär dig använda BankID steg för steg" color="#3b82f6" onClick={() => setGuideKey("bankid")} />
           <BIG_BTN icon="💸" label="Skicka pengar med Swish" desc="Enkelt och säkert" color="#10b981" onClick={() => setGuideKey("swish")} />
+          <BIG_BTN icon="🏥" label="1177 och sjukvård" desc="Ring, boka och chatta med vården" color="#3b82f6" onClick={() => setGuideKey("sjukvard")} />
           <BIG_BTN icon="👴" label="Kolla min pension" desc="Se vad du får på minpension.se" color="#8b5cf6" onClick={() => setGuideKey("pension")} />
         </div>
       )}
@@ -10845,11 +11339,20 @@ function SeniorTab({ setSeniorMode }) {
       {/* GUIDER */}
       {section === "guider" && (
         <div>
-          <div style={{ fontSize: 15, color: "#64748b", marginBottom: 12, fontWeight: 600 }}>Alla guider</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>🔒 Säkerhet & Hälsa</div>
+          <BIG_BTN icon="🚨" label="Skydda dig mot bedrägerier" desc="Viktigt! Lär dig känna igen och undvika bedrägerier" color="#ef4444" onClick={() => setGuideKey("bedrägeri")} />
+          <BIG_BTN icon="🏥" label="1177 och sjukvård" desc="Boka tid, se recept och chatta med sjukvården" color="#3b82f6" onClick={() => setGuideKey("sjukvard")} />
+          <BIG_BTN icon="💊" label="Håll koll på mediciner" desc="Recept, dosettar och apotekets app" color="#10b981" onClick={() => setGuideKey("medicin")} />
+
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 8, marginTop: 16, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>💻 Digitalt & Bank</div>
           <BIG_BTN icon="🔐" label="BankID" desc="Logga in och signera digitalt" color="#3b82f6" onClick={() => setGuideKey("bankid")} />
           <BIG_BTN icon="💸" label="Swish" desc="Skicka och ta emot pengar" color="#10b981" onClick={() => setGuideKey("swish")} />
+          <BIG_BTN icon="📱" label="Kom igång digitalt" desc="Wifi, appar, lösenord och Digidel" color="#06b6d4" onClick={() => setGuideKey("digitalt")} />
+
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 8, marginTop: 16, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>💰 Ekonomi & Framtid</div>
           <BIG_BTN icon="🧾" label="Deklarera" desc="Skicka in din deklaration digitalt" color="#f59e0b" onClick={() => setGuideKey("deklaration")} />
           <BIG_BTN icon="👴" label="Min pension" desc="Kolla pensionen på minpension.se" color="#8b5cf6" onClick={() => setGuideKey("pension")} />
+          <BIG_BTN icon="📋" label="Fullmakt & framtidsplanering" desc="Testamente, fullmakt och digitalt arv" color="#8b5cf6" onClick={() => setGuideKey("fullmakt")} />
           <BIG_BTN icon="💰" label="Sätt upp budget" desc="Håll koll på inkomst och utgifter" color="#06b6d4" onClick={() => setGuideKey("budget")} />
           <BIG_BTN icon="🛡️" label="Mina försäkringar" desc="Kolla och jämför försäkringar" color="#ef4444" onClick={() => setGuideKey("forsak")} />
           <BIG_BTN icon="🏦" label="Ansök om lån" desc="Jämför och ansök hos banker" color="#f97316" onClick={() => setGuideKey("lan")} />
@@ -10891,6 +11394,9 @@ function SeniorTab({ setSeniorMode }) {
         <div>
           <div style={{ fontSize: 15, color: "#64748b", marginBottom: 12, fontWeight: 600 }}>Viktiga telefonnummer</div>
           {[
+            { icon: "🚑", label: "Nödnummer", num: "112", desc: "Ambulans, polis och brandkår — vid nödsituationer" },
+            { icon: "🏥", label: "1177 Sjukvårdsrådgivning", num: "1177", desc: "Sjukvårdsråd dygnet runt — gratis" },
+            { icon: "🆘", label: "Bankbedrägeri", num: "020-10 60 00", desc: "Polisens bedrägerijouren — ring direkt om du blivit lurad!" },
             { icon: "🏦", label: "Swedbank", num: "0771-22 11 22", desc: "BankID och internetbank" },
             { icon: "🏦", label: "Nordea", num: "0771-22 44 88", desc: "BankID och internetbank" },
             { icon: "🏦", label: "Handelsbanken", num: "0771-77 88 99", desc: "BankID och internetbank" },
@@ -10898,7 +11404,8 @@ function SeniorTab({ setSeniorMode }) {
             { icon: "💸", label: "Swish kundtjänst", num: "020-12 44 88", desc: "Hjälp med Swish" },
             { icon: "🧾", label: "Skatteverket", num: "0771-567 567", desc: "Deklaration och skatter" },
             { icon: "👴", label: "Pensionsmyndigheten", num: "0771-776 776", desc: "Frågor om pension" },
-            { icon: "🆘", label: "Bankbedrägeri", num: "020-10 60 00", desc: "Polisens bedrägerijouren — ring direkt om du blivit lurad!" },
+            { icon: "👩‍⚕️", label: "Försäkringskassan", num: "0771-524 524", desc: "Sjukpenning, tandvård och bidrag" },
+            { icon: "🏘️", label: "Kommunens äldrelinje", num: "020-120 00 06", desc: "Senior Alert — råd och stöd för äldre" },
           ].map((item, i) => (
             <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: item.label === "Bankbedrägeri" ? "2px solid #ef444444" : "1px solid var(--border)", padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -11024,6 +11531,13 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
             <div style={{ background: "#10b98111", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10, textAlign: "center" }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#10b981" }}>⭐ Kapital Pro aktiv</div>
               <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Alla funktioner upplåsta</div>
+              <button onClick={() => {
+                const customerId = (() => { try { return localStorage.getItem("kapital_stripe_customer"); } catch { return null; } })();
+                if (customerId) openCustomerPortal(customerId);
+                else alert("Kontakta hej@mykapital.se för att hantera din prenumeration.");
+              }} style={{ marginTop: 10, padding: "6px 16px", background: "none", border: "1px solid #10b98144", borderRadius: 8, color: "#10b981", fontSize: 12, cursor: "pointer" }}>
+                Hantera prenumeration →
+              </button>
             </div>
           )}
 
@@ -11757,16 +12271,38 @@ function Kapital() {
   });
   const [isPro, setIsPro] = useState(() => {
     try {
-      // Check for successful Stripe payment redirect
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("payment") === "success") {
-        localStorage.setItem("kapital_pro", "true");
-        window.history.replaceState({}, "", window.location.pathname);
-        return true;
-      }
       return localStorage.getItem("kapital_pro") === "true";
     } catch { return false; }
   });
+
+  // Verify Stripe session on return from checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session_id");
+    const payment = params.get("payment");
+
+    if (payment === "success" || sessionId) {
+      // Clean URL immediately
+      window.history.replaceState({}, "", window.location.pathname);
+      if (sessionId) {
+        // Verify with Stripe server
+        verifyStripeSession(sessionId).then(result => {
+          if (result?.active) {
+            setIsPro(true);
+            try {
+              localStorage.setItem("kapital_pro", "true");
+              if (result.customerId) localStorage.setItem("kapital_stripe_customer", result.customerId);
+            } catch {}
+          }
+        });
+      } else {
+        // payment=success without session_id (fallback)
+        setIsPro(true);
+        try { localStorage.setItem("kapital_pro", "true"); } catch {}
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [usageCount, setUsageCount] = useState(() => {
     try { return parseInt(localStorage.getItem("kapital_usage") || "0", 10); } catch { return 0; }
   });
@@ -12451,6 +12987,669 @@ function getProfilPct() {
 
 // ── Min Ekonomi ──────────────────────────────────────────────────────────
   // eslint-disable-next-line no-unused-vars
+
+
+// ── Drömrese-planerare ────────────────────────────────────────────────────
+function DromreseTab({ isPro, onUpgrade }) {
+  const [resor, setResor] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kapital_resor") || "[]"); } catch { return []; }
+  });
+  const [visa, setVisa] = useState(null); // null = lista, "ny" = ny resa, id = detalj
+  const [form, setForm] = useState({ namn: "", destination: "", datum: "", dagar: "", budget: "", kategori: "sol", anteckningar: "" });
+  const [aiTips, setAiTips] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [jamfor, setJamfor] = useState([]);
+
+  const kategorier = [
+    { id: "sol", emoji: "🏖️", label: "Sol & Bad" },
+    { id: "stad", emoji: "🏙️", label: "Stadsresa" },
+    { id: "natur", emoji: "🏔️", label: "Natur & Äventyr" },
+    { id: "kultur", emoji: "🏛️", label: "Kultur" },
+    { id: "kryssning", emoji: "🛳️", label: "Kryssning" },
+    { id: "skidor", emoji: "⛷️", label: "Skidresa" },
+    { id: "backpacker", emoji: "🎒", label: "Backpacker" },
+    { id: "lyx", emoji: "💎", label: "Lyxresa" },
+  ];
+
+  function sparaResa() {
+    if (!form.namn || !form.destination) return;
+    const ny = { ...form, id: Date.now().toString(), skapad: new Date().toISOString(), sparad: 0 };
+    const uppdaterad = visa === "ny" ? [...resor, ny] : resor.map(r => r.id === visa ? { ...r, ...form } : r);
+    setResor(uppdaterad);
+    try { localStorage.setItem("kapital_resor", JSON.stringify(uppdaterad)); } catch {}
+    setVisa(null);
+  }
+
+  function raderaResa(id) {
+    const uppdaterad = resor.filter(r => r.id !== id);
+    setResor(uppdaterad);
+    try { localStorage.setItem("kapital_resor", JSON.stringify(uppdaterad)); } catch {}
+    setVisa(null);
+  }
+
+  function uppdateraSparande(id, belopp) {
+    const uppdaterad = resor.map(r => r.id === id ? { ...r, sparad: parseFloat(belopp) || 0 } : r);
+    setResor(uppdaterad);
+    try { localStorage.setItem("kapital_resor", JSON.stringify(uppdaterad)); } catch {}
+  }
+
+  async function hamtaAiTips(resa) {
+    setAiLoading(true);
+    setAiTips("");
+    try {
+      const income = parseFloat(localStorage.getItem("kapital_income") || "0");
+      const resp = await fetch("/api/claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 500,
+          messages: [{ role: "user", content: `Du är en resebudget-expert. Ge praktiska tips för denna resa på svenska.
+
+Destination: ${resa.destination}
+Typ: ${resa.kategori}
+Dagar: ${resa.dagar}
+Budget: ${resa.budget} kr
+Månadsinkomst: ${income} kr
+
+Ge:
+1. 3 tips för att spara pengar på denna resa
+2. Bästa tid att boka (hur långt i förväg)
+3. Dolda kostnader att tänka på
+4. En snabb budgetfördelning (flyg/boende/mat/aktiviteter i %)
+
+Max 180 ord. Konkret och specifik för ${resa.destination}.` }]
+        })
+      });
+      const data = await resp.json();
+      setAiTips(data.content?.[0]?.text || "");
+    } catch { setAiTips("Kunde inte hämta tips just nu."); }
+    setAiLoading(false);
+  }
+
+  const valdResa = resor.find(r => r.id === visa);
+
+  // Jämförelse-vy
+  if (jamfor.length > 0) {
+    const jamforResor = resor.filter(r => jamfor.includes(r.id));
+    return (
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>⚖️ Jämför resor</div>
+          <button onClick={() => setJamfor([])} style={{ background: "none", border: "none", color: "#10b981", fontSize: 13, cursor: "pointer" }}>← Tillbaka</button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${jamforResor.length}, 1fr)`, gap: 10 }}>
+          {jamforResor.map(r => {
+            const kat = kategorier.find(k => k.id === r.kategori) || kategorier[0];
+            const sparPct = r.budget > 0 ? Math.min(100, (r.sparad / r.budget) * 100) : 0;
+            const kvar = (parseFloat(r.budget) || 0) - (r.sparad || 0);
+            return (
+              <div key={r.id} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14 }}>
+                <div style={{ fontSize: 24, textAlign: "center", marginBottom: 6 }}>{kat.emoji}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text, #e2e8f0)", textAlign: "center", marginBottom: 4 }}>{r.namn}</div>
+                <div style={{ fontSize: 12, color: "#64748b", textAlign: "center", marginBottom: 12 }}>{r.destination}</div>
+                {[
+                  { label: "Budget", value: (parseFloat(r.budget) || 0).toLocaleString("sv-SE") + " kr" },
+                  { label: "Sparat", value: (r.sparad || 0).toLocaleString("sv-SE") + " kr", color: "#10b981" },
+                  { label: "Kvar", value: kvar.toLocaleString("sv-SE") + " kr", color: kvar > 0 ? "#f59e0b" : "#10b981" },
+                  { label: "Dagar", value: r.dagar || "–" },
+                  { label: "Datum", value: r.datum || "Ej satt" },
+                ].map(item => (
+                  <div key={item.label} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "6px 0", borderBottom: "1px solid var(--border)" }}>
+                    <span style={{ color: "#64748b" }}>{item.label}</span>
+                    <span style={{ color: item.color || "var(--text, #e2e8f0)", fontWeight: 600 }}>{item.value}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop: 10 }}>
+                  <div style={{ background: "var(--bg2, #080c18)", borderRadius: 99, height: 6, overflow: "hidden" }}>
+                    <div style={{ width: sparPct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99 }} />
+                  </div>
+                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 4, textAlign: "center" }}>{sparPct.toFixed(0)}% sparat</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Detaljvy för en resa
+  if (valdResa) {
+    const kat = kategorier.find(k => k.id === valdResa.kategori) || kategorier[0];
+    const sparPct = valdResa.budget > 0 ? Math.min(100, ((valdResa.sparad || 0) / valdResa.budget) * 100) : 0;
+    const kvar = (parseFloat(valdResa.budget) || 0) - (valdResa.sparad || 0);
+    const manKvar = valdResa.datum ? Math.max(0, Math.ceil((new Date(valdResa.datum) - new Date()) / (30 * 24 * 3600 * 1000))) : null;
+    const sparPerMan = manKvar > 0 ? (kvar / manKvar).toFixed(0) : null;
+
+    return (
+      <div>
+        <button onClick={() => { setVisa(null); setAiTips(""); }} style={{ background: "none", border: "none", color: "#10b981", fontSize: 13, cursor: "pointer", marginBottom: 16, padding: 0 }}>← Alla resor</button>
+
+        <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 20, marginBottom: 12 }}>
+          <div style={{ fontSize: 36, textAlign: "center", marginBottom: 8 }}>{kat.emoji}</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text, #e2e8f0)", textAlign: "center" }}>{valdResa.namn}</div>
+          <div style={{ fontSize: 14, color: "#64748b", textAlign: "center", marginBottom: 16 }}>📍 {valdResa.destination} {valdResa.dagar && `· ${valdResa.dagar} dagar`} {valdResa.datum && `· ${new Date(valdResa.datum).toLocaleDateString("sv-SE")}`}</div>
+
+          {/* Progress */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
+              <span style={{ color: "#64748b" }}>Sparat: {(valdResa.sparad || 0).toLocaleString("sv-SE")} kr</span>
+              <span style={{ color: "#10b981", fontWeight: 700 }}>{sparPct.toFixed(0)}%</span>
+            </div>
+            <div style={{ background: "var(--bg2, #080c18)", borderRadius: 99, height: 10, overflow: "hidden" }}>
+              <div style={{ width: sparPct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99, transition: "width 0.5s" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#475569", marginTop: 4 }}>
+              <span>Mål: {(parseFloat(valdResa.budget) || 0).toLocaleString("sv-SE")} kr</span>
+              <span>Kvar: {kvar.toLocaleString("sv-SE")} kr</span>
+            </div>
+          </div>
+
+          {/* Uppdatera sparande */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <input type="number" placeholder="Uppdatera sparat belopp (kr)" defaultValue={valdResa.sparad || ""}
+              onBlur={e => uppdateraSparande(valdResa.id, e.target.value)}
+              style={{ flex: 1, padding: "10px 12px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 14, outline: "none" }} />
+          </div>
+
+          {sparPerMan && (
+            <div style={{ background: "#10b98111", borderRadius: 10, padding: 12, textAlign: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 13, color: "#10b981" }}>💡 Spara <strong>{parseInt(sparPerMan).toLocaleString("sv-SE")} kr/mån</strong> för att nå målet till {new Date(valdResa.datum).toLocaleDateString("sv-SE", { month: "long", year: "numeric" })}</div>
+            </div>
+          )}
+
+          {valdResa.anteckningar && (
+            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6, fontStyle: "italic" }}>"{valdResa.anteckningar}"</div>
+          )}
+        </div>
+
+        {/* AI-tips */}
+        <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>🤖 AI-resetips</div>
+            {!aiTips && <button onClick={() => hamtaAiTips(valdResa)} disabled={aiLoading} style={{ padding: "6px 14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+              {aiLoading ? "Hämtar..." : "Få tips ✨"}
+            </button>}
+          </div>
+          {aiLoading && <div style={{ color: "#64748b", fontSize: 13 }}>Analyserar din resa... 🌍</div>}
+          {aiTips && <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{aiTips}</div>}
+          {!aiTips && !aiLoading && <div style={{ fontSize: 12, color: "#475569" }}>Få personliga spartips, bästa bokningstid och budgetfördelning för {valdResa.destination}.</div>}
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={() => { setForm({ ...valdResa }); setVisa("redigera_" + valdResa.id); }} style={{ flex: 1, padding: 12, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text, #e2e8f0)", fontSize: 13, cursor: "pointer" }}>
+            ✏️ Redigera
+          </button>
+          <button onClick={() => raderaResa(valdResa.id)} style={{ padding: 12, background: "#ef444422", border: "1px solid #ef444444", borderRadius: 12, color: "#ef4444", fontSize: 13, cursor: "pointer" }}>
+            🗑️ Radera
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Ny resa / redigera
+  if (visa === "ny" || (visa && visa.startsWith("redigera_"))) {
+    return (
+      <div>
+        <button onClick={() => setVisa(null)} style={{ background: "none", border: "none", color: "#10b981", fontSize: 13, cursor: "pointer", marginBottom: 16, padding: 0 }}>← Avbryt</button>
+        <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text, #e2e8f0)", marginBottom: 20 }}>{visa === "ny" ? "✈️ Ny drömresa" : "✏️ Redigera resa"}</div>
+
+        {[
+          { key: "namn", label: "Resenamn", placeholder: "t.ex. Sommar i Japan 2027" },
+          { key: "destination", label: "Destination", placeholder: "t.ex. Tokyo, Japan" },
+          { key: "datum", label: "Planerat datum", placeholder: "", type: "date" },
+          { key: "dagar", label: "Antal dagar", placeholder: "t.ex. 14", type: "number" },
+          { key: "budget", label: "Budget (kr)", placeholder: "t.ex. 35 000", type: "number" },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>{f.label}</div>
+            <input type={f.type || "text"} value={form[f.key]} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+              placeholder={f.placeholder}
+              style={{ width: "100%", padding: "11px 14px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+          </div>
+        ))}
+
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>Typ av resa</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {kategorier.map(k => (
+              <button key={k.id} onClick={() => setForm(p => ({ ...p, kategori: k.id }))}
+                style={{ padding: "10px 8px", background: form.kategori === k.id ? "#10b98122" : "var(--bg2, #080c18)", border: `1px solid ${form.kategori === k.id ? "#10b981" : "var(--border)"}`, borderRadius: 10, color: form.kategori === k.id ? "#10b981" : "#94a3b8", fontSize: 13, cursor: "pointer", fontWeight: form.kategori === k.id ? 700 : 400 }}>
+                {k.emoji} {k.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Anteckningar (valfritt)</div>
+          <textarea value={form.anteckningar} onChange={e => setForm(p => ({ ...p, anteckningar: e.target.value }))}
+            placeholder="Drömmar, önskemål, tips att minnas..." rows={3}
+            style={{ width: "100%", padding: "11px 14px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 14, outline: "none", resize: "none", boxSizing: "border-box", fontFamily: "inherit" }} />
+        </div>
+
+        <button onClick={sparaResa} disabled={!form.namn || !form.destination}
+          style={{ width: "100%", padding: 14, background: !form.namn ? "#1e293b" : "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+          {visa === "ny" ? "Spara drömresa 🌟" : "Spara ändringar ✓"}
+        </button>
+      </div>
+    );
+  }
+
+  // Listvy
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>✈️ Drömresor</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {resor.length >= 2 && (
+            <button onClick={() => setJamfor(resor.slice(0, 2).map(r => r.id))} style={{ padding: "6px 12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>
+              ⚖️ Jämför
+            </button>
+          )}
+          <button onClick={() => { setForm({ namn: "", destination: "", datum: "", dagar: "", budget: "", kategori: "sol", anteckningar: "" }); setVisa("ny"); }}
+            style={{ padding: "6px 14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            + Ny resa
+          </button>
+        </div>
+      </div>
+
+      {resor.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px 20px", background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)" }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🌍</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 6 }}>Planera din drömresa</div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 20, lineHeight: 1.6 }}>Sätt upp ett sparmål, håll koll på budgeten och få AI-tips för din nästa resa.</div>
+          <button onClick={() => { setForm({ namn: "", destination: "", datum: "", dagar: "", budget: "", kategori: "sol", anteckningar: "" }); setVisa("ny"); }}
+            style={{ padding: "12px 24px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            Lägg till din första resa ✈️
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {resor.map(r => {
+            const kat = kategorier.find(k => k.id === r.kategori) || kategorier[0];
+            const sparPct = r.budget > 0 ? Math.min(100, ((r.sparad || 0) / r.budget) * 100) : 0;
+            const manKvar = r.datum ? Math.max(0, Math.ceil((new Date(r.datum) - new Date()) / (30 * 24 * 3600 * 1000))) : null;
+            return (
+              <div key={r.id} onClick={() => setVisa(r.id)} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, cursor: "pointer", transition: "border-color 0.15s" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                  <div style={{ fontSize: 28, flexShrink: 0 }}>{kat.emoji}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>{r.namn}</div>
+                    <div style={{ fontSize: 12, color: "#64748b" }}>📍 {r.destination} {r.dagar && `· ${r.dagar} dgr`} {manKvar !== null && `· ${manKvar} mån kvar`}</div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#10b981" }}>{sparPct.toFixed(0)}%</div>
+                    <div style={{ fontSize: 11, color: "#475569" }}>sparat</div>
+                  </div>
+                </div>
+                <div style={{ background: "var(--bg2, #080c18)", borderRadius: 99, height: 6, overflow: "hidden" }}>
+                  <div style={{ width: sparPct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99 }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#475569", marginTop: 4 }}>
+                  <span>{(r.sparad || 0).toLocaleString("sv-SE")} kr sparat</span>
+                  <span>Mål: {(parseFloat(r.budget) || 0).toLocaleString("sv-SE")} kr</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Jämför rese-tjänster */}
+      <div style={{ marginTop: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 10 }}>🔍 Jämför & boka</div>
+
+        {/* Flyg */}
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>✈️ Flyg</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[{ namn: "Momondo", url: "momondo.se", badge: "Bäst pris" }, { namn: "Skyscanner", url: "skyscanner.se", badge: null }, { namn: "Google Flights", url: "google.com/flights", badge: null }].map(s => (
+              <a key={s.namn} href={`https://${s.url}`} target="_blank" rel="noopener noreferrer"
+                style={{ padding: "7px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, color: "#0ea5e9", fontSize: 12, textDecoration: "none", fontWeight: 600 }}>
+                {s.namn} {s.badge && <span style={{ fontSize: 10, color: "#10b981" }}>· {s.badge}</span>} ↗
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Hotell */}
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>🏨 Hotell & Boende</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[{ namn: "Booking.com", url: "booking.com", badge: "Störst urval" }, { namn: "Hotels.com", url: "hotels.com", badge: null }, { namn: "Airbnb", url: "airbnb.se", badge: "Unikt boende" }, { namn: "Hostelworld", url: "hostelworld.com", badge: "Budget" }].map(s => (
+              <a key={s.namn} href={`https://${s.url}`} target="_blank" rel="noopener noreferrer"
+                style={{ padding: "7px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, color: "#f59e0b", fontSize: 12, textDecoration: "none", fontWeight: 600 }}>
+                {s.namn} {s.badge && <span style={{ fontSize: 10, color: "#10b981" }}>· {s.badge}</span>} ↗
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Tåg */}
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>🚂 Tåg & Buss</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[{ namn: "Omio", url: "omio.se", badge: "Jämför allt" }, { namn: "SJ", url: "sj.se", badge: "Sverige" }, { namn: "Interrail", url: "interrail.eu", badge: "Europa" }, { namn: "FlixBus", url: "flixbus.se", badge: "Billigast" }].map(s => (
+              <a key={s.namn} href={`https://${s.url}`} target="_blank" rel="noopener noreferrer"
+                style={{ padding: "7px 14px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 20, color: "#10b981", fontSize: 12, textDecoration: "none", fontWeight: 600 }}>
+                {s.namn} {s.badge && <span style={{ fontSize: 10, color: "#10b981" }}>· {s.badge}</span>} ↗
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Ekonomisk resehjälp */}
+        <div style={{ background: "linear-gradient(135deg,#10b98111,#0ea5e911)", borderRadius: 14, border: "1px solid #10b98133", padding: 14, marginBottom: 6 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#10b981", marginBottom: 8 }}>💡 Ekonomisk resehjälp</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              { emoji: "💱", label: "Bästa valuta", desc: "Revolut — interbankkurs utan påslag", url: "revolut.com" },
+              { emoji: "🛡️", label: "Reseförsäkring", desc: "Från 35 kr/dag — jämför nu", url: "globetrotter.se" },
+              { emoji: "✈️", label: "Handbagage-tips", desc: "Undvik bagageavgifter — packa smart", url: "ryanair.com/se/sv/bra-att-veta/handbagage" },
+              { emoji: "🏦", label: "Resekontonummer", desc: "N26 & Revolut — avgiftsfria uttag", url: "n26.com/sv-se" },
+            ].map(item => (
+              <a key={item.label} href={`https://${item.url}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", background: "var(--card)", borderRadius: 10, padding: "10px 12px", border: "1px solid var(--border)", display: "block" }}>
+                <div style={{ fontSize: 18, marginBottom: 4 }}>{item.emoji}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 2 }}>{item.label}</div>
+                <div style={{ fontSize: 11, color: "#64748b", lineHeight: 1.4 }}>{item.desc}</div>
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ fontSize: 10, color: "#475569", textAlign: "center" }}>ANNONS — Vi kan erhålla provision vid bokning</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Ekonomisk Hälsokoll (Pro) ─────────────────────────────────────────────
+function EkonomiskHalsoKoll({ isPro, onUpgrade }) {
+  const [step, setStep] = useState(0);
+  const [rapport, setRapport] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const [data, setData] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kapital_halsa_data") || "{}"); } catch { return {}; }
+  });
+
+  const upd = (k, v) => setData(p => ({ ...p, [k]: v }));
+
+  const fragor = [
+    { key: "inkomst", label: "Månadsinkomst (netto efter skatt)", suffix: "kr", type: "number", placeholder: "35 000", icon: "💰" },
+    { key: "utgifter", label: "Totala fasta utgifter/mån (hyra, lån, abonnemang)", suffix: "kr", type: "number", placeholder: "18 000", icon: "📋" },
+    { key: "rorliga", label: "Rörliga kostnader/mån (mat, nöje, kläder)", suffix: "kr", type: "number", placeholder: "8 000", icon: "🛒" },
+    { key: "sparande", label: "Hur mycket sparar du per månad?", suffix: "kr", type: "number", placeholder: "3 000", icon: "🏦" },
+    { key: "tillgangar", label: "Totala tillgångar (konto, fonder, fastighet)", suffix: "kr", type: "number", placeholder: "250 000", icon: "💎" },
+    { key: "skulder", label: "Totala skulder (lån, kredit, CSN)", suffix: "kr", type: "number", placeholder: "120 000", icon: "📉" },
+    { key: "buffer", label: "Buffert (kvar på konto för oväntade utgifter)", suffix: "kr", type: "number", placeholder: "30 000", icon: "🛡️" },
+    { key: "betalningsanmarkningar", label: "Har du betalningsanmärkningar?", suffix: "", type: "select", options: ["Nej", "1-2 stycken", "Fler än 2"], icon: "⚠️" },
+    { key: "lon_trend", label: "Hur har din inkomst utvecklats senaste 2 åren?", suffix: "", type: "select", options: ["Ökat", "Oförändrad", "Minskat"], icon: "📊" },
+    { key: "pension", label: "Pensionssparande per månad (PPM, tjänstepension, privat)", suffix: "kr", type: "number", placeholder: "2 000", icon: "🏖️" },
+  ];
+
+  function beraknaScore() {
+    const ink = parseFloat(data.inkomst) || 0;
+    const utg = parseFloat(data.utgifter) || 0;
+    const ror = parseFloat(data.rorliga) || 0;
+    const spar = parseFloat(data.sparande) || 0;
+    const till = parseFloat(data.tillgangar) || 0;
+    const skul = parseFloat(data.skulder) || 0;
+    const buf = parseFloat(data.buffer) || 0;
+    const pen = parseFloat(data.pension) || 0;
+    const totUtg = utg + ror;
+    const kvar = ink - totUtg;
+    const sparkvot = ink > 0 ? (spar / ink) * 100 : 0;
+    const skuldsattning = till > 0 ? (skul / till) * 100 : 100;
+    const bufferManader = totUtg > 0 ? buf / totUtg : 0;
+    const netto = till - skul;
+
+    let scores = {
+      likviditet: 0,
+      sparande: 0,
+      skulder: 0,
+      buffer: 0,
+      pension: 0,
+      anmarkningar: 0,
+      trend: 0,
+    };
+
+    // Likviditet: kvar efter utgifter
+    if (kvar > ink * 0.3) scores.likviditet = 100;
+    else if (kvar > ink * 0.2) scores.likviditet = 80;
+    else if (kvar > ink * 0.1) scores.likviditet = 60;
+    else if (kvar > 0) scores.likviditet = 35;
+    else scores.likviditet = 0;
+
+    // Sparkvot
+    if (sparkvot >= 25) scores.sparande = 100;
+    else if (sparkvot >= 15) scores.sparande = 80;
+    else if (sparkvot >= 10) scores.sparande = 60;
+    else if (sparkvot >= 5) scores.sparande = 35;
+    else scores.sparande = 10;
+
+    // Skuldsättning
+    if (skuldsattning <= 20) scores.skulder = 100;
+    else if (skuldsattning <= 40) scores.skulder = 80;
+    else if (skuldsattning <= 60) scores.skulder = 55;
+    else if (skuldsattning <= 80) scores.skulder = 30;
+    else scores.skulder = 10;
+
+    // Buffert (månader)
+    if (bufferManader >= 6) scores.buffer = 100;
+    else if (bufferManader >= 3) scores.buffer = 75;
+    else if (bufferManader >= 1) scores.buffer = 45;
+    else scores.buffer = 10;
+
+    // Pension
+    const penPct = ink > 0 ? (pen / ink) * 100 : 0;
+    if (penPct >= 10) scores.pension = 100;
+    else if (penPct >= 5) scores.pension = 70;
+    else if (penPct >= 2) scores.pension = 45;
+    else scores.pension = 15;
+
+    // Betalningsanmärkningar
+    if (data.betalningsanmarkningar === "Nej" || !data.betalningsanmarkningar) scores.anmarkningar = 100;
+    else if (data.betalningsanmarkningar === "1-2 stycken") scores.anmarkningar = 30;
+    else scores.anmarkningar = 0;
+
+    // Löneutveckling
+    if (data.lon_trend === "Ökat") scores.trend = 100;
+    else if (data.lon_trend === "Oförändrad" || !data.lon_trend) scores.trend = 60;
+    else scores.trend = 20;
+
+    const vikter = { likviditet: 0.20, sparande: 0.20, skulder: 0.15, buffer: 0.15, pension: 0.10, anmarkningar: 0.12, trend: 0.08 };
+    const total = Object.keys(scores).reduce((s, k) => s + scores[k] * vikter[k], 0);
+
+    let betyg, farg, beskrivning;
+    if (total >= 85) { betyg = "Utmärkt"; farg = "#10b981"; beskrivning = "Din ekonomi är i toppskick. Du har stark likviditet, god sparkvot och kontroll på dina skulder. Fortsätt så!" }
+    else if (total >= 70) { betyg = "Stark"; farg = "#22c55e"; beskrivning = "Din ekonomi är välskött med några mindre förbättringsområden. Du är på rätt spår." }
+    else if (total >= 55) { betyg = "Godkänd"; farg = "#f59e0b"; beskrivning = "Ekonomin fungerar men det finns tydliga förbättringsområden. Fokusera på buffert och sparkvot." }
+    else if (total >= 40) { betyg = "Behöver förbättras"; farg = "#f97316"; beskrivning = "Din ekonomi har flera svaga punkter. Prioritera att minska skulder och bygga buffert." }
+    else { betyg = "Kritisk"; farg = "#ef4444"; beskrivning = "Din ekonomiska situation kräver omedelbara åtgärder. Överväg att kontakta Kronofogdens budget- och skuldrådgivning." }
+
+    return { total: Math.round(total), betyg, farg, beskrivning, scores, detaljer: { kvar, sparkvot, skuldsattning, bufferManader, netto } };
+  }
+
+  async function genereraRapport() {
+    setLoading(true);
+    const score = beraknaScore();
+    try {
+      const prompt = `Du är en erfaren privatekonomicoach. Analysera denna persons ekonomiska situation och ge en personlig rapport på svenska.
+
+Data:
+- Månadsinkomst: ${data.inkomst} kr
+- Fasta utgifter: ${data.utgifter} kr  
+- Rörliga kostnader: ${data.rorliga} kr
+- Sparande/mån: ${data.sparande} kr
+- Tillgångar: ${data.tillgangar} kr
+- Skulder: ${data.skulder} kr
+- Buffert: ${data.buffer} kr
+- Betalningsanmärkningar: ${data.betalningsanmarkningar || "Nej"}
+- Inkomstutveckling: ${data.lon_trend || "Oförändrad"}
+- Pensionssparande: ${data.pension} kr/mån
+
+Ekonomisk hälsopoäng: ${score.total}/100 (${score.betyg})
+
+Ge:
+1. En personlig analys (3-4 meningar)
+2. Topp 3 konkreta åtgärder att göra NU (numrerade)
+3. Ett positivt avslut
+
+Var konkret med siffror. Max 200 ord. Inga rubriker med #.`;
+
+      const resp = await fetch("/api/claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 400, messages: [{ role: "user", content: prompt }] })
+      });
+      const d = await resp.json();
+      const aiText = d.content?.[0]?.text || "";
+      setRapport({ ...score, aiAnalys: aiText });
+    } catch {
+      setRapport({ ...score, aiAnalys: "" });
+    }
+    setLoading(false);
+    localStorage.setItem("kapital_halsa_data", JSON.stringify(data));
+  }
+
+  if (!isPro) return (
+    <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid #f59e0b33", padding: 20, textAlign: "center", margin: "16px 0" }}>
+      <div style={{ fontSize: 32, marginBottom: 8 }}>🏥</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: "#f59e0b", marginBottom: 6 }}>Ekonomisk Hälsokoll</div>
+      <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 16, lineHeight: 1.6 }}>Få din personliga ekonomiska hälsopoäng — ett alternativ till UC-upplysning baserat på din egna data. Inkluderar AI-analys och konkreta åtgärdsförslag.</div>
+      <button onClick={onUpgrade} style={{ padding: "10px 24px", background: "linear-gradient(135deg,#f59e0b,#f97316)", borderRadius: 10, border: "none", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+        Lås upp med Pro ⭐
+      </button>
+    </div>
+  );
+
+  if (rapport) return (
+    <div style={{ margin: "16px 0" }}>
+      {/* Score circle */}
+      <div style={{ background: "var(--card)", borderRadius: 16, border: `1px solid ${rapport.farg}44`, padding: 24, textAlign: "center", marginBottom: 12 }}>
+        <div style={{ width: 100, height: 100, borderRadius: "50%", border: `6px solid ${rapport.farg}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", background: rapport.farg + "11" }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: rapport.farg }}>{rapport.total}</div>
+          <div style={{ fontSize: 10, color: rapport.farg }}>/ 100</div>
+        </div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: rapport.farg, marginBottom: 4 }}>{rapport.betyg}</div>
+        <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{rapport.beskrivning}</div>
+      </div>
+
+      {/* Category scores */}
+      <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>📊 Detaljerad analys</div>
+        {[
+          { label: "Likviditet", score: rapport.scores.likviditet, desc: `${Math.round(rapport.detaljer.kvar).toLocaleString("sv-SE")} kr kvar/mån` },
+          { label: "Sparkvot", score: rapport.scores.sparande, desc: `${rapport.detaljer.sparkvot.toFixed(1)}% av inkomst` },
+          { label: "Skuldsättning", score: rapport.scores.skulder, desc: `${rapport.detaljer.skuldsattning.toFixed(0)}% av tillgångar` },
+          { label: "Buffert", score: rapport.scores.buffer, desc: `${rapport.detaljer.bufferManader.toFixed(1)} månader` },
+          { label: "Pension", score: rapport.scores.pension, desc: "Pensionssparande" },
+          { label: "Kredithistorik", score: rapport.scores.anmarkningar, desc: "Betalningsanmärkningar" },
+        ].map(item => {
+          const c = item.score >= 75 ? "#10b981" : item.score >= 50 ? "#f59e0b" : "#ef4444";
+          return (
+            <div key={item.label} style={{ marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 4 }}>
+                <span style={{ color: "var(--text, #e2e8f0)" }}>{item.label}</span>
+                <span style={{ color: c, fontWeight: 700 }}>{item.score}/100</span>
+              </div>
+              <div style={{ background: "var(--bg2, #080c18)", borderRadius: 99, height: 6, overflow: "hidden" }}>
+                <div style={{ width: item.score + "%", height: "100%", background: c, borderRadius: 99, transition: "width 1s ease" }} />
+              </div>
+              <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>{item.desc}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* AI analys */}
+      {rapport.aiAnalys && (
+        <div style={{ background: "linear-gradient(135deg,#10b98111,#0ea5e911)", borderRadius: 16, border: "1px solid #10b98133", padding: 16, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: "#10b981", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>🤖 AI-coach analys</div>
+          <div style={{ fontSize: 14, color: "#94a3b8", lineHeight: 1.7, whiteSpace: "pre-wrap" }}>{rapport.aiAnalys}</div>
+        </div>
+      )}
+
+      {/* Legal */}
+      <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.5, marginBottom: 12 }}>
+        ⚠️ Hälsopoängen baseras på uppgifter du själv angett och är inte en kreditupplysning. Den utgör inte finansiell rådgivning och påverkar inte din kreditvärdighet hos banker eller UC.
+      </div>
+
+      <button onClick={() => { setRapport(null); setStep(0); }} style={{ width: "100%", padding: 12, background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text, #e2e8f0)", fontSize: 14, cursor: "pointer" }}>
+        Gör om hälsokollet
+      </button>
+    </div>
+  );
+
+  const fraga = fragor[step];
+  const progress = ((step) / fragor.length) * 100;
+
+  return (
+    <div style={{ margin: "16px 0" }}>
+      <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 20 }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>🏥 Ekonomisk Hälsokoll</div>
+            <div style={{ fontSize: 12, color: "#64748b" }}>Fråga {step + 1} av {fragor.length}</div>
+          </div>
+          <div style={{ fontSize: 12, color: "#10b981", fontWeight: 700 }}>{Math.round(progress)}%</div>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ background: "var(--bg2, #080c18)", borderRadius: 99, height: 4, marginBottom: 20, overflow: "hidden" }}>
+          <div style={{ width: progress + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99, transition: "width 0.3s" }} />
+        </div>
+
+        {/* Question */}
+        <div style={{ fontSize: 22, marginBottom: 8 }}>{fraga.icon}</div>
+        <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text, #e2e8f0)", marginBottom: 16, lineHeight: 1.5 }}>{fraga.label}</div>
+
+        {fraga.type === "select" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {fraga.options.map(opt => (
+              <button key={opt} onClick={() => { upd(fraga.key, opt); setTimeout(() => { if (step < fragor.length - 1) setStep(s => s + 1); }, 200); }}
+                style={{ padding: "12px 16px", background: data[fraga.key] === opt ? "#10b98122" : "var(--bg2, #080c18)", border: `1px solid ${data[fraga.key] === opt ? "#10b981" : "var(--border)"}`, borderRadius: 10, color: data[fraga.key] === opt ? "#10b981" : "var(--text, #e2e8f0)", fontSize: 14, cursor: "pointer", textAlign: "left", fontWeight: data[fraga.key] === opt ? 700 : 400 }}>
+                {opt}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="number" value={data[fraga.key] || ""} onChange={e => upd(fraga.key, e.target.value)}
+              placeholder={fraga.placeholder}
+              onKeyDown={e => { if (e.key === "Enter" && step < fragor.length - 1) setStep(s => s + 1); }}
+              style={{ flex: 1, padding: "12px 14px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 16, outline: "none" }} />
+            <span style={{ color: "#64748b", fontSize: 14 }}>{fraga.suffix}</span>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+          {step > 0 && (
+            <button onClick={() => setStep(s => s - 1)} style={{ flex: 1, padding: 12, background: "none", border: "1px solid var(--border)", borderRadius: 10, color: "#64748b", fontSize: 14, cursor: "pointer" }}>
+              ← Tillbaka
+            </button>
+          )}
+          {step < fragor.length - 1 ? (
+            <button onClick={() => setStep(s => s + 1)} style={{ flex: 2, padding: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 10, border: "none", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+              Nästa →
+            </button>
+          ) : (
+            <button onClick={genereraRapport} disabled={loading} style={{ flex: 2, padding: 12, background: loading ? "#334155" : "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 10, border: "none", color: "#fff", fontSize: 14, fontWeight: 700, cursor: loading ? "default" : "pointer" }}>
+              {loading ? "Analyserar... 🤖" : "Generera hälsokoll ✨"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MinEkonomi({ isPro, onUpgrade }) {
   const income = parseFloat(localStorage.getItem("kapital_income") || "0");
   const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
@@ -12475,6 +13674,7 @@ function MinEkonomi({ isPro, onUpgrade }) {
 
   return (
     <div>
+      <EkonomiskHalsoKoll isPro={isPro} onUpgrade={onUpgrade} />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
         {metrics.map(m => (
           <div key={m.label} style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 14 }}>
@@ -12513,90 +13713,482 @@ function MinEkonomi({ isPro, onUpgrade }) {
 }
 
 // ── Smart Guide Button ────────────────────────────────────────────────────
-function SmartGuide() {
+function SmartGuide({ isPro, onUpgrade }) {
   const [open, setOpen] = useState(false);
-  const [visible, setVisible] = useState(() => {
-    try { return localStorage.getItem("kapital_guide_off") !== "true"; } catch { return true; }
-  });
+  const [meddelanden, setMeddelanden] = useState([
+    { roll: "assistant", text: "Hej! 👋 Jag är din AI-ekonomicoach. Jag kan hjälpa dig med:
 
-  if (!visible) return null;
+• Frågor om appen och hur du använder den
+• Ekonomiska råd och budgettips
+• Förklara finansiella begrepp
+• Guida dig att fylla i all information
 
-  const tips = [
-    { icon: "🔍", text: "Tryck på en aktie i listan för snabbanalys" },
-    { icon: "💰", text: "Fyll i din inkomst under Ekonomi → Budget för att aktivera hälsoscoren" },
-    { icon: "📊", text: "Gå till Aktier → ₿ Krypto för AI-analys av kryptovalutor" },
-    { icon: "👴", text: "Aktivera Senior-läge under Profil för enklare navigation" },
-    { icon: "🎯", text: "Lägg till sparmål under Ekonomi → Budget → Sparmål" },
-    { icon: "🛡️", text: "Registrera dina försäkringar under Trygghet för en komplett profil" },
-    { icon: "📅", text: "Se din ekonomikalender under Profil → Kalender" },
-    { icon: "🌍", text: "Byt språk och valuta under Profil → Profil" },
+Vad vill du veta?" }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const chatRef = React.useRef(null);
+
+  const SNABB_FRAGOR = [
+    "Hur fyller jag i min budget?",
+    "Vad är en bra sparkvot?",
+    "Hur fungerar FIRE-kalkylatorn?",
+    "Vad ska jag tänka på med aktier?",
+    "Hur sätter jag upp ett sparmål?",
+    "Förklara ekonomisk hälsokoll",
   ];
 
-  const tip = tips[Math.floor(Date.now() / (1000 * 60 * 60 * 4)) % tips.length];
+  React.useEffect(() => {
+    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  }, [meddelanden]);
+
+  async function skicka(text) {
+    const fraga = text || input.trim();
+    if (!fraga) return;
+    setInput("");
+
+    const nyaMsg = [...meddelanden, { roll: "user", text: fraga }];
+    setMeddelanden(nyaMsg);
+    setLoading(true);
+
+    // Hämta ekonomisk kontext från localStorage
+    const income = localStorage.getItem("kapital_income") || "0";
+    const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+    const totalExp = Object.values(expenses).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+    const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
+    const tillgangar = JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]");
+    const skulder = JSON.parse(localStorage.getItem("kapital_skulder") || "[]");
+    const totalT = tillgangar.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
+    const totalS = skulder.reduce((s, t) => s + (parseFloat(t.varde) || 0), 0);
+
+    const systemPrompt = `Du är en vänlig och kunnig AI-ekonomicoach för appen Kapital. Du hjälper användaren med:
+1. Hur man använder appen och dess funktioner
+2. Ekonomiska råd anpassade till Sverige (SEK, svenska lagar, Skatteverket, Avanza, Nordnet etc.)
+3. Förklarar finansiella begrepp på ett enkelt sätt
+4. Guidar användaren att fylla i information i appen
+
+Användarens ekonomiska data (om tillgänglig):
+- Månadsinkomst: ${income} kr
+- Totala utgifter: ${Math.round(totalExp)} kr/mån
+- Kvar per månad: ${Math.round(parseFloat(income) - totalExp)} kr
+- Tillgångar: ${Math.round(totalT).toLocaleString("sv-SE")} kr
+- Skulder: ${Math.round(totalS).toLocaleString("sv-SE")} kr
+- Antal sparmål: ${goals.length}
+
+Appens funktioner:
+- Aktieanalys (AI-analys av börsbolag)
+- Budget & utgifter (fyll i under Ekonomi)
+- Portföljspårning
+- Pensionskalkylator
+- Skattekalkylator (lön, kapital, ROT/RUT)
+- FIRE-kalkylator (ekonomisk frihet)
+- Kreditscoreberäkning
+- Försäkringsöversikt
+- Lånekalkylator
+- Drömrese-planeraren
+- Ekonomisk Hälsokoll (Pro)
+- Erbjudanden & deals
+
+Svara alltid på svenska. Var konkret, vänlig och ge praktiska råd. Max 150 ord per svar om inte användaren frågar om mer.
+OBS: Du ger allmänna råd, inte personlig finansiell rådgivning. Uppmana alltid till att konsultera en auktoriserad rådgivare vid stora beslut.`;
+
+    try {
+      const resp = await fetch("/api/claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 500,
+          system: systemPrompt,
+          messages: nyaMsg.filter(m => m.roll !== "system").map(m => ({
+            role: m.roll === "user" ? "user" : "assistant",
+            content: m.text
+          }))
+        })
+      });
+      const data = await resp.json();
+      const svar = data.content?.[0]?.text || "Kunde inte hämta svar just nu.";
+      setMeddelanden(prev => [...prev, { roll: "assistant", text: svar }]);
+    } catch {
+      setMeddelanden(prev => [...prev, { roll: "assistant", text: "Tillfälligt fel. Försök igen om en stund." }]);
+    }
+    setLoading(false);
+  }
 
   return (
     <>
       {/* Floating button */}
       {!open && (
         <button onClick={() => setOpen(true)}
-          style={{ position: "fixed", bottom: 82, right: 16, width: 46, height: 46, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 20, cursor: "pointer", zIndex: 200, boxShadow: "0 4px 20px #10b98166", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          ?
+          style={{ position: "fixed", bottom: 82, right: 16, width: 50, height: 50, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", zIndex: 200, boxShadow: "0 4px 20px #10b98166", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          🤖
         </button>
       )}
 
-      {/* Guide panel */}
+      {/* Chat panel */}
       {open && (
-        <div style={{ position: "fixed", bottom: 80, right: 12, left: 12, background: "var(--card)", borderRadius: 18, border: "1px solid #10b98144", padding: 18, zIndex: 200, boxShadow: "0 8px 40px #00000088" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>💡 Smart guide</div>
-            <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#64748b", fontSize: 20, cursor: "pointer" }}>✕</button>
-          </div>
+        <div style={{ position: "fixed", bottom: 0, right: 0, left: 0, top: 0, zIndex: 9998, display: "flex", flexDirection: "column" }}>
+          {/* Backdrop */}
+          <div onClick={() => setOpen(false)} style={{ flex: 1, background: "rgba(0,0,0,0.5)" }} />
 
-          <div style={{ background: "var(--border2)", borderRadius: 12, padding: 14, marginBottom: 12 }}>
-            <div style={{ fontSize: 22, marginBottom: 6 }}>{tip.icon}</div>
-            <div style={{ fontSize: 14, color: "#e2e8f0", lineHeight: 1.6 }}>{tip.text}</div>
-          </div>
+          {/* Chat window */}
+          <div style={{ background: "var(--card, #0f172a)", borderRadius: "20px 20px 0 0", border: "1px solid var(--border)", borderBottom: "none", maxHeight: "85vh", display: "flex", flexDirection: "column" }}>
 
-          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12 }}>Alla tips:</div>
-          {tips.filter(t => t !== tip).slice(0, 3).map((t, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
-              <span style={{ fontSize: 16 }}>{t.icon}</span>
-              <span style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5 }}>{t.text}</span>
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 18px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🤖</div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>AI-ekonomicoach</div>
+                  <div style={{ fontSize: 11, color: "#10b981" }}>● Online — svarar direkt</div>
+                </div>
+              </div>
+              <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#64748b", fontSize: 22, cursor: "pointer", padding: 4 }}>✕</button>
             </div>
-          ))}
 
-          <button onClick={() => { setVisible(false); setOpen(false); try { localStorage.setItem("kapital_guide_off", "true"); } catch {} }}
-            style={{ width: "100%", padding: "8px", background: "none", border: "none", color: "#334155", fontSize: 12, cursor: "pointer", marginTop: 8 }}>
-            Stäng av guide-knappen
-          </button>
+            {/* Pro-gate om inte Pro */}
+            {!isPro && (
+              <div style={{ padding: "12px 16px", background: "linear-gradient(135deg,#f59e0b11,#10b98111)", borderBottom: "1px solid var(--border)" }}>
+                <div style={{ fontSize: 13, color: "#f59e0b", marginBottom: 6, fontWeight: 600 }}>⭐ Pro-funktion</div>
+                <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 10, lineHeight: 1.5 }}>AI-ekonomicoachen ingår i Pro. Du kan ställa 3 testfrågor utan konto.</div>
+                <button onClick={onUpgrade} style={{ padding: "8px 16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  Uppgradera till Pro →
+                </button>
+              </div>
+            )}
+
+            {/* Messages */}
+            <div ref={chatRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 200, maxHeight: "50vh" }}>
+              {meddelanden.map((msg, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: msg.roll === "user" ? "flex-end" : "flex-start" }}>
+                  <div style={{ maxWidth: "82%", padding: "10px 14px", borderRadius: msg.roll === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: msg.roll === "user" ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "var(--bg2, #080c18)", color: msg.roll === "user" ? "#fff" : "var(--text, #e2e8f0)", fontSize: 14, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {loading && (
+                <div style={{ display: "flex", gap: 6, padding: "10px 14px", background: "var(--bg2, #080c18)", borderRadius: "18px 18px 18px 4px", width: "fit-content" }}>
+                  {[0,1,2].map(i => (
+                    <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", animation: `bounce 1s ${i * 0.15}s infinite`, opacity: 0.7 }} />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Snabbfrågor */}
+            {meddelanden.length <= 2 && (
+              <div style={{ padding: "0 16px 8px", display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {SNABB_FRAGOR.map(f => (
+                  <button key={f} onClick={() => skicka(f)} style={{ padding: "6px 12px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 20, color: "#94a3b8", fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Input */}
+            <div style={{ padding: "12px 16px", borderTop: "1px solid var(--border)", display: "flex", gap: 8, paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+              <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && !loading && skicka()}
+                placeholder="Ställ en fråga om appen eller ekonomi..."
+                style={{ flex: 1, padding: "11px 14px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text, #e2e8f0)", fontSize: 14, outline: "none", fontFamily: "inherit" }} />
+              <button onClick={() => skicka()} disabled={loading || !input.trim()}
+                style={{ width: 44, height: 44, borderRadius: "50%", background: input.trim() ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "var(--bg2, #080c18)", border: "none", color: "#fff", fontSize: 18, cursor: input.trim() ? "pointer" : "default", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                ↑
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
+    </>
+  );
+}
+
+
+// ── Feedback System ───────────────────────────────────────────────────────
+function FeedbackKnapp() {
+  const [open, setOpen] = React.useState(false);
+  const [typ, setTyp] = React.useState("fel");
+  const [meddelande, setMeddelande] = React.useState("");
+  const [betyg, setBetyg] = React.useState(null);
+  const [skickat, setSkickat] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
+  const typer = [
+    { id: "fel", emoji: "🐛", label: "Bugg/Fel" },
+    { id: "forbattring", emoji: "💡", label: "Förbättring" },
+    { id: "funktion", emoji: "✨", label: "Ny funktion" },
+    { id: "ovrigt", emoji: "💬", label: "Övrigt" },
+  ];
+
+  async function skicka() {
+    if (!meddelande.trim()) return;
+    setLoading(true);
+    try {
+      await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          typ,
+          meddelande,
+          betyg,
+          sida: window.location.pathname,
+          version: "1.0",
+        }),
+      });
+      setSkickat(true);
+      setTimeout(() => { setOpen(false); setSkickat(false); setMeddelande(""); setBetyg(null); }, 2500);
+    } catch {
+      setSkickat(true);
+    }
+    setLoading(false);
+  }
+
+  return (
+    <>
+      {/* Feedback-knapp */}
+      <button onClick={() => setOpen(true)} style={{ position: "fixed", right: 0, bottom: 100, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: "12px 0 0 12px", color: "#fff", fontSize: 12, fontWeight: 700, padding: "10px 8px", cursor: "pointer", zIndex: 998, writingMode: "vertical-rl", textOrientation: "mixed", letterSpacing: 1 }}>
+        Feedback
+      </button>
+
+      {/* Modal */}
+      {open && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={e => { if (e.target === e.currentTarget) setOpen(false); }}>
+          <div style={{ background: "var(--card, #0f172a)", borderRadius: "20px 20px 0 0", padding: 24, width: "100%", maxWidth: 500, border: "1px solid var(--border)", borderBottom: "none" }}>
+
+            {skickat ? (
+              <div style={{ textAlign: "center", padding: "20px 0" }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>🙏</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: "#10b981" }}>Tack för din feedback!</div>
+                <div style={{ fontSize: 14, color: "#64748b", marginTop: 6 }}>Vi läser allt och förbättrar appen kontinuerligt.</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>💬 Skicka feedback</div>
+                  <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "#64748b", fontSize: 20, cursor: "pointer", padding: 0 }}>×</button>
+                </div>
+
+                {/* Typ */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+                  {typer.map(t => (
+                    <button key={t.id} onClick={() => setTyp(t.id)} style={{ padding: "10px 8px", background: typ === t.id ? "#10b98122" : "var(--bg2, #080c18)", border: `1px solid ${typ === t.id ? "#10b981" : "var(--border)"}`, borderRadius: 10, color: typ === t.id ? "#10b981" : "#94a3b8", fontSize: 13, cursor: "pointer", fontWeight: typ === t.id ? 700 : 400 }}>
+                      {t.emoji} {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Betyg */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>Hur nöjd är du med appen? (valfritt)</div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {[1,2,3,4,5].map(n => (
+                      <button key={n} onClick={() => setBetyg(n)} style={{ flex: 1, padding: "8px 4px", background: betyg === n ? "#f59e0b22" : "var(--bg2, #080c18)", border: `1px solid ${betyg === n ? "#f59e0b" : "var(--border)"}`, borderRadius: 8, fontSize: 18, cursor: "pointer" }}>
+                        {n <= (betyg || 0) ? "⭐" : "☆"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Meddelande */}
+                <textarea value={meddelande} onChange={e => setMeddelande(e.target.value)} placeholder={typ === "fel" ? "Beskriv vad som gick fel och hur det hände..." : typ === "forbattring" ? "Vad skulle kunna fungera bättre?" : typ === "funktion" ? "Vilken funktion saknar du?" : "Skriv ditt meddelande..."} rows={4} style={{ width: "100%", padding: "12px 14px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 14, resize: "none", outline: "none", boxSizing: "border-box", lineHeight: 1.6, fontFamily: "inherit" }} />
+
+                <button onClick={skicka} disabled={loading || !meddelande.trim()} style={{ width: "100%", marginTop: 12, padding: 14, background: !meddelande.trim() ? "#1e293b" : "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: !meddelande.trim() ? "default" : "pointer" }}>
+                  {loading ? "Skickar..." : "Skicka feedback →"}
+                </button>
+                <div style={{ fontSize: 11, color: "#475569", textAlign: "center", marginTop: 8 }}>Anonym — vi lagrar ingen persondata</div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </>
   );
 }
 
-function CookieBanner() {
-  const [accepted, setAccepted] = useState(() => {
-    try { return localStorage.getItem("kapital_cookies") === "true"; } catch { return false; }
-  });
+// ── Admin Panel ───────────────────────────────────────────────────────────
+function AdminPanel() {
+  const [key, setKey] = React.useState(() => { try { return localStorage.getItem("kapital_admin_key") || ""; } catch { return ""; } });
+  const [inloggad, setInloggad] = React.useState(false);
+  const [feedback, setFeedback] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [filter, setFilter] = React.useState("alla");
+  const [error, setError] = React.useState("");
 
-  if (accepted) return null;
+  async function logga() {
+    setLoading(true);
+    setError("");
+    try {
+      const resp = await fetch("/api/feedback", { headers: { "x-admin-key": key } });
+      if (resp.status === 401) { setError("Fel admin-nyckel"); setLoading(false); return; }
+      const data = await resp.json();
+      setFeedback(data);
+      setInloggad(true);
+      try { localStorage.setItem("kapital_admin_key", key); } catch {}
+    } catch { setError("Kunde inte ansluta"); }
+    setLoading(false);
+  }
+
+  async function radera(id) {
+    await fetch("/api/feedback", { method: "DELETE", headers: { "Content-Type": "application/json", "x-admin-key": key }, body: JSON.stringify({ id }) });
+    setFeedback(f => f.filter(x => x.id !== id));
+  }
+
+  const typFarg = { fel: "#ef4444", forbattring: "#f59e0b", funktion: "#10b981", ovrigt: "#64748b" };
+  const typEmoji = { fel: "🐛", forbattring: "💡", funktion: "✨", ovrigt: "💬" };
+
+  const filtrerad = filter === "alla" ? feedback : feedback.filter(f => f.typ === filter);
+
+  const stats = {
+    total: feedback.length,
+    fel: feedback.filter(f => f.typ === "fel").length,
+    forbattring: feedback.filter(f => f.typ === "forbattring").length,
+    funktion: feedback.filter(f => f.typ === "funktion").length,
+    snittBetyg: feedback.filter(f => f.betyg).length > 0 ? (feedback.filter(f => f.betyg).reduce((s, f) => s + f.betyg, 0) / feedback.filter(f => f.betyg).length).toFixed(1) : "–",
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg, #0a0f1e)", color: "var(--text, #e2e8f0)", fontFamily: "'Inter',-apple-system,sans-serif", padding: "24px 16px 80px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        <button onClick={() => navigate("/")} style={{ background: "none", border: "none", color: "#10b981", fontSize: 14, cursor: "pointer", marginBottom: 20, padding: 0 }}>← Tillbaka till appen</button>
+        <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>🛠 Admin — Feedback</div>
+        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 24 }}>mykapital.se/admin</div>
+
+        {!inloggad ? (
+          <div style={{ background: "var(--card, #0f172a)", borderRadius: 16, border: "1px solid var(--border)", padding: 24 }}>
+            <div style={{ fontSize: 14, color: "#94a3b8", marginBottom: 16 }}>Ange admin-nyckeln för att se feedback</div>
+            <input type="password" value={key} onChange={e => setKey(e.target.value)} onKeyDown={e => e.key === "Enter" && logga()} placeholder="Admin-nyckel" style={{ width: "100%", padding: "12px 14px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 15, outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
+            {error && <div style={{ color: "#ef4444", fontSize: 13, marginBottom: 10 }}>{error}</div>}
+            <button onClick={logga} disabled={loading} style={{ width: "100%", padding: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+              {loading ? "Loggar in..." : "Logga in →"}
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Stats */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8, marginBottom: 20 }}>
+              {[
+                { label: "Totalt", value: stats.total, color: "#94a3b8" },
+                { label: "🐛 Buggar", value: stats.fel, color: "#ef4444" },
+                { label: "💡 Idéer", value: stats.forbattring, color: "#f59e0b" },
+                { label: "✨ Funktioner", value: stats.funktion, color: "#10b981" },
+                { label: "⭐ Snittbetyg", value: stats.snittBetyg, color: "#f59e0b" },
+              ].map(s => (
+                <div key={s.label} style={{ background: "var(--card, #0f172a)", borderRadius: 12, border: "1px solid var(--border)", padding: "10px 8px", textAlign: "center" }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.value}</div>
+                  <div style={{ fontSize: 10, color: "#475569", marginTop: 2 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Filter */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+              {["alla", "fel", "forbattring", "funktion", "ovrigt"].map(f => (
+                <button key={f} onClick={() => setFilter(f)} style={{ padding: "6px 14px", background: filter === f ? "#10b98122" : "var(--card, #0f172a)", border: `1px solid ${filter === f ? "#10b981" : "var(--border)"}`, borderRadius: 20, color: filter === f ? "#10b981" : "#64748b", fontSize: 12, cursor: "pointer", fontWeight: filter === f ? 700 : 400 }}>
+                  {f === "alla" ? "Alla" : typEmoji[f] + " " + { fel: "Buggar", forbattring: "Förbättringar", funktion: "Funktioner", ovrigt: "Övrigt" }[f]}
+                </button>
+              ))}
+              <button onClick={() => { setInloggad(false); try { localStorage.removeItem("kapital_admin_key"); } catch {} }} style={{ marginLeft: "auto", padding: "6px 14px", background: "none", border: "1px solid #334155", borderRadius: 20, color: "#64748b", fontSize: 12, cursor: "pointer" }}>Logga ut</button>
+            </div>
+
+            {/* Feedback lista */}
+            {filtrerad.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 40, color: "#475569" }}>Ingen feedback att visa</div>
+            ) : (
+              filtrerad.map(f => (
+                <div key={f.id} style={{ background: "var(--card, #0f172a)", borderRadius: 14, border: `1px solid ${typFarg[f.typ] || "#1e293b"}33`, padding: 16, marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={{ background: (typFarg[f.typ] || "#64748b") + "22", color: typFarg[f.typ] || "#64748b", fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 700 }}>
+                        {typEmoji[f.typ]} {f.typ}
+                      </span>
+                      {f.betyg && <span style={{ fontSize: 12, color: "#f59e0b" }}>{"⭐".repeat(f.betyg)}</span>}
+                      <span style={{ fontSize: 11, color: "#475569" }}>{f.sida}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, color: "#475569" }}>{new Date(f.tid).toLocaleString("sv-SE", { dateStyle: "short", timeStyle: "short" })}</span>
+                      <button onClick={() => radera(f.id)} style={{ background: "#ef444422", border: "1px solid #ef444444", borderRadius: 6, color: "#ef4444", fontSize: 11, padding: "3px 8px", cursor: "pointer" }}>Radera</button>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 14, color: "var(--text, #e2e8f0)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{f.meddelande}</div>
+                </div>
+              ))
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CookieBanner() {
+  const [status, setStatus] = useState(() => {
+    try { return localStorage.getItem("kapital_cookies") || null; } catch { return null; }
+  });
+  const [aldersOk, setAldersOk] = useState(() => {
+    try { return localStorage.getItem("kapital_alder") === "true"; } catch { return false; }
+  });
+  const [visaAlder, setVisaAlder] = useState(false);
+
+  function acceptera() {
+    if (!aldersOk) { setVisaAlder(true); return; }
+    setStatus("accepted");
+    try { localStorage.setItem("kapital_cookies", "accepted"); } catch {}
+  }
+
+  function avvisa() {
+    if (!aldersOk) { setVisaAlder(true); return; }
+    setStatus("rejected");
+    try { localStorage.setItem("kapital_cookies", "rejected"); } catch {}
+  }
+
+  function bekraftaAlder() {
+    setAldersOk(true);
+    try { localStorage.setItem("kapital_alder", "true"); } catch {}
+    setVisaAlder(false);
+    setStatus("accepted");
+    try { localStorage.setItem("kapital_cookies", "accepted"); } catch {}
+  }
+
+  if (status) return null;
+
+  if (visaAlder) return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "var(--card, #0f172a)", border: "1px solid var(--border)", borderRadius: 20, padding: 28, maxWidth: 360, width: "100%", textAlign: "center" }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>🔞</div>
+        <div style={{ fontSize: 17, fontWeight: 800, color: "var(--text, #e2e8f0)", marginBottom: 8 }}>Åldersgräns 18 år</div>
+        <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6, marginBottom: 20 }}>
+          Kapital innehåller finansiell information och är avsedd för personer som är minst 18 år. Bekräfta att du är 18 år eller äldre för att fortsätta.
+        </div>
+        <button onClick={bekraftaAlder} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
+          Jag är 18 år eller äldre ✓
+        </button>
+        <button onClick={() => setVisaAlder(false)} style={{ width: "100%", padding: 10, background: "none", border: "1px solid var(--border)", borderRadius: 12, color: "#64748b", fontSize: 13, cursor: "pointer" }}>
+          Avbryt
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ position: "fixed", bottom: 70, left: 0, right: 0, zIndex: 999, padding: "0 12px" }}>
       <div style={{ background: "var(--card)", border: "1px solid var(--border2)", borderRadius: 16, padding: "16px 18px", maxWidth: 680, margin: "0 auto", boxShadow: "0 -4px 32px #00000066" }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0", marginBottom: 6 }}>🍪 Kapital använder lokal lagring</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text, #e2e8f0)", marginBottom: 6 }}>🍪 Kapital använder lokal lagring</div>
         <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, lineHeight: 1.5 }}>
-          Vi lagrar din data lokalt i din webbläsare för att appen ska fungera. Vi säljer aldrig din data och skickar den inte till tredje part. Läs vår <a href="/integritetspolicy" style={{ color: "#10b981", textDecoration: "underline" }}>integritetspolicy</a> och våra <a href="/anvandarvillkor" style={{ color: "#10b981", textDecoration: "underline" }}>användarvillkor</a> för mer info.
+          Vi lagrar din data lokalt i din webbläsare för att appen ska fungera. Vi säljer aldrig din data. Läs vår <a href="/integritetspolicy" style={{ color: "#10b981", textDecoration: "underline" }}>integritetspolicy</a> och <a href="/anvandarvillkor" style={{ color: "#10b981", textDecoration: "underline" }}>användarvillkor</a>.
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => { setAccepted(true); try { localStorage.setItem("kapital_cookies", "true"); } catch {} }}
-            style={{ flex: 2, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <button onClick={acceptera} style={{ flex: 2, padding: "10px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
             Godkänn
           </button>
-          <button onClick={() => { setAccepted(true); try { localStorage.setItem("kapital_cookies", "true"); } catch {} }}
-            style={{ flex: 1, padding: "10px", background: "var(--border2)", border: "1px solid var(--border2)", borderRadius: 10, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
-            Stäng
+          <button onClick={avvisa} style={{ flex: 1, padding: "10px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 10, color: "#94a3b8", fontSize: 13, cursor: "pointer" }}>
+            Avvisa
           </button>
         </div>
       </div>
@@ -12661,12 +14253,14 @@ function AnvandarvillkorPage() {
 export default function KapitalApp() {
   const path = useRoute();
   if (path === "/integritetspolicy") return <IntegritetspolicyPage />;
+  if (path === "/admin") return <AdminPanel />;
   if (path === "/anvandarvillkor") return <AnvandarvillkorPage />;
   return (
     <ErrorBoundary>
       <Kapital />
-      <SmartGuide />
+      <SmartGuide isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />
       <CookieBanner />
+      <FeedbackKnapp />
     </ErrorBoundary>
   );
 }
