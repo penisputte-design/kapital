@@ -122,29 +122,29 @@ class ErrorBoundary extends React.Component {
 // Miljövariabel-format: REACT_APP_AFF_AVANZA=https://track.adrecord.com/?...
 // Fallback till direktlänk om miljövariabel saknas.
 const AFF = {
-  avanza:      process.env.REACT_APP_AFF_AVANZA      || AFF.avanza,
-  nordnet:     process.env.REACT_APP_AFF_NORDNET     || AFF.nordnet,
-  degiro:      process.env.REACT_APP_AFF_DEGIRO      || AFF.degiro,
-  zmarta:      process.env.REACT_APP_AFF_ZMARTA      || AFF.zmarta,
-  lendo:       process.env.REACT_APP_AFF_LENDO       || AFF.lendo,
-  sbab:        process.env.REACT_APP_AFF_SBAB        || AFF.sbab,
-  hypoteket:   process.env.REACT_APP_AFF_HYPOTEKET   || AFF.hypoteket,
-  insplanet:   process.env.REACT_APP_AFF_INSPLANET   || AFF.insplanet,
-  hedvig:      process.env.REACT_APP_AFF_HEDVIG      || AFF.hedvig,
-  tibber:      process.env.REACT_APP_AFF_TIBBER      || AFF.tibber,
-  revolut:     process.env.REACT_APP_AFF_REVOLUT     || AFF.revolut,
-  booking:     process.env.REACT_APP_AFF_BOOKING     || AFF.booking,
-  momondo:     process.env.REACT_APP_AFF_MOMONDO     || AFF.momondo,
-  skyscanner:  process.env.REACT_APP_AFF_SKYSCANNER  || AFF.skyscanner,
-  airbnb:      process.env.REACT_APP_AFF_AIRBNB      || AFF.airbnb,
-  expedia:     process.env.REACT_APP_AFF_EXPEDIA     || AFF.expedia,
-  tui:         process.env.REACT_APP_AFF_TUI         || AFF.tui,
-  agria:       process.env.REACT_APP_AFF_AGRIA       || AFF.agria,
-  santander:   process.env.REACT_APP_AFF_SANTANDER   || AFF.santander,
+  avanza:      process.env.REACT_APP_AFF_AVANZA      || "https://www.avanza.se",
+  nordnet:     process.env.REACT_APP_AFF_NORDNET     || "https://www.nordnet.se",
+  degiro:      process.env.REACT_APP_AFF_DEGIRO      || "https://www.degiro.se",
+  zmarta:      process.env.REACT_APP_AFF_ZMARTA      || "https://www.zmarta.se",
+  lendo:       process.env.REACT_APP_AFF_LENDO       || "https://www.lendo.se",
+  sbab:        process.env.REACT_APP_AFF_SBAB        || "https://www.sbab.se",
+  hypoteket:   process.env.REACT_APP_AFF_HYPOTEKET   || "https://www.hypoteket.se",
+  insplanet:   process.env.REACT_APP_AFF_INSPLANET   || "https://www.insplanet.se",
+  hedvig:      process.env.REACT_APP_AFF_HEDVIG      || "https://www.hedvig.com",
+  tibber:      process.env.REACT_APP_AFF_TIBBER      || "https://tibber.com/se",
+  revolut:     process.env.REACT_APP_AFF_REVOLUT     || "https://www.revolut.com",
+  booking:     process.env.REACT_APP_AFF_BOOKING     || "https://www.booking.com",
+  momondo:     process.env.REACT_APP_AFF_MOMONDO     || "https://www.momondo.se",
+  skyscanner:  process.env.REACT_APP_AFF_SKYSCANNER  || "https://www.skyscanner.se",
+  airbnb:      process.env.REACT_APP_AFF_AIRBNB      || "https://www.airbnb.se",
+  expedia:     process.env.REACT_APP_AFF_EXPEDIA     || "https://www.expedia.se",
+  tui:         process.env.REACT_APP_AFF_TUI         || "https://www.tui.se",
+  agria:       process.env.REACT_APP_AFF_AGRIA       || "https://www.agria.se",
+  santander:   process.env.REACT_APP_AFF_SANTANDER   || "https://www.santander.se",
   leasing:     process.env.REACT_APP_AFF_LEASING     || "https://www.leaseonline.se",
-  n26:         process.env.REACT_APP_AFF_N26         || AFF.n26,
-  omio:        process.env.REACT_APP_AFF_OMIO        || AFF.omio,
-  interrail:   process.env.REACT_APP_AFF_INTERRAIL   || AFF.interrail,
+  n26:         process.env.REACT_APP_AFF_N26         || "https://n26.com/sv-se",
+  omio:        process.env.REACT_APP_AFF_OMIO        || "https://www.omio.se",
+  interrail:   process.env.REACT_APP_AFF_INTERRAIL   || "https://www.interrail.eu",
 };
 
 const API = "/api/claude";
@@ -704,6 +704,7 @@ async function fetchKurs(ticker) {
   return mockPrice(ticker);
 }
 
+// eslint-disable-next-line no-unused-vars
 async function fetchKursHistorik(ticker) {
   try {
     const resp = await fetch(`/api/kurs?ticker=${encodeURIComponent(ticker)}&type=history`);
@@ -13124,6 +13125,7 @@ function getProfilPct() {
 
 
 // ── Drömrese-planerare ────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 function DromreseTab({ isPro, onUpgrade }) {
   const [resor, setResor] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kapital_resor") || "[]"); } catch { return []; }
@@ -13784,6 +13786,7 @@ Var konkret med siffror. Max 200 ord. Inga rubriker med #.`;
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function MinEkonomi({ isPro, onUpgrade }) {
   const income = parseFloat(localStorage.getItem("kapital_income") || "0");
   const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
