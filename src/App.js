@@ -7593,7 +7593,6 @@ function Onboarding({ onDone }) {
             Hoppa över — fyll i ekonomin senare
           </button>
         )}
-        </div>
       </div>
     </div>
   );
