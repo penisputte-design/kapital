@@ -14309,16 +14309,13 @@ function ProfilByggare({ onClose }) {
   // Find current section
   const currentSektion = PROFIL_SEKTIONER.find(s => s.steps.some(st => st.id === PROFIL_STEPS[step]?.id)) || PROFIL_SEKTIONER[0];
   const sektionIndex = PROFIL_SEKTIONER.indexOf(currentSektion);
-  const pct = Math.round((step / PROFIL_STEPS.length) * 100);
+  const totalSteps = PROFIL_STEPS.length;
+  const pct = Math.round((step / totalSteps) * 100);
 
   const sparaOchStang = () => {
     try { localStorage.setItem("kapital_profil_step", String(step)); } catch {}
     onClose();
   };
-
-  const totalSteps = PROFIL_STEPS.length;
-  const completedSteps = Object.keys(answers).length;
-  const pct = Math.round((completedSteps / totalSteps) * 100);
 
   const currentStep = PROFIL_STEPS[step];
 
