@@ -2126,9 +2126,6 @@ function PortfoljTab({ isPro, onUpgrade }) {
     </div>
   );
 }
-    </div>
-  );
-}
 
 // ── Price Alerts ──────────────────────────────────────────────────────────
 function useAlerts() {
