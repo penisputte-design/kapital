@@ -147,6 +147,200 @@ const AFF = {
   interrail:   process.env.REACT_APP_AFF_INTERRAIL   || "https://www.interrail.eu",
 };
 
+
+// ── Supabase Integration ──────────────────────────────────────────────────
+const SUPABASE_URL = "https://icuwxxtvhvhogmycnspl.supabase.co";
+const SUPABASE_KEY = "sb_publishable_0bCcjD3QEWY9uvXBVAJO3Q_U_LaLoiI";
+
+// Minimal Supabase client utan npm-paket
+const supabase = {
+  _headers: {
+    "Content-Type": "application/json",
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`,
+  },
+
+  auth: {
+    _url: `${SUPABASE_URL}/auth/v1`,
+    _token: null,
+    _user: null,
+
+    async getSession() {
+      const stored = localStorage.getItem("kapital_sb_session");
+      if (!stored) return { session: null, user: null };
+      try {
+        const s = JSON.parse(stored);
+        if (s.expires_at && Date.now() / 1000 > s.expires_at - 60) {
+          // Refresh token
+          const refreshed = await this.refreshSession(s.refresh_token);
+          return refreshed;
+        }
+        this._token = s.access_token;
+        this._user = s.user;
+        return { session: s, user: s.user };
+      } catch { return { session: null, user: null }; }
+    },
+
+    async refreshSession(refreshToken) {
+      try {
+        const resp = await fetch(`${this._url}/token?grant_type=refresh_token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+        const data = await resp.json();
+        if (data.access_token) {
+          const session = { ...data, user: data.user };
+          localStorage.setItem("kapital_sb_session", JSON.stringify(session));
+          this._token = data.access_token;
+          this._user = data.user;
+          return { session, user: data.user };
+        }
+      } catch {}
+      localStorage.removeItem("kapital_sb_session");
+      return { session: null, user: null };
+    },
+
+    async signInWithOtp(email) {
+      const resp = await fetch(`${this._url}/otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ email, create_user: true }),
+      });
+      return resp.ok;
+    },
+
+    async verifyOtp(email, token) {
+      const resp = await fetch(`${this._url}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ type: "email", email, token }),
+      });
+      const data = await resp.json();
+      if (data.access_token) {
+        const session = { ...data, user: data.user };
+        localStorage.setItem("kapital_sb_session", JSON.stringify(session));
+        this._token = data.access_token;
+        this._user = data.user;
+        return { session, user: data.user };
+      }
+      return { error: data.error || "Fel kod" };
+    },
+
+    async signOut() {
+      try {
+        await fetch(`${this._url}/logout`, {
+          method: "POST",
+          headers: { ...supabase._headers, "Authorization": `Bearer ${this._token}` },
+        });
+      } catch {}
+      localStorage.removeItem("kapital_sb_session");
+      this._token = null;
+      this._user = null;
+    },
+  },
+
+  async from(table) {
+    const session = await this.auth.getSession();
+    const token = session.session?.access_token || SUPABASE_KEY;
+    return {
+      _table: table,
+      _token: token,
+      async upsert(data) {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${token}`,
+            "Prefer": "resolution=merge-duplicates,return=minimal",
+          },
+          body: JSON.stringify(data),
+        });
+        return resp.ok;
+      },
+      async select() {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*`, {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+        const data = await resp.json();
+        return Array.isArray(data) ? data[0] : null;
+      },
+    };
+  },
+};
+
+// Synka localStorage → Supabase
+async function syncToSupabase(userId) {
+  if (!userId) return;
+  try {
+    const db = await supabase.from("ekonomi");
+    await db.upsert({
+      id: userId,
+      income: localStorage.getItem("kapital_income") || "",
+      expenses: JSON.parse(localStorage.getItem("kapital_expenses") || "{}"),
+      goals: JSON.parse(localStorage.getItem("kapital_goals") || "[]"),
+      tillgangar: JSON.parse(localStorage.getItem("kapital_tillgangar") || "[]"),
+      skulder: JSON.parse(localStorage.getItem("kapital_skulder") || "[]"),
+      halsa_data: JSON.parse(localStorage.getItem("kapital_halsa_data") || "{}"),
+      profil_step: parseInt(localStorage.getItem("kapital_profil_step") || "0"),
+      uppdaterad: new Date().toISOString(),
+    });
+
+    const db2 = await supabase.from("portfolj");
+    await db2.upsert({
+      id: userId,
+      holdings: JSON.parse(localStorage.getItem("kapital_holdings_v2") || "[]"),
+      watchlist: JSON.parse(localStorage.getItem("kapital_watchlist") || "[]"),
+      extra_watchlist: JSON.parse(localStorage.getItem("kapital_extra_watchlist") || "[]"),
+      resor: JSON.parse(localStorage.getItem("kapital_resor") || "[]"),
+      sparade_analyser: JSON.parse(localStorage.getItem("kapital_saved_analyses") || "[]"),
+      uppdaterad: new Date().toISOString(),
+    });
+
+    const name = localStorage.getItem("kapital_name") || "";
+    const db3 = await supabase.from("profiles");
+    await db3.upsert({ id: userId, namn: name, uppdaterad: new Date().toISOString() });
+  } catch (e) { console.log("Sync error:", e); }
+}
+
+// Ladda data från Supabase → localStorage
+async function loadFromSupabase(userId) {
+  if (!userId) return false;
+  try {
+    const db = await supabase.from("ekonomi");
+    const data = await db.select();
+    if (data) {
+      if (data.income) localStorage.setItem("kapital_income", data.income);
+      if (data.expenses && Object.keys(data.expenses).length) localStorage.setItem("kapital_expenses", JSON.stringify(data.expenses));
+      if (data.goals?.length) localStorage.setItem("kapital_goals", JSON.stringify(data.goals));
+      if (data.tillgangar?.length) localStorage.setItem("kapital_tillgangar", JSON.stringify(data.tillgangar));
+      if (data.skulder?.length) localStorage.setItem("kapital_skulder", JSON.stringify(data.skulder));
+      if (data.halsa_data && Object.keys(data.halsa_data).length) localStorage.setItem("kapital_halsa_data", JSON.stringify(data.halsa_data));
+      if (data.profil_step) localStorage.setItem("kapital_profil_step", String(data.profil_step));
+    }
+
+    const db2 = await supabase.from("portfolj");
+    const data2 = await db2.select();
+    if (data2) {
+      if (data2.holdings?.length) localStorage.setItem("kapital_holdings_v2", JSON.stringify(data2.holdings));
+      if (data2.watchlist?.length) localStorage.setItem("kapital_watchlist", JSON.stringify(data2.watchlist));
+      if (data2.extra_watchlist?.length) localStorage.setItem("kapital_extra_watchlist", JSON.stringify(data2.extra_watchlist));
+      if (data2.resor?.length) localStorage.setItem("kapital_resor", JSON.stringify(data2.resor));
+      if (data2.sparade_analyser?.length) localStorage.setItem("kapital_saved_analyses", JSON.stringify(data2.sparade_analyser));
+    }
+
+    const db3 = await supabase.from("profiles");
+    const data3 = await db3.select();
+    if (data3?.namn) localStorage.setItem("kapital_name", data3.namn);
+
+    return true;
+  } catch (e) { console.log("Load error:", e); return false; }
+}
+
 const API = "/api/claude";
 const MODEL = "claude-sonnet-4-6";
 const FAST_MODEL = "claude-haiku-4-5-20251001";
@@ -12754,7 +12948,7 @@ function SeniorTab({ setSeniorMode }) {
 }
 
 
-function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurrency, exchangeRates, currencies, seniorMode, setSeniorMode, theme, setTheme, splashEnabled, toggleSplash }) {
+function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurrency, exchangeRates, currencies, seniorMode, setSeniorMode, theme, setTheme, splashEnabled, toggleSplash, sbUser, onLogin, onLogout }) {
   const [name, setName] = useState(() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } });
   const [email, setEmail] = useState(() => { try { return localStorage.getItem("kapital_email") || ""; } catch { return ""; } });
   const [showLangs, setShowLangs] = useState(false);
@@ -13690,6 +13884,26 @@ function Kapital() {
     try { return parseInt(localStorage.getItem("kapital_usage") || "0", 10); } catch { return 0; }
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [sbUser, setSbUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+
+  // Check Supabase session on load
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ user }) => {
+      if (user) {
+        setSbUser(user);
+        loadFromSupabase(user.id);
+      }
+    });
+  }, []);
+
+  // Auto-sync to Supabase when data changes (debounced)
+  React.useEffect(() => {
+    if (!sbUser) return;
+    const timer = setTimeout(() => syncToSupabase(sbUser.id), 3000);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sbUser]);
   const [toast, setToast] = useState(null);
 
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 2500); };
@@ -14148,7 +14362,7 @@ OBS: Detta är AI-genererade uppskattningar baserade på allmänt tillgänglig i
           </div>
         )}
         {/* PROFIL */}
-        {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} splashEnabled={splashEnabled} toggleSplash={toggleSplash} />}
+        {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} splashEnabled={splashEnabled} toggleSplash={toggleSplash} sbUser={sbUser} onLogin={() => setShowLogin(true)} onLogout={async () => { await supabase.auth.signOut(); setSbUser(null); }} />}
         {tab === 4 && seniorMode && <SeniorTab setSeniorMode={setSeniorMode} />}
 
         {/* Legal footer */}
@@ -16079,6 +16293,7 @@ export default function KapitalApp() {
     <ErrorBoundary>
       <Kapital />
       <SmartGuide />
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLoggedIn={(user) => { setSbUser(user); setShowLogin(false); }} />}
       <CookieBanner />
       <FeedbackKnapp />
     </ErrorBoundary>
