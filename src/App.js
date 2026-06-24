@@ -617,6 +617,9 @@ function ProGate({ onUpgrade, t }) {
           </button>
         </div>
         <div style={{ fontSize: 11, color: "#334155" }}>{t.proCancel}</div>
+        <button onClick={() => window.history.back()} style={{ background: "none", border: "none", color: "#475569", fontSize: 13, cursor: "pointer", marginTop: 12, textDecoration: "underline" }}>
+          ← Fortsätt med Bas
+        </button>
       </div>
     </div>
   );
@@ -3142,8 +3145,12 @@ function SparaTab({ currency, exchangeRates, currencies }) {
   const updateGoalSaved = (id, val) => { saveGoals(goals.map(g => g.id === id ? { ...g, saved: Math.min(+val || 0, g.target) } : g)); };
   const removeGoal = (id) => saveGoals(goals.filter(g => g.id !== id));
 
-  const [activeSection, setActiveSection] = useState(null); // null = home
-  const [activeSubSection, setActiveSubSection] = useState(null);
+  const [activeSection, setActiveSection] = useState(() => {
+    try { const s = localStorage.getItem("kapital_open_section"); if (s) { localStorage.removeItem("kapital_open_section"); return s; } } catch {} return null;
+  });
+  const [activeSubSection, setActiveSubSection] = useState(() => {
+    try { const s = localStorage.getItem("kapital_open_subsection"); if (s) { localStorage.removeItem("kapital_open_subsection"); return s; } } catch {} return null;
+  });
 
   const goBack = () => {
     if (activeSubSection) { setActiveSubSection(null); }
@@ -3332,8 +3339,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "abonnemang", icon: "📱", label: "Abonnemang", desc: "Streaming, gym och prenumerationer" },
             ] : activeSection === "sparkonto" ? [
               { id: "sparkonto_jamfor", icon: "🏦", label: "Jämför sparkonton", desc: "Bästa räntan för dina pengar" },
-              { id: "kryptokuide", icon: "₿", label: "Kryptoguide", desc: "Kom igång med krypto" },
-              { id: "kryptoskatt", icon: "🧾", label: "Kryptoskatt", desc: "K4 och deklaration av krypton" },
+              { id: "sparguide", icon: "💡", label: "Spartips & strategier", desc: "Buffert, autospar och hållbart sparande" },
             ] : activeSection === "fonder" ? [
               { id: "fondguide", icon: "📊", label: "Fondguide 2026", desc: "Bästa fonder för framtiden" },
             ] : [
@@ -8647,11 +8653,11 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
 
   const QUICK_ACTIONS = [
     { icon: "🔍", label: "Aktieanalys", color: "#10b981", action: () => { setTab(1); setSubTab("analys"); } },
-    { icon: "💰", label: "Min budget", color: "#3b82f6", action: () => { setTab(2); } },
+    { icon: "💰", label: "Min budget", color: "#3b82f6", action: () => { setTab(2); localStorage.setItem("kapital_open_section", "budget"); localStorage.setItem("kapital_open_subsection", "budget_all"); } },
     { icon: "📊", label: "Fonder", color: "#f59e0b", action: () => { setTab(1); setSubTab("fonder"); } },
     { icon: "🤖", label: "AI-coach", color: "#8b5cf6", action: () => { setTab(2); } },
     { icon: "🤝", label: "Erbjudanden", color: "#f59e0b", action: () => { setTab(3); setSubTab("deals_hem"); } },
-    { icon: "📊", label: "Min profil", color: "#f97316", action: () => { setTab(3); setSubTab("profil"); } },
+    { icon: "📊", label: "Min profil", color: "#f97316", action: () => { setTab(4); } },
   ];
 
   // Get health score for display
@@ -8779,7 +8785,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
           const p = mockPrice(s.ticker);
           const up = p.chgPct >= 0;
           return (
-            <button key={s.name} onClick={() => { setQuery(s.name); analyze(s.name); setTab(1); setSubTab("analys"); unlock("first_analysis"); }}
+            <button key={s.name} onClick={() => { setQuery(s.name); setTab(1); setSubTab("analys"); unlock("first_analysis"); }}
               style={{ flexShrink: 0, background: "var(--card)", border: `1px solid ${up ? "#22c55e22" : "#ef444422"}`, borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left", minWidth: 110 }}>
               <div style={{ fontSize: 18, marginBottom: 4 }}>{s.icon}</div>
               <div style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0" }}>{s.name}</div>
