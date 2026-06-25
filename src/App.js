@@ -14117,7 +14117,45 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
             {isPro && <div style={{ fontSize: 12, color: "#10b981", marginTop: 4 }}>⭐ Kapital Pro</div>}
           </div>
 
-          {/* Email */}
+          {/* Konto & Synk — Supabase inloggning */}
+          {sbUser ? (
+            <div style={{ background: "linear-gradient(135deg,#10b98111,#0ea5e911)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✓</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>Inloggad & synkad</div>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>{sbUser.email}</div>
+                  </div>
+                </div>
+                <button onClick={onLogout} style={{ padding: "5px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#64748b", fontSize: 12, cursor: "pointer" }}>
+                  Logga ut
+                </button>
+              </div>
+              <button onClick={async () => { const s = await supabase.auth.getSession(); if (s.user) await syncToSupabase(s.user.id); }}
+                style={{ width: "100%", padding: "8px", background: "#10b98122", border: "1px solid #10b98133", borderRadius: 8, color: "#10b981", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>
+                🔄 Synka data nu
+              </button>
+            </div>
+          ) : (
+            <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 4 }}>🔐 Logga in / Skapa konto</div>
+              <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, lineHeight: 1.6 }}>
+                Synka din data mellan telefon och dator. Gratis — ingen registrering, bara din e-post.
+              </div>
+              <button onClick={onLogin}
+                style={{ width: "100%", padding: "13px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 8 }}>
+                🔐 Logga in / Skapa konto
+              </button>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center" }}>
+                {["📧 Engångskod via e-post", "🛡️ Ingen registrering", "🔄 Synkar alla enheter"].map(s => (
+                  <span key={s} style={{ fontSize: 10, color: "#475569", background: "var(--bg2)", padding: "3px 8px", borderRadius: 20 }}>{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Email lokal */}
           <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 16px", marginBottom: 10 }}>
             <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>📧 E-post</div>
             <input value={email} onChange={e => saveEmail(e.target.value)} placeholder="din@email.se"
