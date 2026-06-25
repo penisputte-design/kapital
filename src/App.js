@@ -8850,7 +8850,7 @@ function LoginModal({ onClose, onLoggedIn }) {
 
                 <button onClick={skickaKod} disabled={loading}
                   style={{ width: "100%", padding: 14, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>
-                  {loading ? "Skickar..." : "Skicka inloggningskod →"}
+                  {loading ? "Skapar konto..." : "Skapa konto / Logga in →"}
                 </button>
                 <div style={{ fontSize: 12, color: "#475569", textAlign: "center", lineHeight: 1.6 }}>
                   Vi skickar en 6-siffrig engångskod till din e-post.<br/>
@@ -14155,12 +14155,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
             </div>
           )}
 
-          {/* Email lokal */}
-          <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 16px", marginBottom: 10 }}>
-            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>📧 E-post</div>
-            <input value={email} onChange={e => saveEmail(e.target.value)} placeholder="din@email.se"
-              style={{ width: "100%", background: "none", border: "none", outline: "none", fontSize: 15, color: "#e2e8f0" }} />
-          </div>
+
 
           {/* Pro */}
           {!isPro ? (
