@@ -7638,7 +7638,7 @@ function useNotifications() {
 function NotificationCenter({ onClose }) {
   // eslint-disable-next-line no-unused-vars
   const { notifications, markAllRead, unreadCount } = useNotifications();
-  useEffect(() => { markAllRead(); }, []);
+  useEffect(() => { markAllRead(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div style={{ position: "fixed", inset: 0, background: "#000c", zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
       <div style={{ background: "var(--card)", borderRadius: "20px 20px 0 0", padding: "20px 16px 40px", maxWidth: 480, width: "100%", border: "1px solid var(--border)", maxHeight: "75vh", display: "flex", flexDirection: "column" }} onClick={e => e.stopPropagation()}>
@@ -11164,7 +11164,7 @@ function AktieGraf({ ticker, color }) {
       setLoading(false);
     };
     fetchStock();
-  }, [ticker, period]);
+  }, [ticker, period]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
     return (
