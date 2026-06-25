@@ -17428,7 +17428,6 @@ function AnvandarvillkorPage() {
 // LoginModal triggas via event från ProfilTab
 function LoginModalWrapper() {
   const [visa, setVisa] = useState(false);
-  const [sbUser, setSbUser] = useState(null);
 
   React.useEffect(() => {
     const handler = () => setVisa(true);
@@ -17441,7 +17440,6 @@ function LoginModalWrapper() {
     <LoginModal
       onClose={() => setVisa(false)}
       onLoggedIn={(user) => {
-        setSbUser(user);
         setVisa(false);
         window.dispatchEvent(new CustomEvent("kapital_logged_in", { detail: user }));
       }}
