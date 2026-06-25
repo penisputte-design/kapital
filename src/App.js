@@ -8778,6 +8778,116 @@ function DagligSplash({ onClose, news, onDisable }) {
 
 
 
+
+// ── Inloggning via e-post OTP ─────────────────────────────────────────────
+function LoginModal({ onClose, onLoggedIn }) {
+  const [steg, setSteg] = useState("email");
+  const [email, setEmail] = useState("");
+  const [kod, setKod] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [fel, setFel] = useState("");
+
+  async function skickaKod() {
+    if (!email.includes("@")) { setFel("Ange en giltig e-postadress"); return; }
+    setLoading(true); setFel("");
+    const ok = await supabase.auth.signInWithOtp(email);
+    setLoading(false);
+    if (ok) setSteg("kod");
+    else setFel("Kunde inte skicka kod — försök igen.");
+  }
+
+  async function verifieraKod() {
+    if (kod.length < 6) { setFel("Koden är 6 siffror"); return; }
+    setLoading(true); setFel("");
+    const result = await supabase.auth.verifyOtp(email, kod);
+    setLoading(false);
+    if (result.user) {
+      await loadFromSupabase(result.user.id);
+      onLoggedIn(result.user);
+    } else {
+      setFel(result.error || "Fel kod — försök igen");
+    }
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "var(--card, #0f172a)", borderRadius: 20, border: "1px solid var(--border)", padding: 28, maxWidth: 380, width: "100%" }}>
+
+        {steg === "klar" ? (
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#10b981" }}>Inloggad!</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginTop: 6 }}>Din data laddas in...</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>
+                  {steg === "email" ? "🔐 Logga in eller skapa konto" : "📧 Ange verifieringskod"}
+                </div>
+                <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
+                  {steg === "email" ? "Ange din e-post — vi skickar en engångskod. Nytt konto skapas automatiskt." : `Koden skickades till ${email}`}
+                </div>
+              </div>
+              <button onClick={onClose} style={{ background: "none", border: "none", color: "#64748b", fontSize: 22, cursor: "pointer" }}>✕</button>
+            </div>
+
+            {steg === "email" && (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Din e-postadress</div>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && skickaKod()}
+                    placeholder="namn@example.com" autoFocus
+                    style={{ width: "100%", padding: "13px 16px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text, #e2e8f0)", fontSize: 16, outline: "none", boxSizing: "border-box" }} />
+                  <div style={{ fontSize: 11, color: "#475569", marginTop: 6 }}>
+                    Nytt konto skapas automatiskt om du inte redan har ett.
+                  </div>
+                </div>
+                <button onClick={skickaKod} disabled={loading}
+                  style={{ width: "100%", padding: 14, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>
+                  {loading ? "Skickar..." : "Skicka inloggningskod →"}
+                </button>
+                <div style={{ fontSize: 12, color: "#475569", textAlign: "center", lineHeight: 1.6 }}>
+                  Vi skickar en 6-siffrig engångskod till din e-post.<br/>
+                  <span style={{ color: "#334155" }}>Din data synkas automatiskt mellan alla dina enheter.</span>
+                </div>
+              </>
+            )}
+
+            {steg === "kod" && (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>6-siffrig kod från e-posten</div>
+                  <input type="number" value={kod} onChange={e => setKod(e.target.value.slice(0, 6))}
+                    onKeyDown={e => e.key === "Enter" && verifieraKod()}
+                    placeholder="123456" autoFocus maxLength={6}
+                    style={{ width: "100%", padding: "13px 16px", background: "var(--bg2, #080c18)", border: "1px solid var(--border)", borderRadius: 12, color: "var(--text, #e2e8f0)", fontSize: 28, fontWeight: 700, outline: "none", boxSizing: "border-box", textAlign: "center", letterSpacing: 8 }} />
+                </div>
+                <button onClick={verifieraKod} disabled={loading || kod.length < 6}
+                  style={{ width: "100%", padding: 14, background: kod.length === 6 ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#1e293b", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: kod.length === 6 ? "pointer" : "default", marginBottom: 10 }}>
+                  {loading ? "Verifierar..." : "Logga in ✓"}
+                </button>
+                <button onClick={() => { setSteg("email"); setKod(""); setFel(""); }}
+                  style={{ width: "100%", padding: 10, background: "none", border: "none", color: "#64748b", fontSize: 13, cursor: "pointer" }}>
+                  ← Ändra e-postadress
+                </button>
+              </>
+            )}
+
+            {fel && (
+              <div style={{ background: "#ef444411", border: "1px solid #ef444433", borderRadius: 8, padding: "8px 12px", marginTop: 8, fontSize: 13, color: "#ef4444", textAlign: "center" }}>
+                {fel}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Användarvillkor & Samtycke — visas vid första start ──────────────────
 function VillkorsModal({ onAccept }) {
   const [kryssad1, setKryssad1] = useState(false);
@@ -11134,6 +11244,7 @@ const KRYPTO_PRESETS = [
 
 
 // ── Mitt Företag — Soloföretagare & Frilansare ───────────────────────────
+// eslint-disable-next-line no-unused-vars
 function MittForetagTab({ isPro, onUpgrade }) {
   const [sektion, setSektion] = useState("hem");
   const [form, setForm] = useState({
@@ -11477,6 +11588,7 @@ const LANE_BANKER = {
   ],
 };
 
+// eslint-disable-next-line no-unused-vars
 function SmartLaneRadgivare() {
   const [steg, setSteg] = useState("andamal"); // andamal | belopp | profil | resultat
   const [valtAndamal, setValtAndamal] = useState(null);
@@ -11710,6 +11822,7 @@ Var ärlig och direkt. Avsluta med: "Detta är allmän information, inte finansi
 }
 
 // ── Anyfin & Resurs — Lånekort ───────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 function AnyfinKort() {
   return (
     <div style={{ marginTop: 16 }}>
@@ -11801,6 +11914,7 @@ function SparkontoJamfor({ inc }) {
   const [belopp, setBelopp] = useState("100000");
   const [tid, setTid] = useState("12");
   const [typ, setTyp] = useState("alla");
+  // eslint-disable-next-line no-unused-vars
   const [visaInfo, setVisaInfo] = useState(null);
 
   const typer = [
@@ -11814,6 +11928,7 @@ function SparkontoJamfor({ inc }) {
     .filter(s => typ === "alla" || s.typ === typ)
     .sort((a, b) => b.ranta - a.ranta);
 
+  // eslint-disable-next-line no-unused-vars
   const raknaRanta = (ranta, beloppKr, manader) => {
     const ar = manader / 12;
     if (typ === "isk" || (typ === "alla")) return null; // ISK är annorlunda
@@ -13815,6 +13930,7 @@ const KAPITAL_ROADMAP = {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 function RoadmapTab() {
   const [aktivFas, setAktivFas] = useState("fas1");
   const [checkar, setCheckar] = useState(() => {
@@ -14531,6 +14647,7 @@ function ProfilNotiser() {
   // Sortera efter datum
   releventaHandelser.sort((a, b) => new Date(a.datum) - new Date(b.datum));
 
+  // eslint-disable-next-line no-unused-vars
   const dagKvar = (datum) => {
     const diff = new Date(datum) - new Date();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
@@ -14866,6 +14983,7 @@ function Kapital() {
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [sbUser, setSbUser] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [showLogin, setShowLogin] = useState(false);
 
   // Check Supabase session on load
@@ -14876,6 +14994,14 @@ function Kapital() {
         loadFromSupabase(user.id);
       }
     });
+    // Listen for login event from LoginModalWrapper
+    const handler = (e) => {
+      setSbUser(e.detail);
+      loadFromSupabase(e.detail.id);
+    };
+    window.addEventListener("kapital_logged_in", handler);
+    return () => window.removeEventListener("kapital_logged_in", handler);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Auto-sync to Supabase when data changes (debounced)
@@ -15343,7 +15469,7 @@ OBS: Detta är AI-genererade uppskattningar baserade på allmänt tillgänglig i
           </div>
         )}
         {/* PROFIL */}
-        {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} splashEnabled={splashEnabled} toggleSplash={toggleSplash} sbUser={sbUser} onLogin={() => setShowLogin(true)} onLogout={async () => { await supabase.auth.signOut(); setSbUser(null); }} />}
+        {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} splashEnabled={splashEnabled} toggleSplash={toggleSplash} sbUser={sbUser} onLogin={() => window.dispatchEvent(new CustomEvent("kapital_open_login"))} onLogout={async () => { await supabase.auth.signOut(); setSbUser(null); }} />}
         {tab === 4 && seniorMode && <SeniorTab setSeniorMode={setSeniorMode} />}
 
         {/* Legal footer */}
@@ -15362,7 +15488,7 @@ OBS: Detta är AI-genererade uppskattningar baserade på allmänt tillgänglig i
             { icon: "📈", label: "Aktier", idx: 1 },
             { icon: "💰", label: "Ekonomi", idx: 2 },
             { icon: "🤝", label: "Erbjudanden", idx: 3 },
-            { icon: seniorMode ? "👴" : "👤", label: seniorMode ? "Senior" : "Profil", idx: 4 },
+            { icon: "👤", label: "Profil", idx: 4 },
           ].map(({ icon, label, idx }) => (
             <button key={idx} onClick={() => {
               window.history.pushState({ tab: idx }, "");
@@ -17265,6 +17391,31 @@ function AnvandarvillkorPage() {
   );
 }
 
+
+// LoginModal triggas via event från ProfilTab
+function LoginModalWrapper() {
+  const [visa, setVisa] = useState(false);
+  const [sbUser, setSbUser] = useState(null);
+
+  React.useEffect(() => {
+    const handler = () => setVisa(true);
+    window.addEventListener("kapital_open_login", handler);
+    return () => window.removeEventListener("kapital_open_login", handler);
+  }, []);
+
+  if (!visa) return null;
+  return (
+    <LoginModal
+      onClose={() => setVisa(false)}
+      onLoggedIn={(user) => {
+        setSbUser(user);
+        setVisa(false);
+        window.dispatchEvent(new CustomEvent("kapital_logged_in", { detail: user }));
+      }}
+    />
+  );
+}
+
 export default function KapitalApp() {
   const path = useRoute();
   const [visaVillkor, setVisaVillkor] = useState(() => {
@@ -17279,6 +17430,7 @@ export default function KapitalApp() {
       <Kapital />
       <SmartGuide />
       {visaVillkor && <VillkorsModal onAccept={() => setVisaVillkor(false)} />}
+      <LoginModalWrapper />
       <CookieBanner />
       <FeedbackKnapp />
     </ErrorBoundary>
