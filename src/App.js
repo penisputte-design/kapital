@@ -8831,15 +8831,10 @@ function LoginModal({ onClose, onLoggedIn }) {
   async function skickaKod() {
     if (!email.includes("@")) { setFel("Ange en giltig e-postadress"); return; }
     setLoading(true); setFel("");
-    // Direkt inloggning utan bekräftelsekod
-    const result = await supabase.auth.signInMagicless(email);
+    const ok = await supabase.auth.signInWithOtp(email);
     setLoading(false);
-    if (result.user) {
-      await loadFromSupabase(result.user.id);
-      onLoggedIn(result.user);
-    } else {
-      setFel(result.error || "Kunde inte skapa konto — försök igen.");
-    }
+    if (ok) setSteg("kod");
+    else setFel("Kunde inte skicka kod — försök igen.");
   }
 
   async function verifieraKod() {
@@ -8870,10 +8865,10 @@ function LoginModal({ onClose, onLoggedIn }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>
-                  {steg === "email" ? "🔐 Logga in eller skapa konto" : "📧 Ange verifieringskod"}
+                  {steg === "email" ? "🔐 Logga in / Skapa konto" : "📧 Ange din engångskod"}
                 </div>
                 <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
-                  {steg === "email" ? "Ange din e-post — vi skickar en engångskod. Nytt konto skapas automatiskt." : `Koden skickades till ${email}`}
+                  {steg === "email" ? "Vi skickar en 6-siffrig kod till din e-post. Nytt konto skapas automatiskt." : `Kolla din e-post — koden skickades till ${email}`}
                 </div>
               </div>
               <button onClick={onClose} style={{ background: "none", border: "none", color: "#64748b", fontSize: 22, cursor: "pointer" }}>✕</button>
@@ -8896,7 +8891,7 @@ function LoginModal({ onClose, onLoggedIn }) {
 
                 <button onClick={skickaKod} disabled={loading}
                   style={{ width: "100%", padding: 14, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>
-                  {loading ? "Skapar konto..." : "Skapa konto / Logga in →"}
+                  {loading ? "Skickar kod..." : "Skicka engångskod →"}
                 </button>
                 <div style={{ fontSize: 12, color: "#475569", textAlign: "center", lineHeight: 1.6 }}>
                   Vi skickar en 6-siffrig engångskod till din e-post.<br/>
