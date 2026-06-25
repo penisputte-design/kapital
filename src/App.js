@@ -8845,6 +8845,9 @@ function LoginModal({ onClose, onLoggedIn }) {
                     Nytt konto skapas automatiskt om du inte redan har ett.
                   </div>
                 </div>
+                {/* Cloudflare Turnstile — bot-skydd */}
+                <div id="cf-turnstile" style={{ margin: "0 auto 12px", display: "flex", justifyContent: "center" }}></div>
+
                 <button onClick={skickaKod} disabled={loading}
                   style={{ width: "100%", padding: 14, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginBottom: 12 }}>
                   {loading ? "Skickar..." : "Skicka inloggningskod →"}
@@ -8852,6 +8855,9 @@ function LoginModal({ onClose, onLoggedIn }) {
                 <div style={{ fontSize: 12, color: "#475569", textAlign: "center", lineHeight: 1.6 }}>
                   Vi skickar en 6-siffrig engångskod till din e-post.<br/>
                   <span style={{ color: "#334155" }}>Din data synkas automatiskt mellan alla dina enheter.</span>
+                </div>
+                <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 8 }}>
+                  🛡️ Skyddad av Cloudflare · En e-postadress per konto
                 </div>
               </>
             )}
@@ -14986,6 +14992,16 @@ function Kapital() {
   // eslint-disable-next-line no-unused-vars
   const [showLogin, setShowLogin] = useState(false);
 
+  // Ladda Cloudflare Turnstile för bot-skydd
+  React.useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+    return () => { try { document.head.removeChild(script); } catch {} };
+  }, []);
+
   // Check Supabase session on load
   React.useEffect(() => {
     supabase.auth.getSession().then(({ user }) => {
@@ -15039,6 +15055,23 @@ function Kapital() {
     }, 600);
 
     try {
+      // Kolla om kvoten är slut via Supabase (om inloggad)
+      const session = await supabase.auth.getSession();
+      if (session.user && !isPro) {
+        try {
+          const db = await supabase.from("ekonomi");
+          const data = await db.select();
+          const idag = new Date().toISOString().split("T")[0];
+          const dagAnalyser = data?.dagliga_analyser || {};
+          const antalIdag = dagAnalyser[idag] || 0;
+          if (antalIdag >= FREE_LIMIT) {
+            setError("Du har använt dina " + FREE_LIMIT + " Bas-analyser idag. Uppgradera till Pro!");
+            setLoading(false);
+            return;
+          }
+        } catch {}
+      }
+
       const resp = await fetch(API, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
