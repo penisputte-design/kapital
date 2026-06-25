@@ -14867,9 +14867,6 @@ function Kapital() {
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [sbUser, setSbUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [visaVillkor, setVisaVillkor] = useState(() => {
-    try { return !localStorage.getItem("kapital_villkor_v1"); } catch { return false; }
-  });
 
   // Check Supabase session on load
   React.useEffect(() => {
@@ -17270,6 +17267,10 @@ function AnvandarvillkorPage() {
 
 export default function KapitalApp() {
   const path = useRoute();
+  const [visaVillkor, setVisaVillkor] = useState(() => {
+    try { return !localStorage.getItem("kapital_villkor_v1"); } catch { return false; }
+  });
+
   if (path === "/integritetspolicy") return <IntegritetspolicyPage />;
   if (path === "/admin") return <AdminPanel />;
   if (path === "/anvandarvillkor") return <AnvandarvillkorPage />;
@@ -17278,7 +17279,6 @@ export default function KapitalApp() {
       <Kapital />
       <SmartGuide />
       {visaVillkor && <VillkorsModal onAccept={() => setVisaVillkor(false)} />}
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLoggedIn={(user) => { setSbUser(user); setShowLogin(false); }} />}
       <CookieBanner />
       <FeedbackKnapp />
     </ErrorBoundary>
