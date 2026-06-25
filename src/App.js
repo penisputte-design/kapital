@@ -206,12 +206,53 @@ const supabase = {
     },
 
     async signInWithOtp(email) {
+      // Försök logga in med magic link / OTP
       const resp = await fetch(`${this._url}/otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
         body: JSON.stringify({ email, create_user: true }),
       });
       return resp.ok;
+    },
+
+    async signInMagicless(email) {
+      // Logga in utan bekräftelse — fungerar när confirm email är AVstängt
+      // Försök signUp först, om konto finns försök signIn
+      const pwd = btoa(email + "kapital_secret_2026").slice(0, 20) + "Kk1!";
+      
+      // Försök skapa konto
+      const signupResp = await fetch(`${this._url}/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ email, password: pwd }),
+      });
+      const signupData = await signupResp.json();
+      
+      if (signupData.access_token) {
+        const session = { ...signupData, user: signupData.user };
+        localStorage.setItem("kapital_sb_session", JSON.stringify(session));
+        this._token = signupData.access_token;
+        this._user = signupData.user;
+        return { session, user: signupData.user };
+      }
+      
+      // Konto finns redan — logga in
+      const signinResp = await fetch(`${this._url}/token?grant_type=password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY },
+        body: JSON.stringify({ email, password: pwd }),
+      });
+      const signinData = await signinResp.json();
+      
+      if (signinData.access_token) {
+        const session = { ...signinData, user: signinData.user };
+        localStorage.setItem("kapital_sb_session", JSON.stringify(session));
+        this._token = signinData.access_token;
+        this._user = signinData.user;
+        return { session, user: signinData.user };
+      }
+      
+      return { error: signinData.error_description || "Kunde inte logga in" };
     },
 
     async verifyOtp(email, token) {
@@ -8790,10 +8831,15 @@ function LoginModal({ onClose, onLoggedIn }) {
   async function skickaKod() {
     if (!email.includes("@")) { setFel("Ange en giltig e-postadress"); return; }
     setLoading(true); setFel("");
-    const ok = await supabase.auth.signInWithOtp(email);
+    // Direkt inloggning utan bekräftelsekod
+    const result = await supabase.auth.signInMagicless(email);
     setLoading(false);
-    if (ok) setSteg("kod");
-    else setFel("Kunde inte skicka kod — försök igen.");
+    if (result.user) {
+      await loadFromSupabase(result.user.id);
+      onLoggedIn(result.user);
+    } else {
+      setFel(result.error || "Kunde inte skapa konto — försök igen.");
+    }
   }
 
   async function verifieraKod() {
