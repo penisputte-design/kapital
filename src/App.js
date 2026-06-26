@@ -387,8 +387,9 @@ async function loadFromSupabase(userId) {
 }
 
 const API = "/api/claude";
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-haiku-4-5-20251001"; // Snabb & billig för bas-analyser
 const FAST_MODEL = "claude-haiku-4-5-20251001";
+const PRO_MODEL = "claude-sonnet-4-6"; // Används bara för Pro djupanalys
 // KEY removed — API key handled server-side via Netlify Function
   // eslint-disable-next-line no-unused-vars
 const PRESETS = ["Scandinavian Enviro Systems", "Ericsson", "Volvo", "Sinch", "H&M"];
@@ -8025,27 +8026,42 @@ function Onboarding({ onDone }) {
       localStorage.setItem("kapital_onboarded", "true");
       if (name) localStorage.setItem("kapital_name", name);
       localStorage.setItem("kapital_interests", JSON.stringify(interests));
-      // Spara ekonomisk data direkt till localStorage
+
+      // Spara inkomst
       if (ekonomi.inkomst) localStorage.setItem("kapital_income", ekonomi.inkomst);
+
+      // Spara utgifter med RÄTT nycklar som budget-sektionen läser
+      if (ekonomi.hyra) localStorage.setItem("kapital_rent", ekonomi.hyra);
+      if (ekonomi.mat) localStorage.setItem("kapital_food", ekonomi.mat);
+      if (ekonomi.transport) localStorage.setItem("kapital_transport", ekonomi.transport);
+      if (ekonomi.ovrigt) localStorage.setItem("kapital_leisure", ekonomi.ovrigt);
+      if (ekonomi.sparande) localStorage.setItem("kapital_monthly_savings", ekonomi.sparande);
+      if (ekonomi.buffer) localStorage.setItem("kapital_buffer", ekonomi.buffer);
+      if (ekonomi.lan) localStorage.setItem("kapital_other_debts", ekonomi.lan);
+
+      // Spara också till kapital_expenses med RÄTTA kategori-IDs
       if (ekonomi.hyra || ekonomi.mat || ekonomi.transport) {
         const expenses = {};
-        if (ekonomi.hyra) expenses.Hyra = ekonomi.hyra;
-        if (ekonomi.mat) expenses.Mat = ekonomi.mat;
-        if (ekonomi.transport) expenses.Transport = ekonomi.transport;
-        if (ekonomi.ovrigt) expenses.Övrigt = ekonomi.ovrigt;
+        if (ekonomi.hyra) expenses["boende"] = ekonomi.hyra;
+        if (ekonomi.mat) expenses["mat"] = ekonomi.mat;
+        if (ekonomi.transport) expenses["transport"] = ekonomi.transport;
+        if (ekonomi.ovrigt) expenses["noje"] = ekonomi.ovrigt;
         localStorage.setItem("kapital_expenses", JSON.stringify(expenses));
       }
+
       if (ekonomi.sparande) {
         const goals = [{ name: "Generellt sparande", emoji: "💰", target: parseFloat(ekonomi.sparande) * 12, saved: 0, monthly: parseFloat(ekonomi.sparande) }];
         localStorage.setItem("kapital_goals", JSON.stringify(goals));
       }
+
       // Spara hälsokoll-data
       const halsaData = {
         inkomst: ekonomi.inkomst,
-        utgifter: String(parseFloat(ekonomi.hyra||0) + parseFloat(ekonomi.mat||0) + parseFloat(ekonomi.transport||0)),
-        rorliga: ekonomi.ovrigt || "0",
+        utgifter: ekonomi.hyra || "0",
+        rorliga: String((parseFloat(ekonomi.mat)||0) + (parseFloat(ekonomi.transport)||0) + (parseFloat(ekonomi.ovrigt)||0)),
         sparande: ekonomi.sparande,
         buffer: ekonomi.buffer,
+        skulder: ekonomi.lan || "0",
       };
       localStorage.setItem("kapital_halsa_data", JSON.stringify(halsaData));
     } catch {}
@@ -8125,6 +8141,7 @@ function Onboarding({ onDone }) {
         { key: "ovrigt", label: "📦 Övriga rörliga utgifter", placeholder: "t.ex. 2 000", suffix: "kr/mån" },
         { key: "sparande", label: "🏦 Hur mycket sparar du per månad?", placeholder: "t.ex. 3 000", suffix: "kr/mån" },
         { key: "buffer", label: "🛡️ Buffert på sparkonto", placeholder: "t.ex. 25 000", suffix: "kr" },
+        { key: "lan", label: "💳 Totala skulder / lån", placeholder: "t.ex. 150 000", suffix: "kr" },
       ].map(f => (
         <div key={f.key} style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 6 }}>{f.label}</div>
@@ -8136,6 +8153,22 @@ function Onboarding({ onDone }) {
           </div>
         </div>
       ))}
+
+      {/* Arbetsläge */}
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>💼 Arbetsläge</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+          {["Anställd (fast)", "Anställd (visstid)", "Egenföretagare", "Söker jobb", "Student", "Föräldraledig/Sjukskriven", "Pensionär"].map(a => {
+            const vald = (localStorage.getItem("kapital_arbetsläge") || "") === a;
+            return (
+              <button key={a} onClick={() => { try { localStorage.setItem("kapital_arbetsläge", a); } catch {} window.location.reload(); }}
+                style={{ padding: "9px 8px", background: vald ? "#10b98122" : "var(--card)", border: `1px solid ${vald ? "#10b981" : "var(--border)"}`, borderRadius: 10, color: vald ? "#10b981" : "#64748b", fontSize: 12, cursor: "pointer", fontWeight: vald ? 700 : 400, textAlign: "center" }}>
+                {a}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {ekonomi.inkomst && (
         <div style={{ background: "#10b98111", borderRadius: 12, border: "1px solid #10b98133", padding: 14, marginTop: 16 }}>
@@ -15179,7 +15212,7 @@ function Kapital() {
       const resp = await fetch(API, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: MODEL, max_tokens: 2000,
+          model: isPro ? PRO_MODEL : MODEL, max_tokens: isPro ? 2000 : 1500,
           messages: [{ role: "user", content: `Du är en senior aktieanalytiker på en ledande nordisk investmentbank. Analysera ${name} för en svensk privatinvesterare 2026.
 
 VIKTIGT: Svara EXAKT med detta JSON-format och inget annat. Fyll i verkliga, välgrundade uppskattningar baserade på allmänt tillgänglig information.
@@ -15847,6 +15880,16 @@ function ProfilByggare({ onClose }) {
       localStorage.setItem("kapital_halsa_data", JSON.stringify(halsa));
       // Save step progress
       try { localStorage.setItem("kapital_profil_step", String(step + 1)); } catch {}
+      // Sync to kapital_expenses with correct IDs
+      try {
+        const exp = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+        if (localStorage.getItem("kapital_rent")) exp["boende"] = localStorage.getItem("kapital_rent");
+        if (localStorage.getItem("kapital_food")) exp["mat"] = localStorage.getItem("kapital_food");
+        if (localStorage.getItem("kapital_transport")) exp["transport"] = localStorage.getItem("kapital_transport");
+        if (localStorage.getItem("kapital_leisure")) exp["noje"] = localStorage.getItem("kapital_leisure");
+        if (localStorage.getItem("kapital_subscriptions")) exp["prenumerationer"] = localStorage.getItem("kapital_subscriptions");
+        localStorage.setItem("kapital_expenses", JSON.stringify(exp));
+      } catch {}
 
       // Sparmål om ifyllt
       if (allAnswers.sparmal && allAnswers.sparmal !== "Ja" && allAnswers.sparmal !== "Nej") {
