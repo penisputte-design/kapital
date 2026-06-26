@@ -7901,33 +7901,33 @@ function HealthScore() {
 
   // Savings rate (0-40 points)
   if (savingsRate >= 20) { score += 40; }
-  else if (savingsRate >= 10) { score += 25; tips.push({ icon: "📈", text: "Öka sparkvoten till 20% för optimal ekonomi" }); }
-  else if (savingsRate >= 5) { score += 15; tips.push({ icon: "💸", text: "Försök spara minst 10% av inkomsten" }); }
-  else if (income > 0) { tips.push({ icon: "🚨", text: "Din sparkvot är mycket låg — se över utgifterna" }); }
-  else { tips.push({ icon: "💰", text: "Lägg in din inkomst i Ekonomi-fliken" }); }
+  else if (savingsRate >= 10) { score += 25; tips.push({ icon: "📈", text: "Öka sparkvoten till 20% för optimal ekonomi", tab: 2, section: "budget", sub: "budget_all" }); }
+  else if (savingsRate >= 5) { score += 15; tips.push({ icon: "💸", text: "Försök spara minst 10% av inkomsten — se din budget", tab: 2, section: "budget", sub: "budget_all" }); }
+  else if (income > 0) { tips.push({ icon: "🚨", text: "Din sparkvot är mycket låg — se över utgifterna", tab: 2, section: "budget", sub: "budget_all" }); }
+  else { tips.push({ icon: "💰", text: "Lägg in din inkomst i Ekonomi-fliken", tab: 2, section: null, sub: null }); }
 
   // Buffer (0-20 points)
   if (hasBuffer) { score += 20; }
-  else { tips.push({ icon: "🛡️", text: "Bygg en buffert på 3 månaders utgifter" }); }
+  else { tips.push({ icon: "🛡️", text: "Bygg en buffert på 3 månaders utgifter", tab: 2, section: "sparkonto", sub: "sparkonto_jamfor" }); }
 
   // Has goals (0-20 points)
   if (hasGoals) { score += 20; }
-  else { tips.push({ icon: "🎯", text: "Sätt upp sparmål i Ekonomi-fliken" }); }
+  else { tips.push({ icon: "🎯", text: "Sätt upp sparmål i Ekonomi-fliken", tab: 2, section: "budget", sub: "budget_all" }); }
 
   // Pension (0-15 points)
   if (hasPension) { score += 15; }
-  else { tips.push({ icon: "👴", text: "Starta ett pensionssparande — även 500 kr/mån gör stor skillnad" }); }
+  else { tips.push({ icon: "👴", text: "Starta ett pensionssparande — även 500 kr/mån gör stor skillnad", tab: 2, section: "pension", sub: "pension_kalkyl" }); }
 
   // Forsäkringar (0-10 points)
   if (hasForsakring) { score += 10; }
-  else { tips.push({ icon: "🛡️", text: "Lägg in dina försäkringar under Trygghet" }); }
+  else { tips.push({ icon: "🛡️", text: "Lägg in dina försäkringar under Trygghet", tab: 3, section: "forsakring", sub: null }); }
 
   // Nettovärde (0-15 points)
   if (totalTillgangar > 0) {
     if (nettovarde > 0 && skuldgrad < 50) { score += 15; }
-    else if (skuldgrad < 70) { score += 8; tips.push({ icon: "💳", text: "Skuldsättningen är " + skuldgrad.toFixed(0) + "% — fokusera på amortering" }); }
-    else { tips.push({ icon: "📉", text: "Skuldsättningen är hög — se skuldfria kalkylatorn" }); }
-  } else { tips.push({ icon: "💎", text: "Fyll i tillgångar under Aktier → Min Ekonomi" }); }
+    else if (skuldgrad < 70) { score += 8; tips.push({ icon: "💳", text: "Skuldsättningen är " + skuldgrad.toFixed(0) + "% — fokusera på amortering", tab: 2, section: "lan", sub: "lan" }); }
+    else { tips.push({ icon: "📉", text: "Skuldsättningen är hög — se Lånerådgivaren", tab: 2, section: "lan", sub: "lan" }); }
+  } else { tips.push({ icon: "💎", text: "Fyll i tillgångar under Portfölj", tab: 1, section: null, sub: "portfölj" }); }
 
   const label = score >= 80 ? "Utmärkt" : score >= 60 ? "Bra" : score >= 40 ? "OK" : "Behöver förbättras";
   const color = score >= 80 ? "#10b981" : score >= 60 ? "#3b82f6" : score >= 40 ? "#f59e0b" : "#ef4444";
@@ -7976,11 +7976,20 @@ function HealthScore() {
       {/* Tips */}
       {tips.length > 0 && (
         <div>
-          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>💡 Förbättringsförslag</div>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>💡 Förbättringsförslag — tryck för att komma dit direkt</div>
           {tips.slice(0, 3).map((tip, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, marginBottom: 6, fontSize: 12, color: "#94a3b8" }}>
-              <span>{tip.icon}</span><span>{tip.text}</span>
-            </div>
+            <button key={i} onClick={() => {
+              if (tip.tab !== undefined) {
+                window.dispatchEvent(new CustomEvent("kapital_navigate", { detail: { tab: tip.tab, section: tip.section, sub: tip.sub } }));
+              }
+            }}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", gap: 10, marginBottom: 8, fontSize: 13, color: "#94a3b8", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px", cursor: "pointer", textAlign: "left" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 16 }}>{tip.icon}</span>
+                <span style={{ lineHeight: 1.4 }}>{tip.text}</span>
+              </div>
+              <span style={{ color: "#10b981", fontSize: 16, flexShrink: 0 }}>→</span>
+            </button>
           ))}
         </div>
       )}
@@ -15098,7 +15107,20 @@ function Kapital() {
       loadFromSupabase(e.detail.id);
     };
     window.addEventListener("kapital_logged_in", handler);
-    return () => window.removeEventListener("kapital_logged_in", handler);
+
+    // Listen for navigate event from tips
+    const navHandler = (e) => {
+      const { tab, section, sub } = e.detail;
+      if (tab !== undefined) setTab(tab);
+      if (section) localStorage.setItem("kapital_open_section", section);
+      if (sub) localStorage.setItem("kapital_open_subsection", sub);
+    };
+    window.addEventListener("kapital_navigate", navHandler);
+
+    return () => {
+      window.removeEventListener("kapital_logged_in", handler);
+      window.removeEventListener("kapital_navigate", navHandler);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -15672,7 +15694,6 @@ const PROFIL_SEKTIONER = [
       { id: "inkomst", label: "Månadsinkomst netto efter skatt (VAD DU FÅR UTBETALT)", icon: "💰", key: "kapital_income", type: "number", placeholder: "35000", suffix: "kr/mån" },
       { id: "biinkomst", label: "Biinkomst per månad (frilans, uthyrning etc.)", icon: "💵", key: "kapital_side_income", type: "number", placeholder: "0", suffix: "kr/mån" },
       { id: "lon_trend", label: "Inkomstutveckling senaste 2 åren?", icon: "📊", key: "kapital_lon_trend", type: "choice", options: ["Ökat", "Oförändrad", "Minskat"] },
-      { id: "arbetsläge", label: "Vad är ditt arbetsläge just nu?", icon: "💼", key: "kapital_arbetsläge", type: "choice", options: ["Anställd (fast)", "Anställd (visstid)", "Egenföretagare", "Söker jobb", "Student", "Föräldraledig/Sjukskriven", "Pensionär"] },
     ]
   },
   {
@@ -15934,7 +15955,7 @@ function ProfilByggare({ onClose }) {
             {currentStep.id === "fire_mal" && "Nästan klart! Drömmar — vill du uppnå ekonomisk frihet och leva på dina investeringar?"}
             {currentStep.id === "investera_mer" && "Vill du börja eller utöka ditt aktie- och fondsparande?"}
             {currentStep.id === "kopa_bostad" && "Planerar du att köpa bostad?"}
-            {currentStep.id === "arbetsläge" && "Vilket arbetsläge stämmer bäst in på dig? Det hjälper oss ge mer relevanta råd."}
+            {currentStep.id === "arbetsläge" && `Hej${answers.namn ? " " + answers.namn : ""}! Vilket arbetsläge stämmer bäst in på dig? Det hjälper oss ge helt rätt råd för din situation.`}
             {currentStep.id === "ekonomisk_oro" && "Sista frågan — hur orolig är du för din ekonomi? Ärligt svar hjälper oss ge rätt råd."}
           </div>
         </div>
