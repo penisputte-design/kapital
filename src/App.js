@@ -15672,6 +15672,7 @@ const PROFIL_SEKTIONER = [
       { id: "inkomst", label: "Månadsinkomst netto efter skatt (VAD DU FÅR UTBETALT)", icon: "💰", key: "kapital_income", type: "number", placeholder: "35000", suffix: "kr/mån" },
       { id: "biinkomst", label: "Biinkomst per månad (frilans, uthyrning etc.)", icon: "💵", key: "kapital_side_income", type: "number", placeholder: "0", suffix: "kr/mån" },
       { id: "lon_trend", label: "Inkomstutveckling senaste 2 åren?", icon: "📊", key: "kapital_lon_trend", type: "choice", options: ["Ökat", "Oförändrad", "Minskat"] },
+      { id: "arbetsläge", label: "Vad är ditt arbetsläge just nu?", icon: "💼", key: "kapital_arbetsläge", type: "choice", options: ["Anställd (fast)", "Anställd (visstid)", "Egenföretagare", "Söker jobb", "Student", "Föräldraledig/Sjukskriven", "Pensionär"] },
     ]
   },
   {
@@ -15933,6 +15934,7 @@ function ProfilByggare({ onClose }) {
             {currentStep.id === "fire_mal" && "Nästan klart! Drömmar — vill du uppnå ekonomisk frihet och leva på dina investeringar?"}
             {currentStep.id === "investera_mer" && "Vill du börja eller utöka ditt aktie- och fondsparande?"}
             {currentStep.id === "kopa_bostad" && "Planerar du att köpa bostad?"}
+            {currentStep.id === "arbetsläge" && "Vilket arbetsläge stämmer bäst in på dig? Det hjälper oss ge mer relevanta råd."}
             {currentStep.id === "ekonomisk_oro" && "Sista frågan — hur orolig är du för din ekonomi? Ärligt svar hjälper oss ge rätt råd."}
           </div>
         </div>
@@ -16474,6 +16476,23 @@ function EkonomiskHalsoKoll({ isPro, onUpgrade }) {
     const vikter = { likviditet: 0.20, sparande: 0.20, skulder: 0.15, buffer: 0.15, pension: 0.10, anmarkningar: 0.12, trend: 0.08 };
     const total = Object.keys(scores).reduce((s, k) => s + scores[k] * vikter[k], 0);
 
+    // Hämta arbetsläge
+    const arbetsläge = localStorage.getItem("kapital_arbetsläge") || "";
+    const arPensionar = arbetsläge === "Pensionär";
+    const arStudent = arbetsläge === "Student";
+    const sokerJobb = arbetsläge === "Söker jobb";
+    const arForaldraledig = arbetsläge === "Föräldraledig/Sjukskriven";
+
+    // Justera scores för pensionärer och studenter
+    if (arPensionar) {
+      scores.sparande = Math.max(scores.sparande, 60); // Pensionärer sparar inte lika mycket
+      scores.trend = 70; // Trend ej relevant
+    }
+    if (arStudent || arForaldraledig) {
+      scores.sparande = Math.max(scores.sparande, 50); // Lägre krav
+      scores.likviditet = Math.max(scores.likviditet, 50);
+    }
+
     // Specifika varningar och insikter
     const varningar = [];
     const insikter = [];
@@ -16500,14 +16519,43 @@ function EkonomiskHalsoKoll({ isPro, onUpgrade }) {
     if (data.lon_trend === "Minskat") varningar.push({ typ: "info", text: "Sjunkande inkomst — se över utgifterna och bygg buffert för säkerhets skull." });
     else if (data.lon_trend === "Ökat") insikter.push({ typ: "bra", text: "Stigande inkomst — bra tillfälle att öka sparandet!" });
 
+    // Arbetsläge-specifika varningar
+    if (sokerJobb) {
+      varningar.push({ typ: "varning", text: "Du söker jobb — bygg buffert på minst 6 månaders utgifter under jobbsöket.", länk: null });
+      varningar.push({ typ: "info", text: "LinkedIn Premium ökar dina chanser att bli sedd av rekryterare.", länk: "https://linkedin.com/premium", länkText: "Prova LinkedIn Premium →" });
+      varningar.push({ typ: "info", text: "Academic Work och Monster har tusentals tjänster — sök via Adrecord.", länk: "https://www.academicwork.se", länkText: "Sök jobb på Academic Work →" });
+    }
+    if (arPensionar) {
+      if (!data.forsakring || data.forsakring === "Nej") varningar.push({ typ: "varning", text: "Som pensionär är hemförsäkring och olycksfallsförsäkring extra viktig.", länk: null });
+      insikter.push({ typ: "bra", text: "Du är pensionär — hälsokollet är anpassat för din situation." });
+      if (kvar < 2000 && ink > 0) varningar.push({ typ: "varning", text: `Bara ${Math.round(kvar).toLocaleString("sv-SE")} kr kvar efter utgifter. Kolla om du missar några förmåner via Pensionsmyndigheten.`, länk: "https://www.minpension.se", länkText: "Kolla din pension på minpension.se →" });
+    }
+    if (arStudent) {
+      insikter.push({ typ: "bra", text: "Student — fokusera på att hålla låg skuldsättning och undvika dyra krediter." });
+      if (parseFloat(data.skulder || 0) > 50000) varningar.push({ typ: "info", text: "CSN-lån är bra skuld men undvik blancolån och kreditkort under studietiden.", länk: null });
+    }
+    if (arForaldraledig) {
+      insikter.push({ typ: "bra", text: "Föräldraledig — tillfälligt lägre inkomst är normalt. Kolla att du har rätt VAB och föräldrapenning." });
+      varningar.push({ typ: "info", text: "Kontrollera att din arbetsgivare betalar ut rätt ob och semesterersättning.", länk: null });
+    }
+
+    // Sänk score om inkomsten är mycket låg (under 15 000 kr/mån)
+    let adjustedTotal = total;
+    if (ink > 0 && ink < 15000 && !arStudent && !arPensionar && !arForaldraledig) {
+      adjustedTotal = Math.min(total, 55); // Max "Godkänd" vid mycket låg inkomst
+    }
+    if (sokerJobb) adjustedTotal = Math.min(total, 65); // Max "Stark" vid jobbsök
+
     let betyg, farg, beskrivning;
-    if (total >= 85) { betyg = "Utmärkt"; farg = "#10b981"; beskrivning = "Din ekonomi är i toppskick. Du har stark likviditet, god sparkvot och kontroll på dina skulder. Fortsätt så!" }
-    else if (total >= 70) { betyg = "Stark"; farg = "#22c55e"; beskrivning = "Din ekonomi är välskött med några mindre förbättringsområden. Du är på rätt spår." }
-    else if (total >= 55) { betyg = "Godkänd"; farg = "#f59e0b"; beskrivning = "Ekonomin fungerar men det finns tydliga förbättringsområden. Fokusera på buffert och sparkvot." }
-    else if (total >= 40) { betyg = "Behöver förbättras"; farg = "#f97316"; beskrivning = "Din ekonomi har flera svaga punkter. Prioritera att minska skulder och bygga buffert." }
+    if (adjustedTotal >= 85) { betyg = "Utmärkt"; farg = "#10b981"; beskrivning = "Din ekonomi är i toppskick. Du har stark likviditet, god sparkvot och kontroll på dina skulder. Fortsätt så!" }
+    else if (adjustedTotal >= 70) { betyg = "Stark"; farg = "#22c55e"; beskrivning = "Din ekonomi är välskött med några mindre förbättringsområden. Du är på rätt spår." }
+    else if (adjustedTotal >= 55) { betyg = "Godkänd"; farg = "#f59e0b"; beskrivning = "Ekonomin fungerar men det finns tydliga förbättringsområden. Fokusera på buffert och sparkvot." }
+    else if (adjustedTotal >= 40) { betyg = "Behöver förbättras"; farg = "#f97316"; beskrivning = "Din ekonomi har flera svaga punkter. Prioritera att minska skulder och bygga buffert." }
     else { betyg = "Kritisk"; farg = "#ef4444"; beskrivning = "Din ekonomiska situation kräver omedelbara åtgärder. Överväg att kontakta Kronofogdens budget- och skuldrådgivning." }
 
-    return { total: Math.round(total), betyg, farg, beskrivning, scores, varningar, insikter, detaljer: { kvar, sparkvot, skuldsattning, bufferManader, netto } };
+    const total_final = Math.round(adjustedTotal);
+
+    return { total: total_final, betyg, farg, beskrivning, scores, varningar, insikter, arbetsläge, detaljer: { kvar, sparkvot, skuldsattning, bufferManader, netto } };
   }
 
   async function genereraRapport() {
@@ -16580,9 +16628,17 @@ Var konkret med siffror. Max 200 ord. Inga rubriker med #.`;
         <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>⚡ Exakt vad som behöver åtgärdas</div>
           {rapport.varningar?.map((v, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, padding: "10px 12px", borderRadius: 10, marginBottom: 8, background: v.typ === "kritisk" ? "#ef444411" : v.typ === "varning" ? "#f59e0b11" : "#3b82f611", border: `1px solid ${v.typ === "kritisk" ? "#ef444433" : v.typ === "varning" ? "#f59e0b33" : "#3b82f633"}` }}>
-              <span style={{ fontSize: 16, flexShrink: 0 }}>{v.typ === "kritisk" ? "🔴" : v.typ === "varning" ? "⚠️" : "ℹ️"}</span>
-              <span style={{ fontSize: 13, color: v.typ === "kritisk" ? "#ef4444" : v.typ === "varning" ? "#f59e0b" : "#3b82f6", lineHeight: 1.5 }}>{v.text}</span>
+            <div key={i} style={{ padding: "10px 12px", borderRadius: 10, marginBottom: 8, background: v.typ === "kritisk" ? "#ef444411" : v.typ === "varning" ? "#f59e0b11" : "#3b82f611", border: `1px solid ${v.typ === "kritisk" ? "#ef444433" : v.typ === "varning" ? "#f59e0b33" : "#3b82f633"}` }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>{v.typ === "kritisk" ? "🔴" : v.typ === "varning" ? "⚠️" : "ℹ️"}</span>
+                <span style={{ fontSize: 13, color: v.typ === "kritisk" ? "#ef4444" : v.typ === "varning" ? "#f59e0b" : "#3b82f6", lineHeight: 1.5 }}>{v.text}</span>
+              </div>
+              {v.länk && (
+                <a href={v.länk} target="_blank" rel="noopener noreferrer sponsored"
+                  style={{ display: "inline-block", marginTop: 8, marginLeft: 26, fontSize: 12, color: "#10b981", textDecoration: "none", fontWeight: 600, background: "#10b98111", padding: "4px 10px", borderRadius: 20, border: "1px solid #10b98133" }}>
+                  {v.länkText} <span style={{ fontSize: 9, color: "#475569", marginLeft: 4 }}>ANNONS</span>
+                </a>
+              )}
             </div>
           ))}
           {rapport.insikter?.map((v, i) => (
