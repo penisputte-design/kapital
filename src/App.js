@@ -507,7 +507,7 @@ const LANGUAGES = [
 
 const T = {
   sv: {
-    tagline: "AI-driven börsintelligens",
+    tagline: "Din ekonomi. Ett smart sparande.",
     upgrade: "Uppgradera",
     analyze: "Analysera",
     analyzing: "Analyserar",
@@ -3163,7 +3163,15 @@ function BudgetAll({ inc, expenses, goals, leftover }) {
 
 function BudgetOversiktInline({ inc, totalExp, leftover, savingsRate, goals }) {
   const [income, setIncome] = useState(String(Math.round(inc) || ""));
-  const save = (v) => { try { localStorage.setItem("kapital_income", v); } catch {} };
+  const save = (v) => {
+    // Validera — max rimlig månadsinkomst 500 000 kr
+    const val = parseFloat(v);
+    if (val > 500000) {
+      alert("Kontrollera beloppet — ange din månadslön efter skatt, inte årsbelopp eller totalt.");
+      return;
+    }
+    try { localStorage.setItem("kapital_income", v); } catch {};
+  };
 
   const rateColor = savingsRate >= 20 ? "#10b981" : savingsRate >= 10 ? "#f59e0b" : "#ef4444";
 
@@ -4958,13 +4966,13 @@ function KreditScore({ inc }) {
   const label = score >= 750 ? "Utmärkt" : score >= 670 ? "Bra" : score >= 580 ? "Godkänd" : score >= 500 ? "Svag" : "Dålig";
   const color = score >= 750 ? "#22c55e" : score >= 670 ? "#10b981" : score >= 580 ? "#f59e0b" : score >= 500 ? "#f97316" : "#ef4444";
 
-  // Arc calculation for gauge
-  const pct = (score - 300) / 550; // 0-1
-  const angle = pct * 180 - 90; // -90 to 90 degrees
+  // Arc calculation for gauge — bågen går från 180° (vänster) till 0° (höger)
+  const pct = Math.max(0, Math.min(1, (score - 300) / 550)); // 0-1
+  const angle = 180 - pct * 180; // 180° (vänster) → 0° (höger)
   const rad = (angle * Math.PI) / 180;
   const cx = 100, cy = 90, r = 70;
   const nx = cx + r * Math.cos(rad);
-  const ny = cy + r * Math.sin(rad);
+  const ny = cy - r * Math.sin(rad); // minus för SVG y-axel är inverterad
 
   const inp = (key, label, ph, type = "text") => (
     <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
@@ -14159,14 +14167,14 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
           </div>
 
           {/* Konto & Synk — Supabase inloggning */}
-          {sbUser ? (
+          {(sbUser || (() => { try { const s = localStorage.getItem("kapital_sb_session"); return s ? JSON.parse(s)?.user : null; } catch { return null; } })()) ? (
             <div style={{ background: "linear-gradient(135deg,#10b98111,#0ea5e911)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✓</div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>Inloggad & synkad</div>
-                    <div style={{ fontSize: 11, color: "#64748b" }}>{sbUser.email}</div>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>{sbUser?.email || (() => { try { return JSON.parse(localStorage.getItem("kapital_sb_session"))?.user?.email; } catch { return ""; } })()}</div>
                   </div>
                 </div>
                 <button onClick={onLogout} style={{ padding: "5px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#64748b", fontSize: 12, cursor: "pointer" }}>
@@ -15661,7 +15669,7 @@ const PROFIL_SEKTIONER = [
     steps: [
       { id: "namn", label: "Ditt namn", icon: "👤", key: "kapital_name", type: "text", placeholder: "Förnamn" },
       { id: "alder", label: "Din ålder", icon: "🎂", key: "kapital_age", type: "number", placeholder: "35" },
-      { id: "inkomst", label: "Månadsinkomst netto (efter skatt)", icon: "💰", key: "kapital_income", type: "number", placeholder: "35000", suffix: "kr/mån" },
+      { id: "inkomst", label: "Månadsinkomst netto efter skatt (VAD DU FÅR UTBETALT)", icon: "💰", key: "kapital_income", type: "number", placeholder: "35000", suffix: "kr/mån" },
       { id: "biinkomst", label: "Biinkomst per månad (frilans, uthyrning etc.)", icon: "💵", key: "kapital_side_income", type: "number", placeholder: "0", suffix: "kr/mån" },
       { id: "lon_trend", label: "Inkomstutveckling senaste 2 åren?", icon: "📊", key: "kapital_lon_trend", type: "choice", options: ["Ökat", "Oförändrad", "Minskat"] },
     ]
@@ -15897,7 +15905,7 @@ function ProfilByggare({ onClose }) {
           <div style={{ fontSize: 15, color: "#e2e8f0", lineHeight: 1.6 }}>
             {currentStep.id === "namn" && "Hej! Jag hjälper dig bygga din finansiella hälsoprofil. Vi börjar enkelt — vad heter du?"}
             {currentStep.id === "alder" && `Trevligt att träffas${answers.namn ? ", " + answers.namn : ""}! Hur gammal är du? Det påverkar pensionsberäkningen.`}
-            {currentStep.id === "inkomst" && "Vad tjänar du per månad efter skatt? Det är grunden för hela din ekonomiska bild."}
+            {currentStep.id === "inkomst" && "Vad tjänar du per månad efter skatt — alltså VAD SOM FAKTISKT SÄTTS IN på ditt konto? Skriv bara nettolönen, t.ex. 25 000 kr."}
             {currentStep.id === "biinkomst" && "Har du några sidoinkomster? Frilans, uthyrning eller annat? Ange 0 om du inte har det."}
             {currentStep.id === "lon_trend" && "Hur har din inkomst förändrats de senaste 2 åren? Det påverkar din ekonomiska stabilitetsbedömning."}
             {currentStep.id === "boende" && "Vad betalar du för boende per månad? Hyra, avgift eller amortering + ränta."}
@@ -16466,6 +16474,32 @@ function EkonomiskHalsoKoll({ isPro, onUpgrade }) {
     const vikter = { likviditet: 0.20, sparande: 0.20, skulder: 0.15, buffer: 0.15, pension: 0.10, anmarkningar: 0.12, trend: 0.08 };
     const total = Object.keys(scores).reduce((s, k) => s + scores[k] * vikter[k], 0);
 
+    // Specifika varningar och insikter
+    const varningar = [];
+    const insikter = [];
+
+    if (kvar < 0) varningar.push({ typ: "kritisk", text: `Du spenderar ${Math.abs(Math.round(kvar)).toLocaleString("sv-SE")} kr mer än du tjänar varje månad — underskott!` });
+    else if (kvar < ink * 0.1) varningar.push({ typ: "varning", text: `Bara ${Math.round(kvar).toLocaleString("sv-SE")} kr kvar efter utgifter — för lite marginal.` });
+    
+    if (sparkvot < 5 && ink > 0) varningar.push({ typ: "varning", text: `Sparkvot ${sparkvot.toFixed(1)}% — under rekommenderade 10%. Försök spara minst ${Math.round(ink * 0.1).toLocaleString("sv-SE")} kr/mån.` });
+    else if (sparkvot >= 20) insikter.push({ typ: "bra", text: `Utmärkt sparkvot ${sparkvot.toFixed(1)}%! Du bygger din förmögenhet snabbt.` });
+
+    if (bufferManader < 1) varningar.push({ typ: "kritisk", text: "Du saknar buffert helt. En oväntad utgift kan bli kris. Prioritera att spara 10 000 kr." });
+    else if (bufferManader < 3) varningar.push({ typ: "varning", text: `Buffert på ${bufferManader.toFixed(1)} månader — rekommendationen är 3-6 månader.` });
+    else if (bufferManader >= 6) insikter.push({ typ: "bra", text: `Stark buffert på ${bufferManader.toFixed(1)} månader. Du klarar oväntade utgifter.` });
+
+    if (!data.pension || parseFloat(data.pension) === 0) varningar.push({ typ: "varning", text: "Inget privat pensionssparande. Även 500 kr/mån gör stor skillnad över 30 år." });
+    
+    if (!data.forsakring || data.forsakring === "Nej") varningar.push({ typ: "info", text: "Ingen hemförsäkring registrerad — skyddar dig mot brand, stöld och ansvar." });
+
+    if (skuldsattning > 80) varningar.push({ typ: "kritisk", text: `Skuldsättning ${Math.round(skuldsattning)}% av tillgångarna — mycket hög. Prioritera att amortera.` });
+    else if (skuldsattning > 40) varningar.push({ typ: "varning", text: `Skuldsättning ${Math.round(skuldsattning)}% — lite hög. Försök amortera extra när du kan.` });
+
+    if (data.betalningsanmarkningar && data.betalningsanmarkningar !== "Nej") varningar.push({ typ: "kritisk", text: "Betalningsanmärkningar försämrar dina möjligheter till lån och hyreskontrakt kraftigt." });
+
+    if (data.lon_trend === "Minskat") varningar.push({ typ: "info", text: "Sjunkande inkomst — se över utgifterna och bygg buffert för säkerhets skull." });
+    else if (data.lon_trend === "Ökat") insikter.push({ typ: "bra", text: "Stigande inkomst — bra tillfälle att öka sparandet!" });
+
     let betyg, farg, beskrivning;
     if (total >= 85) { betyg = "Utmärkt"; farg = "#10b981"; beskrivning = "Din ekonomi är i toppskick. Du har stark likviditet, god sparkvot och kontroll på dina skulder. Fortsätt så!" }
     else if (total >= 70) { betyg = "Stark"; farg = "#22c55e"; beskrivning = "Din ekonomi är välskött med några mindre förbättringsområden. Du är på rätt spår." }
@@ -16473,7 +16507,7 @@ function EkonomiskHalsoKoll({ isPro, onUpgrade }) {
     else if (total >= 40) { betyg = "Behöver förbättras"; farg = "#f97316"; beskrivning = "Din ekonomi har flera svaga punkter. Prioritera att minska skulder och bygga buffert." }
     else { betyg = "Kritisk"; farg = "#ef4444"; beskrivning = "Din ekonomiska situation kräver omedelbara åtgärder. Överväg att kontakta Kronofogdens budget- och skuldrådgivning." }
 
-    return { total: Math.round(total), betyg, farg, beskrivning, scores, detaljer: { kvar, sparkvot, skuldsattning, bufferManader, netto } };
+    return { total: Math.round(total), betyg, farg, beskrivning, scores, varningar, insikter, detaljer: { kvar, sparkvot, skuldsattning, bufferManader, netto } };
   }
 
   async function genereraRapport() {
@@ -16540,6 +16574,25 @@ Var konkret med siffror. Max 200 ord. Inga rubriker med #.`;
         <div style={{ fontSize: 18, fontWeight: 800, color: rapport.farg, marginBottom: 4 }}>{rapport.betyg}</div>
         <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{rapport.beskrivning}</div>
       </div>
+
+      {/* Varningar & Insikter */}
+      {(rapport.varningar?.length > 0 || rapport.insikter?.length > 0) && (
+        <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1 }}>⚡ Exakt vad som behöver åtgärdas</div>
+          {rapport.varningar?.map((v, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, padding: "10px 12px", borderRadius: 10, marginBottom: 8, background: v.typ === "kritisk" ? "#ef444411" : v.typ === "varning" ? "#f59e0b11" : "#3b82f611", border: `1px solid ${v.typ === "kritisk" ? "#ef444433" : v.typ === "varning" ? "#f59e0b33" : "#3b82f633"}` }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>{v.typ === "kritisk" ? "🔴" : v.typ === "varning" ? "⚠️" : "ℹ️"}</span>
+              <span style={{ fontSize: 13, color: v.typ === "kritisk" ? "#ef4444" : v.typ === "varning" ? "#f59e0b" : "#3b82f6", lineHeight: 1.5 }}>{v.text}</span>
+            </div>
+          ))}
+          {rapport.insikter?.map((v, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, padding: "10px 12px", borderRadius: 10, marginBottom: 8, background: "#10b98111", border: "1px solid #10b98133" }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>✅</span>
+              <span style={{ fontSize: 13, color: "#10b981", lineHeight: 1.5 }}>{v.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Category scores */}
       <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 16, marginBottom: 12 }}>
