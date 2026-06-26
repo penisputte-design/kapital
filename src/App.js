@@ -15105,6 +15105,12 @@ function Kapital() {
         setIsPro(true);
         try { localStorage.setItem("kapital_pro", "true"); } catch {}
       }
+      // Rensa URL-parametrar och gå till hem
+      window.history.replaceState({}, "", "/");
+    }
+    // Avbruten betalning — gå tillbaka till appen utan felmeddelande
+    if (params.get("payment") === "cancel") {
+      window.history.replaceState({}, "", "/");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
