@@ -6,12 +6,38 @@
   CI = "false"
   GENERATE_SOURCEMAP = "false"
 
+[functions]
+  node_bundler = "esbuild"
+
+[functions."claude"]
+  timeout = 26
+
 [[redirects]]
   from = "/api/claude"
   to = "/.netlify/functions/claude"
   status = 200
 
 [[redirects]]
+  from = "/api/stripe"
+  to = "/.netlify/functions/stripe"
+  status = 200
+
+[[redirects]]
+  from = "/api/feedback"
+  to = "/.netlify/functions/feedback"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/api/kurs"
+  to = "/.netlify/functions/kurs"
+  status = 200
+
+[[redirects]]
+  from = "/api/nyheter"
+  to = "/.netlify/functions/nyheter"
   status = 200
