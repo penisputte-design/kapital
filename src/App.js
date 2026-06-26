@@ -15898,6 +15898,9 @@ function ProfilByggare({ onClose }) {
           <button onClick={sparaOchStang} style={{ background: "#10b98122", border: "1px solid #10b98144", borderRadius: 20, color: "#10b981", fontSize: 12, cursor: "pointer", padding: "6px 14px", fontWeight: 600 }}>
             💾 Spara & fortsätt senare
           </button>
+          <button onClick={() => { setStep(0); try { localStorage.setItem("kapital_profil_step","0"); } catch {} }} style={{ background: "none", border: "1px solid #334155", borderRadius: 20, color: "#475569", fontSize: 11, cursor: "pointer", padding: "6px 10px" }}>
+            ↺ Börja om
+          </button>
         </div>
 
         {/* Sektion-indikatorer */}
