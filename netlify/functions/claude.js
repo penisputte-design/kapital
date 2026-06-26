@@ -15,7 +15,6 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  // Accept both variable names
   const apiKey = process.env.ANTHROPIC_API_KEY || process.env.REACT_APP_ANTHROPIC_KEY;
   if (!apiKey) {
     return {
@@ -24,34 +23,67 @@ exports.handler = async (event) => {
     };
   }
 
-  try {
-    const body = JSON.parse(event.body);
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+  };
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify(body),
-    });
+  // Retry-funktion med exponentiell backoff
+  const callAnthopic = async (attempt = 1) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 22000); // 22s timeout
 
-    const data = await response.json();
+    try {
+      const body = JSON.parse(event.body);
 
-    return {
-      statusCode: response.status,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify(data),
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: err.message }),
-    };
-  }
+      // Minska tokens automatiskt vid återförsök
+      if (attempt > 1 && body.max_tokens > 800) {
+        body.max_tokens = 800;
+      }
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+
+      // 529 = överbelastad, 500 = serverfel — försök igen
+      if ((response.status === 529 || response.status === 500) && attempt < 3) {
+        const vänta = attempt * 2000; // 2s, 4s
+        await new Promise(r => setTimeout(r, vänta));
+        return callAnthopic(attempt + 1);
+      }
+
+      const data = await response.json();
+      return { statusCode: response.status, headers, body: JSON.stringify(data) };
+
+    } catch (err) {
+      clearTimeout(timeout);
+
+      // Timeout eller nätverksfel — försök igen
+      if (attempt < 3 && (err.name === "AbortError" || err.message.includes("fetch"))) {
+        const vänta = attempt * 1500;
+        await new Promise(r => setTimeout(r, vänta));
+        return callAnthopic(attempt + 1);
+      }
+
+      return {
+        statusCode: 504,
+        headers,
+        body: JSON.stringify({
+          error: "Analystjänsten svarar inte just nu. Anthropic är tillfälligt överbelastad — försök igen om en minut.",
+          retry: true,
+        }),
+      };
+    }
+  };
+
+  return callAnthopic();
 };
