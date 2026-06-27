@@ -15225,17 +15225,24 @@ function Kapital() {
             body: JSON.stringify({
               model: attempt === 1 ? (isPro ? PRO_MODEL : MODEL) : FAST_MODEL,
               max_tokens: attempt === 1 ? (isPro ? 1500 : 800) : 500,
-          messages: [{ role: "user", content: isPro ? `Du är en senior aktieanalytiker. Analysera ${name} för en svensk privatinvesterare 2026. Svara EXAKT med JSON:
+              messages: [{ role: "user", content: isPro ? `Du är en senior aktieanalytiker. Analysera ${name} för en svensk privatinvesterare 2026. Svara EXAKT med JSON:
 
 {"company":"${name}","sector":"SEKTOR","land":"LAND","borslista":"börslistning","summary":"Sammanfattning 3 meningar","score":70,"scoreReason":"Motivering","recommendation":"Köp","keyRisks":["Risk 1","Risk 2","Risk 3"],"keyStrengths":["Styrka 1","Styrka 2","Styrka 3"],"catalysts":["Katalysator 1","Katalysator 2"],"nyckeltal":{"pe":20,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"betavarde":1,"omsattning":"100 mdkr","tillvaxt":10},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"AI-kommentar 3 meningar","lastUpdated":"Juni 2026"}
 
 Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.`
 : `Analysera aktien ${name} kort. Svara EXAKT med JSON:
 {"company":"${name}","sector":"bransch","land":"land","borslista":"börs","summary":"Kort sammanfattning 2 meningar om bolaget","score":65,"scoreReason":"Varför detta score","recommendation":"Köp","keyRisks":["Risk 1","Risk 2","Risk 3"],"keyStrengths":["Styrka 1","Styrka 2","Styrka 3"],"nyckeltal":{"pe":20,"direktavkastning":2,"betavarde":1},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"Kort AI-kommentar 2 meningar","lastUpdated":"Juni 2026"}
-Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.`
-          }]
-        })
-      });
+Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.` }]
+            })
+          });
+          if (resp.status !== 504 && resp.status !== 529) break; // Lyckat svar — avbryt loopen
+          lastError = new Error("API-fel: " + resp.status);
+        } catch (e) {
+          lastError = e;
+        }
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1500));
+      }
+      if (!resp) throw lastError || new Error("Nätverksfel");
 
       if (!resp.ok) {
         const errData = await resp.json().catch(() => ({}));
