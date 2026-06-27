@@ -1673,7 +1673,8 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
 
           {/* Main card with mini graph */}
           <div style={card()}>
-            <LiveKursHeader ticker={result.ticker || result.company} company={result.company} sector={result.sector} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+              <LiveKursHeader ticker={result.ticker || result.company} company={result.company} sector={result.sector} />
               <div style={{ padding: "5px 14px", borderRadius: 99, background: recColor(result.recommendation) + "22", color: recColor(result.recommendation), fontWeight: 700, fontSize: 14, border: `1px solid ${recColor(result.recommendation)}44` }}>
                 {result.recommendation} ({t.aiSignal})
               </div>
