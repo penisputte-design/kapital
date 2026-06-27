@@ -1673,11 +1673,7 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
 
           {/* Main card with mini graph */}
           <div style={card()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700 }}>{result.company}</h2>
-                <div style={{ fontSize: 12, color: "#64748b" }}>{result.sector}</div>
-              </div>
+            <LiveKursHeader ticker={result.ticker || result.company} company={result.company} sector={result.sector} />
               <div style={{ padding: "5px 14px", borderRadius: 99, background: recColor(result.recommendation) + "22", color: recColor(result.recommendation), fontWeight: 700, fontSize: 14, border: `1px solid ${recColor(result.recommendation)}44` }}>
                 {result.recommendation} ({t.aiSignal})
               </div>
@@ -2365,6 +2361,63 @@ function PortfoljTab({ isPro, onUpgrade }) {
       {/* Legal */}
       <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.5, marginTop: 14, padding: "10px 12px", background: "var(--bg2)", borderRadius: 8 }}>
         ⚠️ Kurser du anger uppdateras inte automatiskt — uppdatera nuvarande kurs manuellt för exakt P&L. Historisk avkastning är ingen garanti för framtida resultat.
+      </div>
+    </div>
+  );
+}
+
+
+// ── Live-kurs i analysresultatet ─────────────────────────────────────────
+function LiveKursHeader({ ticker, company, sector }) {
+  const [kurs, setKurs] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!ticker && !company) return;
+    // Försök hitta ticker från QUICK_ITEMS
+    const allItems = Object.values(QUICK_ITEMS).flat();
+    const item = allItems.find(s =>
+      s.name?.toLowerCase() === company?.toLowerCase() ||
+      s.ticker?.toLowerCase() === ticker?.toLowerCase()
+    );
+    const t = item?.ticker || ticker || company;
+
+    fetch(`/api/kurs?ticker=${encodeURIComponent(t)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.pris) setKurs(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [ticker, company]);
+
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+      <div>
+        <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700 }}>{company}</h2>
+        <div style={{ fontSize: 12, color: "#64748b" }}>{sector}</div>
+      </div>
+      <div style={{ textAlign: "right" }}>
+        {loading ? (
+          <div style={{ fontSize: 12, color: "#334155" }}>Hämtar kurs...</div>
+        ) : kurs ? (
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: "var(--text, #e2e8f0)" }}>
+              {kurs.pris > 1000
+                ? kurs.pris.toLocaleString("sv-SE", { maximumFractionDigits: 0 })
+                : kurs.pris.toFixed(2)} kr
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: parseFloat(kurs.andringProcent) >= 0 ? "#22c55e" : "#ef4444" }}>
+              {parseFloat(kurs.andringProcent) >= 0 ? "▲" : "▼"} {Math.abs(parseFloat(kurs.andringProcent)).toFixed(2)}%
+            </div>
+            <div style={{ fontSize: 10, color: "#334155" }}>{kurs.kalla} · ~15 min fördröjd</div>
+          </div>
+        ) : (
+          <div style={{ fontSize: 11, color: "#334155" }}>
+            Kurs ej tillgänglig<br/>
+            <span style={{ fontSize: 10 }}>Lägg till Finnhub API-nyckel</span>
+          </div>
+        )}
       </div>
     </div>
   );
