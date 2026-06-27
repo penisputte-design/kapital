@@ -14144,6 +14144,7 @@ function RoadmapTab() {
 
 function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurrency, exchangeRates, currencies, seniorMode, setSeniorMode, theme, setTheme, splashEnabled, toggleSplash, sbUser, onLogin, onLogout }) {
   const [name, setName] = useState(() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } });
+  // eslint-disable-next-line no-unused-vars
   const [email, setEmail] = useState(() => { try { return localStorage.getItem("kapital_email") || ""; } catch { return ""; } });
   const [showLangs, setShowLangs] = useState(false);
   const [showCurrencies, setShowCurrencies] = useState(false);
@@ -14152,6 +14153,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
   const [section, setSection] = useState("profil");
 
   const saveName = (v) => { setName(v); try { localStorage.setItem("kapital_name", v); } catch {} };
+  // eslint-disable-next-line no-unused-vars
   const saveEmail = (v) => { setEmail(v); try { localStorage.setItem("kapital_email", v); } catch {} };
   const currencyObj = (currencies || []).find(c => c.code === currency) || { flag: "🇸🇪", name: "Svensk krona" };
 
