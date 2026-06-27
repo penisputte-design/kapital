@@ -15218,15 +15218,16 @@ function Kapital() {
       const resp = await fetch(API, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: isPro ? PRO_MODEL : MODEL, max_tokens: isPro ? 2000 : 1500,
-          messages: [{ role: "user", content: `Du är en senior aktieanalytiker på en ledande nordisk investmentbank. Analysera ${name} för en svensk privatinvesterare 2026.
+          model: isPro ? PRO_MODEL : MODEL, max_tokens: isPro ? 1500 : 800,
+          messages: [{ role: "user", content: isPro ? `Du är en senior aktieanalytiker. Analysera ${name} för en svensk privatinvesterare 2026. Svara EXAKT med JSON:
 
-VIKTIGT: Svara EXAKT med detta JSON-format och inget annat. Fyll i verkliga, välgrundade uppskattningar baserade på allmänt tillgänglig information.
+{"company":"${name}","sector":"SEKTOR","land":"LAND","borslista":"börslistning","summary":"Sammanfattning 3 meningar","score":70,"scoreReason":"Motivering","recommendation":"Köp","keyRisks":["Risk 1","Risk 2","Risk 3"],"keyStrengths":["Styrka 1","Styrka 2","Styrka 3"],"catalysts":["Katalysator 1","Katalysator 2"],"nyckeltal":{"pe":20,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"betavarde":1,"omsattning":"100 mdkr","tillvaxt":10},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"AI-kommentar 3 meningar","lastUpdated":"Juni 2026"}
 
-{"company":"${name}","sector":"SEKTOR","land":"LAND","borslista":"t.ex. Nasdaq Stockholm Large Cap","summary":"Djupgående sammanfattning 3-4 meningar om bolagets affärsmodell, marknadsposition och aktuella situation","score":70,"scoreReason":"Konkret motivering till poängsättningen baserad på fundamenta och marknad","recommendation":"Köp","timeHorizon":"Kort 0-6 mån / Medel 6-18 mån / Lång 18+ mån","keyRisks":["Specifik risk 1 med konsekvens","Specifik risk 2 med konsekvens","Specifik risk 3 med konsekvens","Risk 4","Risk 5"],"keyStrengths":["Konkret styrka 1","Konkret styrka 2","Konkret styrka 3","Styrka 4","Styrka 5"],"catalysts":["Katalysator 1 — vad som kan driva kursen","Katalysator 2","Katalysator 3"],"nyckeltal":{"pe":20,"ps":2,"pb":3,"ey":5,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"rorelseMarginal":12,"skuldsattning":"Låg/Medel/Hög","nettoskuld":"10 mdkr","betavarde":1,"ebitda":"15 mdkr","omsattning":"100 mdkr","tillvaxt":10},"utdelning":{"belopp":"3 kr","yield":2.5,"datum":"2026-04-01","frekvens":"Årsvis","historik":[2,2.5,2.8,3],"kommentar":"Kort kommentar om utdelningspolicy"},"insider":[{"namn":"VD/CFO/Styrelseordförande","typ":"Köp","antal":10000,"kurs":100,"datum":"2026-05-01","varde":"1 mkr"}],"grafData":[95,98,102,99,105,103,108,106,110,107,112,109,108,114,116],"news":[{"headline":"Relevant nyhet 1","date":"Juni 2026","source":"DI/Placera/Bloomberg","sentiment":"positiv"},{"headline":"Relevant nyhet 2","date":"Juni 2026","source":"DI","sentiment":"neutral"},{"headline":"Relevant nyhet 3","date":"Maj 2026","source":"Reuter","sentiment":"positiv"}],"konkurrenter":[{"namn":"Konkurrent 1","kommentar":"Kort jämförelse"},{"namn":"Konkurrent 2","kommentar":"Kort jämförelse"}],"esgScore":{"miljo":70,"socialt":65,"styrning":75,"kommentar":"ESG-kommentar"},"tekniskAnalys":{"trend":"Uppåt/Nedåt/Sidledes","stod":"100 kr","motstand":"150 kr","rsi":55,"kommentar":"Teknisk kommentar"},"aiKommentar":"En djupare AI-kommentar på 4-5 meningar om bolagets utsikter, trender i branschen, och vad investerare bör bevaka framöver. Var specifik och analytisk.","lastUpdated":"Juni 2026"}
-
-Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Recommendation måste vara exakt: Kop, Avvakta, eller Salj.
-OBS: Detta är AI-genererade uppskattningar baserade på allmänt tillgänglig information, inte finansiell rådgivning.` }]
+Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.`
+: `Analysera aktien ${name} kort. Svara EXAKT med JSON:
+{"company":"${name}","sector":"bransch","land":"land","borslista":"börs","summary":"Kort sammanfattning 2 meningar om bolaget","score":65,"scoreReason":"Varför detta score","recommendation":"Köp","keyRisks":["Risk 1","Risk 2","Risk 3"],"keyStrengths":["Styrka 1","Styrka 2","Styrka 3"],"nyckeltal":{"pe":20,"direktavkastning":2,"betavarde":1},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"Kort AI-kommentar 2 meningar","lastUpdated":"Juni 2026"}
+Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.`
+          }]
         })
       });
 
