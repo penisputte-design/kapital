@@ -9163,6 +9163,28 @@ function VillkorsModal({ onAccept }) {
   );
 }
 
+
+// ── Beta-testbanner — tas bort vid lansering ─────────────────────────────
+function BetaBanner() {
+  const [visas, setVisas] = useState(() => {
+    try { return !localStorage.getItem("kapital_beta_stangd"); } catch { return true; }
+  });
+
+  if (!visas) return null;
+
+  return (
+    <div style={{ background: "linear-gradient(135deg,#f59e0b22,#10b98111)", borderBottom: "1px solid #f59e0b33", padding: "10px 16px", display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 200 }}>
+      <span style={{ fontSize: 16 }}>🧪</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>BETA-TEST — Vi behöver din hjälp!</div>
+        <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.4 }}>Hittar du något som inte fungerar? Tryck på <strong style={{ color: "#10b981" }}>Hjälp & Support</strong> och berätta!</div>
+      </div>
+      <button onClick={() => { setVisas(false); try { localStorage.setItem("kapital_beta_stangd", "1"); } catch {} }}
+        style={{ background: "none", border: "none", color: "#475569", fontSize: 18, cursor: "pointer", flexShrink: 0 }}>✕</button>
+    </div>
+  );
+}
+
 // ── Daglig ansvarsfriskrivning — visas en gång per dag ───────────────────
 function AnsvarsfriskrivningBanner() {
   const [visas, setVisas] = useState(() => {
@@ -17794,6 +17816,7 @@ export default function KapitalApp() {
   if (path === "/anvandarvillkor") return <AnvandarvillkorPage />;
   return (
     <ErrorBoundary>
+      <BetaBanner />
       <Kapital />
       <SmartGuide />
       {visaVillkor && <VillkorsModal onAccept={() => setVisaVillkor(false)} />}
