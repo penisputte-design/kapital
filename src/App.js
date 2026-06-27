@@ -11226,21 +11226,20 @@ function AktieGraf({ ticker, color }) {
     const fetchStock = async () => {
       try {
         const p = PERIODS.find(p => p.id === period);
-        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${p.range}&interval=${p.interval}`;
-        const proxy = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-        const resp = await fetch(proxy);
+        // Använd vår Netlify Function — undviker CORS-problem med Yahoo Finance
+        const resp = await fetch(`/api/kurs?ticker=${encodeURIComponent(ticker)}&type=history`);
         if (!resp.ok) throw new Error("API error");
         const data = await resp.json();
-        const result = data.chart?.result?.[0];
-        if (!result) throw new Error("No data");
-        const closes = result.indicators?.quote?.[0]?.close || [];
-        const filtered = closes.filter(v => v !== null && v !== undefined);
-        setChartData(filtered);
-        if (filtered.length > 0) {
-          setCurrentPrice(filtered[filtered.length - 1]);
-          const chg = ((filtered[filtered.length - 1] - filtered[0]) / filtered[0]) * 100;
-          setChange(chg);
-        }
+
+        if (data.punkter && data.punkter.length > 0) {
+          const closes = data.punkter.slice(-(p.id === "1d" ? 30 : p.id === "5d" ? 50 : p.id === "1mo" ? 30 : p.id === "3mo" ? 52 : 52)).map(pt => pt.pris);
+          setChartData(closes);
+          if (closes.length > 0) {
+            setCurrentPrice(closes[closes.length - 1]);
+            const chg = ((closes[closes.length - 1] - closes[0]) / closes[0]) * 100;
+            setChange(chg);
+          }
+        } else throw new Error("No data");
       } catch {
         // Fallback mock data
         const pts = 30;
