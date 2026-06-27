@@ -2374,19 +2374,14 @@ function LiveKursHeader({ ticker, company, sector }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!ticker && !company) return;
-    // Försök hitta ticker från QUICK_ITEMS
-    const allItems = Object.values(QUICK_ITEMS).flat();
-    const item = allItems.find(s =>
-      s.name?.toLowerCase() === company?.toLowerCase() ||
-      s.ticker?.toLowerCase() === ticker?.toLowerCase()
-    );
-    const t = item?.ticker || ticker || company;
+    if (!company) return;
+    // Använd AI-tickern om tillgänglig, annars bolagsnamnet (Finnhub söker automatiskt)
+    const query = ticker && ticker !== company ? ticker : company;
 
-    fetch(`/api/kurs?ticker=${encodeURIComponent(t)}`)
+    fetch(`/api/kurs?ticker=${encodeURIComponent(query)}`)
       .then(r => r.json())
       .then(data => {
-        if (data.pris) setKurs(data);
+        if (data.pris && data.pris > 0) setKurs(data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -2400,7 +2395,7 @@ function LiveKursHeader({ ticker, company, sector }) {
       </div>
       <div style={{ textAlign: "right" }}>
         {loading ? (
-          <div style={{ fontSize: 12, color: "#334155" }}>Hämtar kurs...</div>
+          <div style={{ fontSize: 12, color: "#334155" }}>⏳</div>
         ) : kurs ? (
           <div>
             <div style={{ fontSize: 22, fontWeight: 900, color: "var(--text, #e2e8f0)" }}>
@@ -2411,14 +2406,9 @@ function LiveKursHeader({ ticker, company, sector }) {
             <div style={{ fontSize: 13, fontWeight: 700, color: parseFloat(kurs.andringProcent) >= 0 ? "#22c55e" : "#ef4444" }}>
               {parseFloat(kurs.andringProcent) >= 0 ? "▲" : "▼"} {Math.abs(parseFloat(kurs.andringProcent)).toFixed(2)}%
             </div>
-            <div style={{ fontSize: 10, color: "#334155" }}>{kurs.kalla} · ~15 min fördröjd</div>
+            <div style={{ fontSize: 10, color: "#334155" }}>~15 min fördröjd · {kurs.ticker}</div>
           </div>
-        ) : (
-          <div style={{ fontSize: 11, color: "#334155" }}>
-            Kurs ej tillgänglig<br/>
-            <span style={{ fontSize: 10 }}>Lägg till Finnhub API-nyckel</span>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -15280,11 +15270,11 @@ function Kapital() {
               model: attempt === 1 ? (isPro ? PRO_MODEL : MODEL) : FAST_MODEL,
               max_tokens: attempt === 1 ? (isPro ? 1500 : 1000) : 800,
               messages: [{ role: "user", content: isPro ? `Analysera ${name} för svensk investerare 2026. Svara ENDAST med komplett giltig JSON utan markdown:
-{"company":"${name}","sector":"ange sektor","land":"ange land","borslista":"ange börs","summary":"2-3 meningar om bolaget","score":70,"scoreReason":"kort motivering","recommendation":"Köp","keyRisks":["risk1","risk2","risk3"],"keyStrengths":["styrka1","styrka2","styrka3"],"catalysts":["kat1","kat2"],"nyckeltal":{"pe":20,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"betavarde":1,"omsattning":"100 mdkr","tillvaxt":10},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"2 meningar AI-kommentar","lastUpdated":"Juni 2026"}
-score 0-30=Sälj 31-60=Avvakta 61-100=Köp. Ej finansiell rådgivning.`
+{"company":"${name}","ticker":"RÄTT_TICKER_SYMBOL","sector":"ange sektor","land":"ange land","borslista":"ange börs","summary":"2-3 meningar om bolaget","score":70,"scoreReason":"kort motivering","recommendation":"Köp","keyRisks":["risk1","risk2","risk3"],"keyStrengths":["styrka1","styrka2","styrka3"],"catalysts":["kat1","kat2"],"nyckeltal":{"pe":20,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"betavarde":1,"omsattning":"100 mdkr","tillvaxt":10},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"2 meningar AI-kommentar","lastUpdated":"Juni 2026"}
+ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL, etc. score 0-30=Sälj 31-60=Avvakta 61-100=Köp. Ej finansiell rådgivning.`
 : `Analysera ${name}. Svara ENDAST med komplett giltig JSON utan markdown:
-{"company":"${name}","sector":"sektor","land":"land","borslista":"börs","summary":"2 meningar","score":65,"scoreReason":"motivering","recommendation":"Köp","keyRisks":["r1","r2","r3"],"keyStrengths":["s1","s2","s3"],"nyckeltal":{"pe":20,"direktavkastning":2,"betavarde":1},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"1 mening","lastUpdated":"Juni 2026"}
-score 0-30=Sälj 31-60=Avvakta 61-100=Köp. Ej finansiell rådgivning.` }]
+{"company":"${name}","ticker":"RÄTT_TICKER_SYMBOL","sector":"sektor","land":"land","borslista":"börs","summary":"2 meningar","score":65,"scoreReason":"motivering","recommendation":"Köp","keyRisks":["r1","r2","r3"],"keyStrengths":["s1","s2","s3"],"nyckeltal":{"pe":20,"direktavkastning":2,"betavarde":1},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"1 mening","lastUpdated":"Juni 2026"}
+ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. score 0-30=Sälj 31-60=Avvakta 61-100=Köp. Ej finansiell rådgivning.` }]
             })
           });
           if (resp.status !== 504 && resp.status !== 529) break; // Lyckat svar — avbryt loopen
