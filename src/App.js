@@ -15224,15 +15224,13 @@ function Kapital() {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               model: attempt === 1 ? (isPro ? PRO_MODEL : MODEL) : FAST_MODEL,
-              max_tokens: attempt === 1 ? (isPro ? 1500 : 800) : 500,
-              messages: [{ role: "user", content: isPro ? `Du är en senior aktieanalytiker. Analysera ${name} för en svensk privatinvesterare 2026. Svara EXAKT med JSON:
-
-{"company":"${name}","sector":"SEKTOR","land":"LAND","borslista":"börslistning","summary":"Sammanfattning 3 meningar","score":70,"scoreReason":"Motivering","recommendation":"Köp","keyRisks":["Risk 1","Risk 2","Risk 3"],"keyStrengths":["Styrka 1","Styrka 2","Styrka 3"],"catalysts":["Katalysator 1","Katalysator 2"],"nyckeltal":{"pe":20,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"betavarde":1,"omsattning":"100 mdkr","tillvaxt":10},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"AI-kommentar 3 meningar","lastUpdated":"Juni 2026"}
-
-Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.`
-: `Analysera aktien ${name} kort. Svara EXAKT med JSON:
-{"company":"${name}","sector":"bransch","land":"land","borslista":"börs","summary":"Kort sammanfattning 2 meningar om bolaget","score":65,"scoreReason":"Varför detta score","recommendation":"Köp","keyRisks":["Risk 1","Risk 2","Risk 3"],"keyStrengths":["Styrka 1","Styrka 2","Styrka 3"],"nyckeltal":{"pe":20,"direktavkastning":2,"betavarde":1},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"Kort AI-kommentar 2 meningar","lastUpdated":"Juni 2026"}
-Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.` }]
+              max_tokens: attempt === 1 ? (isPro ? 1500 : 1000) : 800,
+              messages: [{ role: "user", content: isPro ? `Analysera ${name} för svensk investerare 2026. Svara ENDAST med komplett giltig JSON utan markdown:
+{"company":"${name}","sector":"ange sektor","land":"ange land","borslista":"ange börs","summary":"2-3 meningar om bolaget","score":70,"scoreReason":"kort motivering","recommendation":"Köp","keyRisks":["risk1","risk2","risk3"],"keyStrengths":["styrka1","styrka2","styrka3"],"catalysts":["kat1","kat2"],"nyckeltal":{"pe":20,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"betavarde":1,"omsattning":"100 mdkr","tillvaxt":10},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"2 meningar AI-kommentar","lastUpdated":"Juni 2026"}
+score 0-30=Sälj 31-60=Avvakta 61-100=Köp. Ej finansiell rådgivning.`
+: `Analysera ${name}. Svara ENDAST med komplett giltig JSON utan markdown:
+{"company":"${name}","sector":"sektor","land":"land","borslista":"börs","summary":"2 meningar","score":65,"scoreReason":"motivering","recommendation":"Köp","keyRisks":["r1","r2","r3"],"keyStrengths":["s1","s2","s3"],"nyckeltal":{"pe":20,"direktavkastning":2,"betavarde":1},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"1 mening","lastUpdated":"Juni 2026"}
+score 0-30=Sälj 31-60=Avvakta 61-100=Köp. Ej finansiell rådgivning.` }]
             })
           });
           if (resp.status !== 504 && resp.status !== 529) break; // Lyckat svar — avbryt loopen
@@ -15266,10 +15264,28 @@ Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.` }]
           .replace(/```\s*/g, "")
           .replace(/^\s*json\s*/i, "")
           .trim();
-        // Find JSON object — ta det längsta matchande objektet
+        // Find JSON object
         const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error("Ingen JSON hittades i: " + text.slice(0, 100));
-        parsed = JSON.parse(jsonMatch[0]);
+        
+        let jsonStr = jsonMatch[0];
+        // Försök reparera trunkerad JSON
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch {
+          // Lägg till saknade avslutande brackets
+          const openBraces = (jsonStr.match(/\{/g) || []).length;
+          const closeBraces = (jsonStr.match(/\}/g) || []).length;
+          const openBrackets = (jsonStr.match(/\[/g) || []).length;
+          const closeBrackets = (jsonStr.match(/\]/g) || []).length;
+          // Ta bort sista ofullständiga property
+          jsonStr = jsonStr.replace(/,\s*"[^"]*"\s*:\s*[^,}\]]*$/, "");
+          jsonStr = jsonStr.replace(/,\s*$/, "");
+          // Stäng öppna arrays och objekt
+          for (let i = 0; i < openBrackets - closeBrackets; i++) jsonStr += "]";
+          for (let i = 0; i < openBraces - closeBraces; i++) jsonStr += "}";
+          parsed = JSON.parse(jsonStr);
+        }
         // Validate required fields
         if (!parsed.company) parsed.company = name;
         if (!parsed.summary) parsed.summary = "Analys genererad för " + name;
