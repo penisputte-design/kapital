@@ -5511,7 +5511,7 @@ function AICoach({ inc, expenses, goals }) {
         })
       });
 
-      if (!resp.ok) throw new Error("API-fel: " + resp.status);
+      if (!resp.ok) throw new Error(resp.status === 504 ? "⏳ Analystjänsten är tillfälligt överbelastad. Försök igen om en stund!" : "API-fel: " + resp.status);
       const data = await resp.json();
       const reply = data.content?.[0]?.text || "Kunde inte svara. Försök igen.";
       setMessages([...newMessages, { role: "assistant", content: reply }]);
@@ -6684,7 +6684,7 @@ function JuridiskAI() {
         })
       });
 
-      if (!resp.ok) throw new Error("API-fel: " + resp.status);
+      if (!resp.ok) throw new Error(resp.status === 504 ? "⏳ Analystjänsten är tillfälligt överbelastad. Försök igen om en stund!" : "API-fel: " + resp.status);
       const data = await resp.json();
       const reply = data.content?.[0]?.text || "Kunde inte svara. Försök igen.";
       setMessages([...newMessages, { role: "assistant", content: reply }]);
@@ -12360,7 +12360,7 @@ Byt ut ALLA värden mot verkliga uppskattningar för ${n}. Score: 0-30=Salj 31-6
         })
       });
 
-      if (!resp.ok) throw new Error("API-fel: " + resp.status);
+      if (!resp.ok) throw new Error(resp.status === 504 ? "⏳ Analystjänsten är tillfälligt överbelastad. Försök igen om en stund!" : "API-fel: " + resp.status);
       const data = await resp.json();
       const text = data.content?.map(b => b.text || "").join("") || "";
       const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
@@ -15216,10 +15216,15 @@ function Kapital() {
         } catch {}
       }
 
-      const resp = await fetch(API, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: isPro ? PRO_MODEL : MODEL, max_tokens: isPro ? 1500 : 800,
+      // Auto-retry vid 504 — max 2 försök
+      let resp, lastError;
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          resp = await fetch(API, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: attempt === 1 ? (isPro ? PRO_MODEL : MODEL) : FAST_MODEL,
+              max_tokens: attempt === 1 ? (isPro ? 1500 : 800) : 500,
           messages: [{ role: "user", content: isPro ? `Du är en senior aktieanalytiker. Analysera ${name} för en svensk privatinvesterare 2026. Svara EXAKT med JSON:
 
 {"company":"${name}","sector":"SEKTOR","land":"LAND","borslista":"börslistning","summary":"Sammanfattning 3 meningar","score":70,"scoreReason":"Motivering","recommendation":"Köp","keyRisks":["Risk 1","Risk 2","Risk 3"],"keyStrengths":["Styrka 1","Styrka 2","Styrka 3"],"catalysts":["Katalysator 1","Katalysator 2"],"nyckeltal":{"pe":20,"direktavkastning":2,"borsvarde":"100 mdkr","ebitdaMarginal":15,"betavarde":1,"omsattning":"100 mdkr","tillvaxt":10},"grafData":[95,98,102,99,105,103,108,106,110,107,112,109],"aiKommentar":"AI-kommentar 3 meningar","lastUpdated":"Juni 2026"}
@@ -15238,18 +15243,23 @@ Score: 0-30=Sälj, 31-60=Avvakta, 61-100=Köp. Ej finansiell rådgivning.`
         if (resp.status === 401) throw new Error("API-nyckel saknas eller är ogiltig (401)");
         if (resp.status === 400) throw new Error("Fel i anropet (400) — " + (errData.error?.message || JSON.stringify(errData)));
         if (resp.status === 429) throw new Error("För många anrop — vänta lite och försök igen");
-        throw new Error("API-fel: " + resp.status);
+        throw new Error(resp.status === 504 ? "⏳ Analystjänsten är tillfälligt överbelastad. Försök igen om en stund!" : "API-fel: " + resp.status);
       }
 
       const data = await resp.json();
 
       // Robust parsing — handle various AI response formats
-      const text = data.content?.map(b => b.text || "").join("") || "";
+      const text = data.content?.map(b => b.text || "").join("") ||
+                   data.choices?.[0]?.message?.content || ""; // OpenAI fallback
       let parsed;
       try {
-        // Try direct parse first
-        const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        // Find JSON object
+        // Rensa alla markdown-varianter
+        let cleaned = text
+          .replace(/```json\s*/gi, "")
+          .replace(/```\s*/g, "")
+          .replace(/^\s*json\s*/i, "")
+          .trim();
+        // Find JSON object — ta det längsta matchande objektet
         const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error("Ingen JSON hittades i: " + text.slice(0, 100));
         parsed = JSON.parse(jsonMatch[0]);
