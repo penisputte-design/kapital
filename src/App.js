@@ -17617,6 +17617,7 @@ function AdminPanel() {
                       <span style={{ background: (typFarg[f.typ] || "#64748b") + "22", color: typFarg[f.typ] || "#64748b", fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 700 }}>
                         {typEmoji[f.typ]} {f.typ}
                       </span>
+                      {f.nyckel && <span style={{ fontSize: 13, fontWeight: 900, color: "#10b981", letterSpacing: 1, background: "#10b98122", padding: "3px 10px", borderRadius: 20 }}>{f.nyckel}</span>}
                       {f.betyg && <span style={{ fontSize: 12, color: "#f59e0b" }}>{"⭐".repeat(f.betyg)}</span>}
                       <span style={{ fontSize: 11, color: "#475569" }}>{f.sida}</span>
                     </div>
