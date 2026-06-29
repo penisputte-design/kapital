@@ -3441,6 +3441,8 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
     try { const s = localStorage.getItem("kapital_open_section"); if (s) { localStorage.removeItem("kapital_open_section"); return s; } } catch {} return null;
   });
   const [activeSubSection, setActiveSubSection] = useState(() => {
+    const openSub = localStorage.getItem("kapital_open_subsection");
+    if (openSub) { localStorage.removeItem("kapital_open_subsection"); return openSub; }
     try { const s = localStorage.getItem("kapital_open_subsection"); if (s) { localStorage.removeItem("kapital_open_subsection"); return s; } } catch {} return null;
   });
 
@@ -11087,22 +11089,23 @@ Skriv på svenska. Var specifik med belopp. Ej finansiell rådgivning — skriv 
             </button>
           </div>
 
-          <div style={{ background: isPro ? "var(--card)" : "#0a0f1e", borderRadius: 16, border: `1px solid ${isPro ? "#10b98133" : "#f59e0b33"}`, padding: 20 }}>
+          <div style={{ background: "var(--card)", borderRadius: 16, border: `1px solid #10b98133`, padding: 20 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
               <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>🤖 AI-genererad plan</div>
-              {!isPro && <span style={{ fontSize: 11, color: "#f59e0b", background: "#f59e0b22", padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>PRO</span>}
+              {!isPro && <span style={{ fontSize: 11, color: "#10b981", background: "#10b98122", padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>Gratis under beta</span>}
             </div>
             <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, lineHeight: 1.6 }}>Claude analyserar hela din ekonomi och skapar en personlig 8-10 stegs handlingsplan med konkreta belopp och tidsplan.</div>
-            {isPro ? (
-              <button onClick={genereraAIPlan} disabled={loading} style={{ width: "100%", padding: 13, background: loading ? "#1e293b" : "linear-gradient(135deg,#8b5cf6,#10b981)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: loading ? "default" : "pointer" }}>
-                {loading ? "⏳ Analyserar din ekonomi..." : "✨ Generera AI-plan →"}
-              </button>
-            ) : (
-              <button onClick={onUpgrade} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#f59e0b,#ef4444)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-                Uppgradera till Pro →
-              </button>
+            <button onClick={genereraAIPlan} disabled={loading} style={{ width: "100%", padding: 13, background: loading ? "#1e293b" : "linear-gradient(135deg,#8b5cf6,#10b981)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: loading ? "default" : "pointer" }}>
+              {loading ? "⏳ Analyserar din ekonomi..." : "✨ Generera AI-plan →"}
+            </button>
+            {error && (
+              <div style={{ fontSize: 12, color: "#ef4444", marginTop: 8, textAlign: "center" }}>
+                {error}
+                <button onClick={genereraAIPlan} style={{ display: "block", margin: "8px auto 0", padding: "6px 16px", background: "#ef444422", border: "1px solid #ef444433", borderRadius: 8, color: "#ef4444", fontSize: 12, cursor: "pointer" }}>
+                  🔄 Försök igen
+                </button>
+              </div>
             )}
-            {error && <div style={{ fontSize: 12, color: "#ef4444", marginTop: 8, textAlign: "center" }}>{error}</div>}
           </div>
 
           <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 14, lineHeight: 1.6 }}>
