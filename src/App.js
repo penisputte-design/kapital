@@ -3171,14 +3171,38 @@ function KalenderTab({ isPro, onUpgrade }) {
 
 // ── Smart Sparande Tab ────────────────────────────────────────────────────
 const EXPENSE_CATEGORIES = [
-  { id: "boende", label: "Boende", emoji: "🏠", color: "#3b82f6" },
-  { id: "mat", label: "Mat & Hushåll", emoji: "🛒", color: "#10b981" },
-  { id: "transport", label: "Transport", emoji: "🚗", color: "#f59e0b" },
-  { id: "noje", label: "Nöje & Fritid", emoji: "🎮", color: "#8b5cf6" },
-  { id: "halsa", label: "Hälsa", emoji: "💊", color: "#ef4444" },
-  { id: "klader", label: "Kläder", emoji: "👕", color: "#ec4899" },
-  { id: "prenumerationer", label: "Prenumerationer", emoji: "📱", color: "#06b6d4" },
-  { id: "ovrigt", label: "Övrigt", emoji: "📦", color: "#64748b" },
+  // Boende
+  { id: "boende", label: "Hyra / Avgift", emoji: "🏠", color: "#3b82f6", grupp: "Boende" },
+  { id: "el", label: "El", emoji: "⚡", color: "#f59e0b", grupp: "Boende" },
+  { id: "bredband", label: "Bredband & TV", emoji: "📡", color: "#06b6d4", grupp: "Boende" },
+  { id: "hemforsakring", label: "Hemförsäkring", emoji: "🛡️", color: "#8b5cf6", grupp: "Boende" },
+  { id: "vatten", label: "Vatten & Avlopp", emoji: "💧", color: "#3b82f6", grupp: "Boende" },
+  // Transport
+  { id: "transport", label: "Transport & Kollektivt", emoji: "🚌", color: "#f59e0b", grupp: "Transport" },
+  { id: "bil", label: "Bil (lån/leasing)", emoji: "🚗", color: "#f97316", grupp: "Transport" },
+  { id: "drivmedel", label: "Drivmedel", emoji: "⛽", color: "#ef4444", grupp: "Transport" },
+  { id: "bilforsakring", label: "Bilförsäkring", emoji: "🚘", color: "#8b5cf6", grupp: "Transport" },
+  // Mat & Hushåll
+  { id: "mat", label: "Mat & Hushåll", emoji: "🛒", color: "#10b981", grupp: "Mat & Hushåll" },
+  { id: "restaurang", label: "Restaurang & Café", emoji: "🍽️", color: "#ec4899", grupp: "Mat & Hushåll" },
+  // Personligt
+  { id: "klader", label: "Kläder & Sko", emoji: "👕", color: "#ec4899", grupp: "Personligt" },
+  { id: "halsa", label: "Hälsa & Vård", emoji: "💊", color: "#ef4444", grupp: "Personligt" },
+  { id: "personlig", label: "Personlig hygien", emoji: "🧴", color: "#06b6d4", grupp: "Personligt" },
+  // Nöje & Fritid
+  { id: "noje", label: "Nöje & Fritid", emoji: "🎮", color: "#8b5cf6", grupp: "Nöje" },
+  { id: "gym", label: "Gym & Sport", emoji: "🏋️", color: "#10b981", grupp: "Nöje" },
+  { id: "resa", label: "Resor & Semester", emoji: "✈️", color: "#3b82f6", grupp: "Nöje" },
+  // Digitalt
+  { id: "prenumerationer", label: "Streaming (Netflix etc)", emoji: "📺", color: "#ef4444", grupp: "Digitalt" },
+  { id: "mobil", label: "Mobilabonnemang", emoji: "📱", color: "#06b6d4", grupp: "Digitalt" },
+  // Barn & Familj
+  { id: "barn", label: "Barn & Familj", emoji: "👶", color: "#f59e0b", grupp: "Familj" },
+  { id: "husdjur", label: "Husdjur", emoji: "🐾", color: "#10b981", grupp: "Familj" },
+  // Övrigt
+  { id: "amortering", label: "Amortering / Lån", emoji: "💳", color: "#ef4444", grupp: "Övrigt" },
+  { id: "sparande", label: "Månadssparande", emoji: "💰", color: "#10b981", grupp: "Övrigt" },
+  { id: "ovrigt", label: "Övrigt", emoji: "📦", color: "#64748b", grupp: "Övrigt" },
 ];
 
 // ── Budget All — samlad vy ────────────────────────────────────────────────
@@ -3450,6 +3474,17 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
     if (activeSubSection) { setActiveSubSection(null); }
     else { setActiveSection(null); }
   };
+
+  // Lyssna på navigation från förbättringsförslag
+  React.useEffect(() => {
+    const handler = (e) => {
+      const { section, sub } = e.detail || {};
+      if (section) setActiveSection(section);
+      if (sub) setActiveSubSection(sub);
+    };
+    window.addEventListener("kapital_open_section_event", handler);
+    return () => window.removeEventListener("kapital_open_section_event", handler);
+  }, []);
 
   const inc = parseFloat(income) || 0;
   const totalExpenses = EXPENSE_CATEGORIES.reduce((s, c) => s + (parseFloat(expenses[c.id]) || 0), 0);
@@ -4966,7 +5001,23 @@ function RotRutKalkylator() {
 // ── Kredit Score ──────────────────────────────────────────────────────────
 function KreditScore({ inc }) {
   const [form, setForm] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("kapital_kredit") || "{}"); } catch { return {}; }
+    try {
+      const saved = JSON.parse(localStorage.getItem("kapital_kredit") || "{}");
+      // Synka med profildata om kredit-formuläret är tomt
+      if (!saved.income) {
+        const profileInc = localStorage.getItem("kapital_income") || "";
+        const profileSkulder = localStorage.getItem("kapital_other_debts") || "";
+        const profileBolanskudd = localStorage.getItem("kapital_bolaneskuld") || "";
+        const profileBillån = localStorage.getItem("kapital_billan") || "";
+        const totalSkuld = (parseFloat(profileSkulder) || 0) + (parseFloat(profileBolanskudd) || 0) + (parseFloat(profileBillån) || 0);
+        return {
+          ...saved,
+          income: profileInc,
+          totalDebt: totalSkuld > 0 ? String(totalSkuld) : saved.totalDebt || "",
+        };
+      }
+      return saved;
+    } catch { return {}; }
   });
 
   const set = (key, val) => {
@@ -15580,8 +15631,10 @@ function Kapital() {
     const navHandler = (e) => {
       const { tab, section, sub } = e.detail;
       if (tab !== undefined) setTab(tab);
-      if (section) localStorage.setItem("kapital_open_section", section);
-      if (sub) localStorage.setItem("kapital_open_subsection", sub);
+      // Dispatch a second event after tab switch so SparaTab can listen
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("kapital_open_section_event", { detail: { section, sub } }));
+      }, 100);
     };
     window.addEventListener("kapital_navigate", navHandler);
 
