@@ -16378,8 +16378,8 @@ function ProfilByggare({ onClose }) {
   const currentStep = PROFIL_STEPS[step];
 
   const saveAndNext = (val) => {
-    const v = val !== undefined ? val : current;
-    if (!v.trim()) return;
+    const v = val !== undefined ? val : (current || answers[currentStep?.id] || "");
+    if (!v || !String(v).trim()) return;
     const newAnswers = { ...answers, [currentStep.id]: v };
     setAnswers(newAnswers);
     try { localStorage.setItem(currentStep.key, v); } catch {}
@@ -16589,12 +16589,11 @@ function ProfilByggare({ onClose }) {
           <div>
             <div style={{ position: "relative" }}>
               <input
-                value={current}
+                value={current || answers[currentStep?.id] || ""}
                 onChange={e => setCurrent(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && saveAndNext()}
                 placeholder={currentStep.placeholder}
                 inputMode={currentStep.type === "number" ? "decimal" : "text"}
-                autoFocus
                 style={{ width: "100%", padding: "18px 20px", background: "var(--card)", border: "1px solid #10b98155", borderRadius: 16, color: "#e2e8f0", fontSize: 22, fontWeight: 700, outline: "none", boxSizing: "border-box", textAlign: "center", marginBottom: 6 }}
               />
               {currentStep.suffix && <div style={{ textAlign: "center", fontSize: 13, color: "#64748b", marginBottom: 12 }}>{currentStep.suffix}</div>}
