@@ -3811,12 +3811,14 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
       {activeSubSection === "expenses" && (
         <div>
           <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12 }}>Fyll i dina genomsnittliga månadskostnader</div>
-          {EXPENSE_CATEGORIES.map(c => (
-            <div key={c.id} style={{ background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: "12px 14px", marginBottom: 8 }}>
+          {EXPENSE_CATEGORIES.map(c => {
+            const ifyllt = parseFloat(expenses[c.id] || 0) > 0;
+            return (
+            <div key={c.id} style={{ background: ifyllt ? "#10b98110" : "#ef444410", borderRadius: 12, border: `1px solid ${ifyllt ? "#10b98133" : "#ef444433"}`, padding: "12px 14px", marginBottom: 8, transition: "all 0.2s" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: c.color + "22", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{c.emoji}</div>
-                  <div style={{ fontSize: 14, color: "#e2e8f0" }}>{c.label}</div>
+                  <div style={{ fontSize: 14, color: ifyllt ? "#e2e8f0" : "#94a3b8" }}>{c.label}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, width: 130 }}>
                   <input
@@ -3840,7 +3842,8 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
           <div style={{ background: "var(--card)", borderRadius: 12, border: "1px solid #10b98133", padding: "14px", marginTop: 4, display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontSize: 14, color: "#64748b" }}>Totalt</span>
             <span style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{totalExpenses.toLocaleString("sv-SE")} kr/mån</span>
@@ -5142,26 +5145,33 @@ function KreditScore({ inc }) {
   const nx = cx + r * Math.cos(rad);
   const ny = cy - r * Math.sin(rad); // minus för SVG y-axel är inverterad
 
-  const inp = (key, label, ph, type = "text") => (
-    <div style={{ background: "var(--bg2)", borderRadius: 10, padding: "12px 14px", marginBottom: 8 }}>
-      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6 }}>{label}</div>
-      {type === "select" ? (
-        <select value={form[key] || "nej"} onChange={e => set(key, e.target.value)}
-          style={{ width: "100%", background: "none", border: "none", outline: "none", color: "#e2e8f0", fontSize: 18, fontWeight: 700, cursor: "pointer" }}>
-          <option value="nej" style={{ background: "var(--card)" }}>Nej</option>
-          <option value="ja" style={{ background: "var(--card)" }}>Ja</option>
-        </select>
-      ) : (
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <input value={form[key] || ""} onChange={e => set(key, e.target.value)} placeholder={ph} inputMode="decimal"
-            style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 22, fontWeight: 700, color: "#e2e8f0" }} />
-          {type === "pct" && <span style={{ fontSize: 14, color: "#475569" }}>%</span>}
-          {type === "kr" && <span style={{ fontSize: 14, color: "#475569" }}>kr</span>}
-          {type === "ar" && <span style={{ fontSize: 14, color: "#475569" }}>år</span>}
+  const inp = (key, label, ph, type = "text") => {
+    const ifyllt = form[key] && String(form[key]).trim() !== "" && form[key] !== "0";
+    const bgColor = ifyllt ? "#10b98115" : "#ef444415";
+    const borderColor = ifyllt ? "#10b98133" : "#ef444433";
+    return (
+      <div style={{ background: bgColor, borderRadius: 10, padding: "12px 14px", marginBottom: 8, border: `1px solid ${borderColor}`, transition: "all 0.2s" }}>
+        <div style={{ fontSize: 11, color: ifyllt ? "#10b981" : "#ef4444", marginBottom: 6, fontWeight: 600 }}>
+          {ifyllt ? "✓" : "○"} {label}
         </div>
-      )}
-    </div>
-  );
+        {type === "select" ? (
+          <select value={form[key] || "nej"} onChange={e => set(key, e.target.value)}
+            style={{ width: "100%", background: "none", border: "none", outline: "none", color: "#e2e8f0", fontSize: 18, fontWeight: 700, cursor: "pointer" }}>
+            <option value="nej" style={{ background: "var(--card)" }}>Nej</option>
+            <option value="ja" style={{ background: "var(--card)" }}>Ja</option>
+          </select>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input value={form[key] || ""} onChange={e => set(key, e.target.value)} placeholder={ph} inputMode="decimal"
+              style={{ flex: 1, background: "none", border: "none", outline: "none", fontSize: 22, fontWeight: 700, color: "#e2e8f0" }} />
+            {type === "pct" && <span style={{ fontSize: 14, color: "#475569" }}>%</span>}
+            {type === "kr" && <span style={{ fontSize: 14, color: "#475569" }}>kr</span>}
+            {type === "ar" && <span style={{ fontSize: 14, color: "#475569" }}>år</span>}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div>
