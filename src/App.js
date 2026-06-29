@@ -3519,50 +3519,77 @@ function SparaTab({ currency, exchangeRates, currencies }) {
             </div>
           )}
 
-          {/* Category cards — 4 grupper för tydlig navigation */}
+          {/* Grupperade kategorier med rubriker */}
+
+          {/* GRUPP 1: Min ekonomi */}
+          <div style={{ fontSize: 11, color: "#475569", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8, marginTop: 4 }}>💰 Min ekonomi</div>
           {[
-            // GRUPP 1: Min ekonomi
-            { id: "budget", icon: "💰", color: "#10b981", label: "Budget & Utgifter", desc: inc > 0 ? `${Math.round(totalExpenses).toLocaleString("sv-SE")} kr/mån · ${goals.length} mål` : "Fyll i din inkomst och utgifter", items: [{ id: "budget_all", icon: "💰", label: "Budget & Utgifter" }] },
-            { id: "sparkonto", icon: "🏦", color: "#10b981", label: "Bästa sparkontot", desc: "Jämför räntor — hitta bäst avkastning på dina pengar", items: [{ id: "sparkonto_jamfor", icon: "🏦", label: "Jämför sparkonton" }] },
-            { id: "boende", icon: "🏠", color: "#3b82f6", label: "Boende & Fordon", desc: "Hyra, el, bil och alla fasta kostnader", items: [{ id: "boendekostnad", icon: "🏠", label: "Boende" }, { id: "fordonskostnad", icon: "🚗", label: "Fordon" }, { id: "abonnemang", icon: "📱", label: "Abonnemang" }] },
-            { id: "lon", icon: "💼", color: "#06b6d4", label: "Lön & Yrke", desc: "Lönespec, snittlöner och löneutveckling", items: [{ id: "lonespec", icon: "🧾", label: "Min lönespec" }, { id: "snittlon", icon: "📊", label: "Snittlöner" }, { id: "lonekalkyl", icon: "📈", label: "Löneutveckling" }] },
-            { id: "kredit", icon: "⭐", color: "#8b5cf6", label: "Kreditscore", desc: "Beräkna och förbättra din kreditscore", items: [{ id: "kreditscore", icon: "⭐", label: "Min kreditscore" }] },
-
-            // GRUPP 2: Planering & Kalkylatorer
-            { id: "kalkylatorer", icon: "📈", color: "#f59e0b", label: "Kalkylatorer", desc: "FIRE, ränta-på-ränta, skuld & pension", items: [{ id: "fire", icon: "🔥", label: "FIRE" }, { id: "rantan", icon: "📈", label: "Ränta-på-ränta" }, { id: "skuld", icon: "💳", label: "Skuldfri" }, { id: "pension", icon: "👴", label: "Pension" }] },
-            { id: "skatt", icon: "🧾", color: "#f97316", label: "Skatt & Deklaration", desc: "Lön, K4, ISK och ROT/RUT", items: [{ id: "lon", icon: "💼", label: "Löneskatt" }, { id: "k4", icon: "📋", label: "K4" }, { id: "isk", icon: "🏦", label: "ISK-skatt" }, { id: "rot", icon: "🔨", label: "ROT & RUT" }] },
-
-            // GRUPP 3: Investeringar & Handel
-            { id: "investerarguide", icon: "🎓", color: "#10b981", label: "Bli en bra investerare", desc: "AI-guide från nybörjare till expert", items: [
-                { id: "investerarstart", icon: "🚀", label: "Kom igång" },
-                { id: "investerarai", icon: "🤖", label: "AI-coach för investerare" },
-              ] },
-            { id: "fonder", icon: "📊", color: "#10b981", label: "Fondguide", desc: "Populära fonder och framtidsutsikter", items: [{ id: "fondguide", icon: "📊", label: "Fondguide 2026" }] },
-            { id: "utland", icon: "🌍", color: "#3b82f6", label: "Utländska värdepapper", desc: "Aktier, ETF:er och handel utomlands", items: [{ id: "utlandguide", icon: "🌍", label: "Handla utomlands" }] },
-            { id: "krypto", icon: "₿", color: "#f59e0b", label: "Krypto", desc: "Guide, skatt och håll koll på dina krypton", items: [{ id: "kryptokuide", icon: "₿", label: "Kryptoguide" }, { id: "kryptoskatt", icon: "🧾", label: "Kryptoskatt" }] },
-            { id: "valuta", icon: "💱", color: "#06b6d4", label: "Valuta & Omvandlare", desc: "Live-kurser och valutaomvandlare", items: [{ id: "valutaomvandlare", icon: "💱", label: "Valutaomvandlare" }] },
-
-            // GRUPP 4: AI & Hjälp
-            { id: "aicoach", icon: "🤖", color: "#10b981", label: "AI-ekonomicoach", desc: "Fråga om allt inom ekonomi och skatt", items: [{ id: "aicoach", icon: "💬", label: "AI-coachen" }] },
-            { id: "juridisk", icon: "⚖️", color: "#8b5cf6", label: "Juridisk AI", desc: "Avtal, hyresrätt, arbetsrätt och mer", items: [
-                { id: "juridiskAI", icon: "⚖️", label: "Juridisk AI" },
-                { id: "agarstruktur", icon: "🏢", label: "Ägarstruktur & Delägarskap" },
-                { id: "tolvtrea", icon: "📊", label: "3:12-reglerna" },
-                { id: "exitkalkyl", icon: "🚀", label: "Exit-kalkylator" },
-                { id: "formansvarde", icon: "🚗", label: "Förmånsvärde & Traktamente" },
-              ] },
-
-            // GRUPP 5: Hem & Liv
-            { id: "bygghus", icon: "🏗️", color: "#f97316", label: "Bygg & Renovera", desc: "Kostnadsplan för hus, renovering och VVS", items: [{ id: "bygghusguide", icon: "🏗️", label: "Bygg ditt hem" }, { id: "renoveringskalkyl", icon: "🔨", label: "Renovering" }] },
-            { id: "billigtliv", icon: "💡", color: "#06b6d4", label: "Lev billigare", desc: "Tips och verktyg för att sänka dina kostnader", items: [{ id: "billigboende", icon: "🏠", label: "Billigt boende" }, { id: "resebiljett", icon: "🚌", label: "Resa smart" }, { id: "affiliates", icon: "🤝", label: "Erbjudanden" }] },
+            { id: "budget", icon: "💰", color: "#10b981", label: "Budget & Utgifter", desc: inc > 0 ? `${Math.round(totalExpenses).toLocaleString("sv-SE")} kr/mån · ${goals.length} mål` : "Fyll i din inkomst och utgifter" },
+            { id: "boende", icon: "🏠", color: "#3b82f6", label: "Boende, El & Fordon", desc: "Hyra, el, bredband, bil och fasta kostnader" },
+            { id: "sparkonto", icon: "🏦", color: "#10b981", label: "Bästa sparkontot", desc: "Jämför räntor — hitta bäst avkastning" },
+            { id: "kredit", icon: "⭐", color: "#8b5cf6", label: "Kreditscore", desc: "Beräkna och förbättra din kreditscore" },
+            { id: "lon", icon: "💼", color: "#06b6d4", label: "Lön & Yrke", desc: "Lönespec, snittlöner och löneutveckling" },
           ].map(cat => (
-            <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "16px", background: "var(--card)", border: `1px solid ${cat.color}22`, borderRadius: 16, cursor: "pointer", textAlign: "left", marginBottom: 10 }}>
-              <div style={{ width: 48, height: 48, borderRadius: 14, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
-                {cat.icon}
-              </div>
+            <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 16px", background: "var(--card)", border: `1px solid ${cat.color}22`, borderRadius: 14, cursor: "pointer", textAlign: "left", marginBottom: 8 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{cat.icon}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#e2e8f0" }}>{cat.label}</div>
-                <div style={{ fontSize: 12, color: "#475569", marginTop: 3 }}>{cat.desc}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{cat.label}</div>
+                <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>{cat.desc}</div>
+              </div>
+              <span style={{ color: "#334155", fontSize: 20 }}>›</span>
+            </button>
+          ))}
+
+          {/* GRUPP 2: Planering */}
+          <div style={{ fontSize: 11, color: "#475569", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8, marginTop: 16 }}>📊 Planering & Kalkylatorer</div>
+          {[
+            { id: "kalkylatorer", icon: "📈", color: "#f59e0b", label: "Kalkylatorer", desc: "FIRE, ränta-på-ränta, skuld & pension" },
+            { id: "skatt", icon: "🧾", color: "#f97316", label: "Skatt & Deklaration", desc: "Lön, K4, ISK och ROT/RUT" },
+            { id: "bygghus", icon: "🏗️", color: "#f97316", label: "Bygg & Renovera", desc: "Kostnadsplan för hus och renovering" },
+            { id: "billigtliv", icon: "💡", color: "#06b6d4", label: "Lev billigare", desc: "Tips och verktyg för att sänka kostnader" },
+          ].map(cat => (
+            <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 16px", background: "var(--card)", border: `1px solid ${cat.color}22`, borderRadius: 14, cursor: "pointer", textAlign: "left", marginBottom: 8 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{cat.icon}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{cat.label}</div>
+                <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>{cat.desc}</div>
+              </div>
+              <span style={{ color: "#334155", fontSize: 20 }}>›</span>
+            </button>
+          ))}
+
+          {/* GRUPP 3: Investeringar */}
+          <div style={{ fontSize: 11, color: "#475569", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8, marginTop: 16 }}>🌱 Investeringar & Handel</div>
+          {[
+            { id: "investerarguide", icon: "🎓", color: "#10b981", label: "Bli en bra investerare", desc: "AI-guide från nybörjare till expert" },
+            { id: "fonder", icon: "📊", color: "#10b981", label: "Fondguide", desc: "Populära fonder och framtidsutsikter" },
+            { id: "utland", icon: "🌍", color: "#3b82f6", label: "Utländska värdepapper", desc: "Aktier, ETF:er och handel utomlands" },
+            { id: "krypto", icon: "₿", color: "#f59e0b", label: "Krypto", desc: "Guide, skatt och håll koll på dina krypton" },
+            { id: "valuta", icon: "💱", color: "#06b6d4", label: "Valuta & Omvandlare", desc: "Live-kurser och valutaomvandlare" },
+          ].map(cat => (
+            <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 16px", background: "var(--card)", border: `1px solid ${cat.color}22`, borderRadius: 14, cursor: "pointer", textAlign: "left", marginBottom: 8 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{cat.icon}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{cat.label}</div>
+                <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>{cat.desc}</div>
+              </div>
+              <span style={{ color: "#334155", fontSize: 20 }}>›</span>
+            </button>
+          ))}
+
+          {/* GRUPP 4: AI & Juridik */}
+          <div style={{ fontSize: 11, color: "#475569", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8, marginTop: 16 }}>🤖 AI & Juridik</div>
+          {[
+            { id: "forsakring", icon: "🛡️", color: "#ef4444", label: "Försäkringar", desc: "Håll koll på dina försäkringar" },
+            { id: "ekonomiplan", icon: "🎯", color: "#10b981", label: "Min Ekonomiplan", desc: "Personlig checklista — bocka av steg för steg" },
+            { id: "aicoach", icon: "🤖", color: "#10b981", label: "AI-ekonomicoach", desc: "Fråga om allt inom ekonomi och skatt" },
+            { id: "juridisk", icon: "⚖️", color: "#8b5cf6", label: "Juridisk AI", desc: "Avtal, hyresrätt, arbetsrätt och mer" },
+          ].map(cat => (
+            <button key={cat.id} onClick={() => setActiveSection(cat.id)} style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", padding: "14px 16px", background: "var(--card)", border: `1px solid ${cat.color}22`, borderRadius: 14, cursor: "pointer", textAlign: "left", marginBottom: 8 }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: cat.color + "22", border: `1px solid ${cat.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{cat.icon}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>{cat.label}</div>
+                <div style={{ fontSize: 12, color: "#475569", marginTop: 2 }}>{cat.desc}</div>
               </div>
               <span style={{ color: "#334155", fontSize: 20 }}>›</span>
             </button>
@@ -3601,6 +3628,8 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "juridiskAI", icon: "⚖️", label: "Juridisk AI-assistent", desc: "Avtal, försäkring, lån och dina rättigheter" },
             ] : activeSection === "valuta" ? [
               { id: "valutaomvandlare", icon: "💱", label: "Valutaomvandlare", desc: "Live-kurser och omvandlare" },
+            ] : activeSection === "ekonomiplan" ? [
+              { id: "ekonomiplan", icon: "🎯", label: "Generera plan", desc: "Snabbkoll gratis · AI-plan för Pro" },
             ] : activeSection === "aicoach" ? [
               { id: "aicoach", icon: "💬", label: "Fråga AI-coachen", desc: "Personliga svar om din ekonomi" },
             ] : activeSection === "lan" ? [
@@ -3615,6 +3644,8 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "budget_all", icon: "💰", label: "Budget & Utgifter", desc: "Inkomst, utgifter och sparmål" },
             ] : activeSection === "boende" ? [
               { id: "boendekostnad", icon: "🏠", label: "Mitt boende", desc: "Samlad vy av boendekostnader" },
+              { id: "fordonskostnad", icon: "🚗", label: "Fordon & Transport", desc: "Bil, MC, cykel och kollektivtrafik" },
+              { id: "abonnemang", icon: "📱", label: "El, Bredband & Abonnemang", desc: "Fasta månadskostnader för hem" },
             ] : activeSection === "fordon" ? [
               { id: "fordonskostnad", icon: "🚗", label: "Min bil", desc: "Vad kostar bilen dig per månad?" },
             ] : activeSection === "investerarguide" ? [
@@ -3631,14 +3662,18 @@ function SparaTab({ currency, exchangeRates, currencies }) {
               { id: "abonnemang", icon: "📱", label: "Abonnemang", desc: "Streaming, gym och prenumerationer" },
             ] : activeSection === "sparkonto" ? [
               { id: "sparkonto_jamfor", icon: "🏦", label: "Jämför sparkonton", desc: "Bästa räntan för dina pengar" },
-              { id: "sparguide", icon: "💡", label: "Spartips & strategier", desc: "Buffert, autospar och hållbart sparande" },
             ] : activeSection === "fonder" ? [
               { id: "fondguide", icon: "📊", label: "Fondguide 2026", desc: "Bästa fonder för framtiden" },
-            ] : [
+            ] : activeSection === "krypto" ? [
+              { id: "kryptokuide", icon: "₿", label: "Kryptoguide", desc: "Kom igång med krypto" },
+              { id: "kryptoskatt", icon: "🧾", label: "Kryptoskatt K4", desc: "Beräkna din skatt på krypto" },
+            ] : activeSection === "skatt" ? [
               { id: "lon", icon: "💼", label: "Löneskatt", desc: "Beräkna din nettolön" },
               { id: "k4", icon: "📋", label: "K4 — Aktier & Krypto", desc: "Kapitalvinstskatt & förlusthantering" },
               { id: "isk", icon: "🏦", label: "ISK-skatt", desc: "Jämför ISK mot kapitalskatt" },
               { id: "rot", icon: "🔨", label: "ROT & RUT-avdrag", desc: "Beräkna ditt avdrag" },
+            ] : [
+              { id: "aicoach", icon: "🤖", label: "AI-ekonomicoach", desc: "Fråga om allt" },
             ]
           } />
         </div>
@@ -3905,7 +3940,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       )}
 
       {/* FIRE */}
-      {activeSubSection === "fire" && <FireKalkylator inc={inc} leftover={leftover} />}
+      {activeSubSection === "fire" && <><FireKalkylator inc={inc} leftover={leftover} /><Disclaimer typ="pension" /></>}
 
       {/* RANTA PA RANTA */}
       {activeSubSection === "rantan" && <RantaKalkylator />}
@@ -3914,8 +3949,8 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "skuld" && <SkuldfriKalkylator />}
 
       {/* PENSION */}
-      {activeSubSection === "pension" && <PensionKalkylator inc={inc} />}
-      {activeSubSection === "kreditscore" && <KreditScore inc={inc} />}
+      {activeSubSection === "pension" && <><PensionKalkylator inc={inc} /><Disclaimer typ="pension" /></>}
+      {activeSubSection === "kreditscore" && <><KreditScore inc={inc} /><Disclaimer typ="kredit" /></>}
       {activeSubSection === "lonespec" && <LoneSpec inc={inc} />}
       {activeSubSection === "snittlon" && <SnittLon />}
       {activeSubSection === "lonekalkyl" && <LoneKalkyl inc={inc} />}
@@ -3924,21 +3959,22 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "tolvtrea" && <TolvtreaKalkyl />}
       {activeSubSection === "exitkalkyl" && <ExitKalkyl />}
       {activeSubSection === "formansvarde" && <FormansvardeTraktamente />}
-      {activeSubSection === "kryptokuide" && <KryptoGuide />}
-      {activeSubSection === "kryptoskatt" && <KryptoSkatt />}
-      {activeSubSection === "utlandguide" && <UtlandGuide />}
+      {activeSubSection === "kryptokuide" && <><KryptoGuide /><Disclaimer typ="fond" /></>}
+      {activeSubSection === "kryptoskatt" && <><KryptoSkatt /><Disclaimer typ="skatt" /></>}
+      {activeSubSection === "utlandguide" && <><UtlandGuide /><Disclaimer typ="aktier" /></>}
       {activeSubSection === "bygghusguide" && <ByggHusGuide />}
       {activeSubSection === "renoveringskalkyl" && <RenoveringKalkyl />}
       {activeSubSection === "billigboende" && <BilligtBoende />}
       {activeSubSection === "resebiljett" && <ResaSmart />}
       {activeSubSection === "affiliates" && <ErbjudandenHub />}
-      {activeSubSection === "investerarstart" && <InvesterarGuide />}
+      {activeSubSection === "investerarstart" && <><InvesterarGuide /><Disclaimer typ="aktier" /></>}
       {activeSubSection === "resurser" && <InvesterarResurser />}
-      {activeSubSection === "investerarai" && <InvesterarAI />}
+      {activeSubSection === "investerarai" && <><InvesterarAI /><Disclaimer typ="aktier" /></>}
       {activeSubSection === "sparkonto_jamfor" && <SparkontoJamfor inc={inc} />}
-      {activeSubSection === "fondguide" && <FondGuide />}
+      {activeSubSection === "fondguide" && <><FondGuide /><Disclaimer typ="fond" /></>}
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
-      {activeSubSection === "aicoach" && <AICoach inc={inc} expenses={expenses} goals={goals} />}
+      {activeSubSection === "ekonomiplan" && <EkonomiPlanTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />}
+      {activeSubSection === "aicoach" && <><AICoach inc={inc} expenses={expenses} goals={goals} /><Disclaimer typ="general" /></>}
       {activeSubSection === "lanansokan" && <LanAnsokan />}
       {activeSubSection === "minaforsakringar" && <MinaForsakringar />}
       {activeSubSection === "forsakringsguide" && <ForsakringsGuide />}
@@ -3948,8 +3984,8 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "fordonskostnad" && <Fordonskostnad />}
       {activeSubSection === "skatt" && <SkattKalkylator inc={inc} />}
       {activeSubSection === "lon" && <LonSkatt inc={inc} />}
-      {activeSubSection === "k4" && <K4Kalkylator />}
-      {activeSubSection === "isk" && <ISKKalkylator />}
+      {activeSubSection === "k4" && <><K4Kalkylator /><Disclaimer typ="skatt" /></>}
+      {activeSubSection === "isk" && <><ISKKalkylator /><Disclaimer typ="skatt" /></>}
       {activeSubSection === "rot" && <RotRutKalkylator />}
 
     </div>
@@ -7579,7 +7615,7 @@ function DelaTab({ result }) {
   const showToast = (m) => { setToast(m); setTimeout(() => setToast(null), 2500); };
 
   const getText = () => !result ? "" :
-    `📊 ${result.company} — Kapital-analys\n\n${result.recommendation} · ${result.score}/100\n\n${result.summary}\n\n⚠ Risker: ${result.keyRisks?.slice(0,2).join(", ")}\n✓ Styrkor: ${result.keyStrengths?.slice(0,2).join(", ")}\n\n#börsen #aktier #${result.company.replace(/\s/g,"")}`;
+    `📊 ${result.company} — AI-analys via Kapital\n\n${result.recommendation} · ${result.score}/100\n\n${result.summary}\n\n⚠️ Risker: ${result.keyRisks?.slice(0,2).join(", ")}\n✓ Styrkor: ${result.keyStrengths?.slice(0,2).join(", ")}\n\n⚠️ OBS: Detta är en AI-genererad analys — INTE finansiell rådgivning. Gör alltid din egen analys innan du investerar. Historisk avkastning garanterar inte framtida resultat. Investeringar innebär risk för kapitalförlust.\n\nKälla: mykapital.se | #aktier #börsen #${result.company?.replace(/\s/g,"")}`;
 
   if (!result) return (
     <div style={{ textAlign: "center", padding: "80px 0", color: "#334155" }}>
@@ -7599,16 +7635,27 @@ function DelaTab({ result }) {
   return (
     <div>
       {toast && <Toast msg={toast} />}
-      <div style={card()}>
-        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Förhandsgranskning</div>
-        <pre style={{ fontSize: 13, color: "#cbd5e1", whiteSpace: "pre-wrap", lineHeight: 1.6, margin: 0, fontFamily: "inherit" }}>{getText()}</pre>
+
+      {/* Dela-varning — tydlig */}
+      <div style={{ background: "#f59e0b11", border: "1px solid #f59e0b33", borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 4 }}>⚠️ Innan du delar — läs detta</div>
+        <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>
+          Analysen är AI-genererad och <strong style={{ color: "#e2e8f0" }}>inte finansiell rådgivning</strong>. Du ansvarar själv för vad du delar och hur mottagare tolkar informationen. Varningen ingår automatiskt i delad text.
+        </div>
       </div>
+
+      <div style={card()}>
+        <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>Förhandsgranskning — inkl. ansvarsfriskrivning</div>
+        <pre style={{ fontSize: 12, color: "#cbd5e1", whiteSpace: "pre-wrap", lineHeight: 1.6, margin: 0, fontFamily: "inherit" }}>{getText()}</pre>
+      </div>
+
       {shareBtn("𝕏", "Dela på X / Twitter", () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(getText().slice(0,280))}`, "_blank"), "#1da1f2")}
-      {shareBtn("in", "Dela på LinkedIn", () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://borskoll.se`, "_blank"), "#0077b5")}
+      {shareBtn("in", "Dela på LinkedIn", () => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=https://mykapital.se`, "_blank"), "#0077b5")}
       {shareBtn("📘", "Dela på Facebook", () => window.open(`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(getText())}`, "_blank"), "#4267B2")}
-      {shareBtn("📋", "Kopiera text", () => navigator.clipboard.writeText(getText()).then(() => showToast("✓ Kopierat!")), "#22c55e")}
-      {shareBtn("📤", "Dela via telefonen", () => navigator.share ? navigator.share({ title: `${result.company} – Analys`, text: getText() }) : navigator.clipboard.writeText(getText()).then(() => showToast("✓ Kopierat!")), "#8b5cf6")}
-      <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 8, lineHeight: 1.6 }}>⚠ AI-genererad analys — inte finansiell rådgivning enligt lag (2007:528). Investeringar sker på eget ansvar.</div>
+      {shareBtn("📋", "Kopiera text", () => navigator.clipboard.writeText(getText()).then(() => showToast("✓ Kopierat! Varning ingår i texten.")), "#22c55e")}
+      {shareBtn("📤", "Dela via telefonen", () => navigator.share ? navigator.share({ title: `${result.company} – AI-analys (ej rådgivning)`, text: getText() }) : navigator.clipboard.writeText(getText()).then(() => showToast("✓ Kopierat!")), "#8b5cf6")}
+
+      <Disclaimer typ="aktier" />
     </div>
   );
 }
@@ -9025,6 +9072,26 @@ function LoginModal({ onClose, onLoggedIn }) {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+
+// ── Juridisk ansvarsfriskrivning — återanvändbar komponent ───────────────
+function Disclaimer({ typ = "general" }) {
+  const texter = {
+    general: "⚖️ Informationsverktyg — inte finansiell rådgivning enligt lag (2007:528). Konsultera en auktoriserad rådgivare för personliga beslut.",
+    aktier: "⚖️ AI-analyser är informativa uppskattningar — inte köp- eller säljrekommendationer. Historisk avkastning garanterar inte framtida resultat. Investeringar innebär risk. Lag (2007:528).",
+    kredit: "⚖️ Kreditscore är en uppskattning baserad på dina uppgifter — inte en officiell UC-bedömning. Faktisk kreditvärdighet kan avvika.",
+    skatt: "⚖️ Skatteberäkningar är uppskattningar. Konsultera Skatteverket eller en revisor för exakta beräkningar.",
+    pension: "⚖️ Pensionsberäkningar är prognoser baserade på dagens regler och din indata. Faktisk pension kan avvika.",
+    fond: "⚖️ Fondguiden är informativ — inte en rekommendation att köpa specifika fonder. Fondsparande innebär risk för kapitalförlust.",
+    juridisk: "⚖️ Juridisk AI ger generell information — inte juridisk rådgivning. Kontakta en advokat för ditt specifika fall.",
+    halsa: "⚖️ Hälsokollen är ett informationsverktyg baserat på din indata — inte finansiell rådgivning. Siffrorna är uppskattningar.",
+  };
+  return (
+    <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 16, padding: "8px 12px", background: "var(--bg2)", borderRadius: 8, lineHeight: 1.6, border: "1px solid var(--border)" }}>
+      {texter[typ] || texter.general}
     </div>
   );
 }
@@ -10876,11 +10943,288 @@ function JamforForsakring() {
 }
 
 
+
+// ── Min Ekonomiplan — AI-genererad checklista ────────────────────────────
+function EkonomiPlanTab({ isPro, onUpgrade }) {
+  const [plan, setPlan] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kapital_ekonomiplan") || "null"); } catch { return null; }
+  });
+  const [loading, setLoading] = useState(false);
+  const [checkade, setCheckade] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("kapital_plan_check") || "{}"); } catch { return {}; }
+  });
+  const [error, setError] = useState("");
+
+  // Hämta användarens ekonomidata
+  const getUserData = () => {
+    try {
+      const inc = parseFloat(localStorage.getItem("kapital_income") || "0");
+      const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+      const totalExp = Object.values(expenses).reduce((s, v) => s + parseFloat(v || 0), 0);
+      const buffer = parseFloat(localStorage.getItem("kapital_buffer") || "0");
+      const skulder = parseFloat(localStorage.getItem("kapital_other_debts") || "0");
+      const sparande = parseFloat(localStorage.getItem("kapital_monthly_savings") || "0");
+      const arbetsläge = localStorage.getItem("kapital_arbetsläge") || "";
+      const goals = JSON.parse(localStorage.getItem("kapital_goals") || "[]");
+      const name = localStorage.getItem("kapital_name") || "";
+      return { inc, totalExp, buffer, skulder, sparande, arbetsläge, goals, name, kvar: inc - totalExp };
+    } catch { return {}; }
+  };
+
+  const toggleCheck = (id) => {
+    const nya = { ...checkade, [id]: !checkade[id] };
+    setCheckade(nya);
+    try { localStorage.setItem("kapital_plan_check", JSON.stringify(nya)); } catch {}
+  };
+
+  // Nivå 1 — Snabbkoll (automatisk, ingen AI)
+  const genereraSnabbkoll = () => {
+    const d = getUserData();
+    const steg = [];
+
+    if (!d.inc || d.inc < 1000) {
+      steg.push({ id: "s1", prio: "hög", ikon: "💰", titel: "Fyll i din månadsinkomst", desc: "Gå till Ekonomi → Budget & Utgifter → fyll i din nettolön", tid: "5 min", belopp: null, kategori: "grund" });
+    }
+    if (d.totalExp === 0) {
+      steg.push({ id: "s2", prio: "hög", ikon: "📊", titel: "Kartlägg dina utgifter", desc: "Fyll i hyra, mat, transport och övriga kostnader i Budget", tid: "15 min", belopp: null, kategori: "grund" });
+    }
+    if (d.buffer < d.totalExp) {
+      const målBuffer = Math.round(d.totalExp * 3);
+      const saknas = Math.max(0, målBuffer - d.buffer);
+      steg.push({ id: "s3", prio: "hög", ikon: "🛡️", titel: "Bygg en buffert på 3 månaders utgifter", desc: `Målet är ${målBuffer.toLocaleString("sv-SE")} kr. Du har ${d.buffer.toLocaleString("sv-SE")} kr idag. Spara ${Math.round(saknas/6).toLocaleString("sv-SE")} kr/mån i 6 månader.`, tid: "6 månader", belopp: Math.round(saknas/6), kategori: "sparande" });
+    }
+    if (d.kvar > 0 && d.sparande < d.inc * 0.1) {
+      const rekSpar = Math.round(d.inc * 0.1);
+      steg.push({ id: "s4", prio: "medel", ikon: "📈", titel: "Öka sparkvoten till minst 10%", desc: `Sätt upp ett autospar på ${rekSpar.toLocaleString("sv-SE")} kr/mån direkt när lönen kommer in.`, tid: "Löpande", belopp: rekSpar, kategori: "sparande" });
+    }
+    if (d.skulder > d.inc * 6) {
+      steg.push({ id: "s5", prio: "hög", ikon: "💳", titel: "Prioritera att amortera skulder", desc: `Dina skulder (${d.skulder.toLocaleString("sv-SE")} kr) är höga. Betala av dyraste lånet först — "avalanche-metoden".`, tid: "1-3 år", belopp: null, kategori: "skulder" });
+    }
+    if (d.arbetsläge === "Söker jobb") {
+      steg.push({ id: "s6", prio: "hög", ikon: "💼", titel: "Aktivera ditt nätverk aktivt", desc: "Uppdatera LinkedIn, kontakta tidigare kollegor och registrera dig hos Academic Work och Manpower.", tid: "Denna vecka", belopp: null, kategori: "jobb" });
+    }
+    if (d.goals.length === 0) {
+      steg.push({ id: "s7", prio: "medel", ikon: "🎯", titel: "Sätt upp ett sparmål", desc: "Gå till Ekonomi → Budget → Sparmål och lägg till ditt första mål (t.ex. semester, ny dator, kontantinsats).", tid: "10 min", belopp: null, kategori: "mål" });
+    }
+    steg.push({ id: "s8", prio: "låg", ikon: "🏦", titel: "Flytta sparandet till högränta-konto", desc: "Jämför sparkonton under Erbjudanden — hitta bästa räntan.", tid: "30 min", belopp: null, kategori: "sparande" });
+    steg.push({ id: "s9", prio: "låg", ikon: "📋", titel: "Kolla dina försäkringar", desc: "Har du hemförsäkring, olycksfallsförsäkring och eventuellt livförsäkring? Jämför under Erbjudanden.", tid: "1 timme", belopp: null, kategori: "trygghet" });
+    if (!localStorage.getItem("kapital_pension")) {
+      steg.push({ id: "s10", prio: "medel", ikon: "👴", titel: "Kolla din pension på minpension.se", desc: "Logga in med BankID och se hur mycket du förväntas få. Överväg privat pensionssparande om det saknas.", tid: "30 min", belopp: null, kategori: "pension" });
+    }
+
+    return { steg, skapad: new Date().toISOString(), typ: "snabbkoll", namn: d.name };
+  };
+
+  // Nivå 2 — AI-genererad plan (Pro)
+  const genereraAIPlan = async () => {
+    setLoading(true); setError("");
+    const d = getUserData();
+    const prompt = `Du är en svensk ekonomirådgivare. Baserat på denna persons ekonomi, skapa en personlig handlingsplan med 8-10 konkreta steg.
+
+Ekonomidata:
+- Månadsinkomst: ${d.inc.toLocaleString("sv-SE")} kr
+- Månadskostnader: ${d.totalExp.toLocaleString("sv-SE")} kr  
+- Kvar per månad: ${d.kvar.toLocaleString("sv-SE")} kr
+- Buffert: ${d.buffer.toLocaleString("sv-SE")} kr
+- Skulder: ${d.skulder.toLocaleString("sv-SE")} kr
+- Månadsparande: ${d.sparande.toLocaleString("sv-SE")} kr
+- Arbetsläge: ${d.arbetsläge || "okänt"}
+- Sparmål: ${d.goals.length} st
+
+Svara ENDAST med giltig JSON utan markdown:
+{"namn":"${d.name || "Din"}","sammanfattning":"2 meningar om ekonomisk situation","steg":[{"id":"a1","prio":"hög","ikon":"💰","titel":"Konkret steg","desc":"Exakt vad personen ska göra med belopp och tidsplan","tid":"t.ex. 2 veckor","belopp":1000,"kategori":"sparande"}]}
+
+Prio: hög/medel/låg. Kategorier: grund/sparande/skulder/investering/pension/trygghet/jobb/mål
+Skriv på svenska. Var specifik med belopp. Ej finansiell rådgivning — skriv "du kan överväga" inte "du ska".`;
+
+    try {
+      const resp = await fetch("/api/claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 1500, messages: [{ role: "user", content: prompt }] })
+      });
+      const data = await resp.json();
+      const text = data.content?.[0]?.text || data.choices?.[0]?.message?.content || "";
+      const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Ingen plan genererad");
+      const parsed = JSON.parse(jsonMatch[0]);
+      const nyPlan = { ...parsed, skapad: new Date().toISOString(), typ: "ai" };
+      setPlan(nyPlan);
+      try { localStorage.setItem("kapital_ekonomiplan", JSON.stringify(nyPlan)); } catch {}
+    } catch (e) {
+      setError("Kunde inte generera plan — försök igen");
+    }
+    setLoading(false);
+  };
+
+  const startaSnabbkoll = () => {
+    const nyPlan = genereraSnabbkoll();
+    setPlan(nyPlan);
+    try { localStorage.setItem("kapital_ekonomiplan", JSON.stringify(nyPlan)); } catch {}
+  };
+
+  const prioFarg = { "hög": "#ef4444", "medel": "#f59e0b", "låg": "#10b981" };
+  const katEmoji = { grund: "📋", sparande: "💰", skulder: "💳", investering: "📈", pension: "👴", trygghet: "🛡️", jobb: "💼", mål: "🎯" };
+
+  const klaraSteg = plan ? plan.steg.filter(s => checkade[s.id]).length : 0;
+  const totaltSteg = plan ? plan.steg.length : 0;
+  const pct = totaltSteg > 0 ? Math.round((klaraSteg / totaltSteg) * 100) : 0;
+
+  return (
+    <div>
+      <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text, #e2e8f0)", marginBottom: 4 }}>🎯 Min Ekonomiplan</div>
+      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 16 }}>En personlig checklista baserad på din ekonomi. Bocka av steg för steg.</div>
+
+      {!plan ? (
+        <div>
+          {/* Välj typ */}
+          <div style={{ background: "var(--card)", borderRadius: 16, border: "1px solid var(--border)", padding: 20, marginBottom: 12 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 6 }}>⚡ Snabbkoll — gratis</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, lineHeight: 1.6 }}>Automatisk checklista baserad på din sparkvot, buffert och skulder. Ingen AI-analys.</div>
+            <button onClick={startaSnabbkoll} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+              Generera snabbkoll →
+            </button>
+          </div>
+
+          <div style={{ background: isPro ? "var(--card)" : "#0a0f1e", borderRadius: 16, border: `1px solid ${isPro ? "#10b98133" : "#f59e0b33"}`, padding: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>🤖 AI-genererad plan</div>
+              {!isPro && <span style={{ fontSize: 11, color: "#f59e0b", background: "#f59e0b22", padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>PRO</span>}
+            </div>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 14, lineHeight: 1.6 }}>Claude analyserar hela din ekonomi och skapar en personlig 8-10 stegs handlingsplan med konkreta belopp och tidsplan.</div>
+            {isPro ? (
+              <button onClick={genereraAIPlan} disabled={loading} style={{ width: "100%", padding: 13, background: loading ? "#1e293b" : "linear-gradient(135deg,#8b5cf6,#10b981)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: loading ? "default" : "pointer" }}>
+                {loading ? "⏳ Analyserar din ekonomi..." : "✨ Generera AI-plan →"}
+              </button>
+            ) : (
+              <button onClick={onUpgrade} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#f59e0b,#ef4444)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                Uppgradera till Pro →
+              </button>
+            )}
+            {error && <div style={{ fontSize: 12, color: "#ef4444", marginTop: 8, textAlign: "center" }}>{error}</div>}
+          </div>
+
+          <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 14, lineHeight: 1.6 }}>
+            ⚖️ Informationsverktyg — inte finansiell rådgivning enligt lag (2007:528)
+          </div>
+        </div>
+      ) : (
+        <div>
+          {/* Progress */}
+          <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>{plan.namn ? `${plan.namn}s ekonomiplan` : "Din ekonomiplan"}</div>
+                <div style={{ fontSize: 11, color: "#475569" }}>{plan.typ === "ai" ? "🤖 AI-genererad" : "⚡ Snabbkoll"} · {new Date(plan.skapad).toLocaleDateString("sv-SE")}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 24, fontWeight: 900, color: pct === 100 ? "#10b981" : "#f59e0b" }}>{pct}%</div>
+                <div style={{ fontSize: 11, color: "#475569" }}>{klaraSteg}/{totaltSteg} klart</div>
+              </div>
+            </div>
+            <div style={{ background: "var(--bg2)", borderRadius: 99, height: 8, overflow: "hidden" }}>
+              <div style={{ width: pct + "%", height: "100%", background: "linear-gradient(90deg,#10b981,#0ea5e9)", borderRadius: 99, transition: "width 0.4s" }} />
+            </div>
+            {plan.sammanfattning && <div style={{ fontSize: 12, color: "#64748b", marginTop: 10, lineHeight: 1.6 }}>{plan.sammanfattning}</div>}
+          </div>
+
+          {/* Steg */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+            {plan.steg.map(s => {
+              const klar = checkade[s.id];
+              return (
+                <button key={s.id} onClick={() => toggleCheck(s.id)}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 12, background: klar ? "#10b98108" : "var(--card)", border: `1px solid ${klar ? "#10b98133" : "var(--border)"}`, borderRadius: 12, padding: "12px 14px", cursor: "pointer", textAlign: "left" }}>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", border: `2px solid ${klar ? "#10b981" : prioFarg[s.prio] || "#64748b"}`, background: klar ? "#10b981" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, fontSize: 13, color: "#fff", fontWeight: 900 }}>
+                    {klar ? "✓" : ""}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                      <span style={{ fontSize: 14 }}>{s.ikon}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: klar ? "#64748b" : "var(--text, #e2e8f0)", textDecoration: klar ? "line-through" : "none" }}>{s.titel}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: klar ? "#334155" : "#64748b", lineHeight: 1.5 }}>{s.desc}</div>
+                    <div style={{ display: "flex", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 10, color: prioFarg[s.prio], background: (prioFarg[s.prio] || "#64748b") + "22", padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>{s.prio} prioritet</span>
+                      <span style={{ fontSize: 10, color: "#475569", background: "var(--bg2)", padding: "2px 8px", borderRadius: 20 }}>⏱️ {s.tid}</span>
+                      {s.belopp && <span style={{ fontSize: 10, color: "#10b981", background: "#10b98122", padding: "2px 8px", borderRadius: 20 }}>💰 {s.belopp.toLocaleString("sv-SE")} kr/mån</span>}
+                      {s.kategori && <span style={{ fontSize: 10, color: "#475569" }}>{katEmoji[s.kategori]} {s.kategori}</span>}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Klar! */}
+          {pct === 100 && (
+            <div style={{ background: "linear-gradient(135deg,#10b98122,#0ea5e922)", borderRadius: 14, border: "1px solid #10b98133", padding: 20, textAlign: "center", marginBottom: 14 }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#10b981" }}>Fantastiskt jobbat!</div>
+              <div style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Du har slutfört hela din ekonomiplan. Dags att sätta nya mål!</div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => { setPlan(null); setCheckade({}); try { localStorage.removeItem("kapital_ekonomiplan"); localStorage.removeItem("kapital_plan_check"); } catch {} }}
+              style={{ flex: 1, padding: 11, background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 10, color: "#64748b", fontSize: 13, cursor: "pointer" }}>
+              🔄 Ny plan
+            </button>
+            {!isPro && (
+              <button onClick={onUpgrade} style={{ flex: 1, padding: 11, background: "linear-gradient(135deg,#8b5cf6,#10b981)", border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                ✨ AI-plan (Pro)
+              </button>
+            )}
+          </div>
+
+          <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 12, lineHeight: 1.6 }}>
+            ⚖️ Planens steg är informativa — inte finansiell rådgivning enligt lag (2007:528).<br/>
+            Konsultera en auktoriserad rådgivare för personliga investeringsbeslut.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ── Affiliate-klickspårning ───────────────────────────────────────────────
+async function trackClick(partner, kategori, url) {
+  // Logga i Supabase
+  try {
+    const supabaseUrl = "https://icuwxxtvhvhogmycnspl.supabase.co";
+    const anonKey = typeof SUPABASE_KEY !== "undefined" ? SUPABASE_KEY : "";
+    if (anonKey) {
+      fetch(`${supabaseUrl}/rest/v1/affiliate_clicks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": anonKey,
+          "Authorization": `Bearer ${anonKey}`,
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify({
+          partner,
+          kategori,
+          url,
+          sida: window.location.pathname,
+          tid: new Date().toISOString(),
+          session: localStorage.getItem("kapital_session_id") || "anon",
+        }),
+      }).catch(() => {});
+    }
+  } catch {}
+  // Öppna länken
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 function ErbjudandenHubFull({ subTab, setSubTab }) {
   const [expanded, setExpanded] = useState(null);
 
   const KATEGORIER = [
     { id: "deals_hem", icon: "🌟", label: "Alla" },
+    { id: "deals_jobb", icon: "💼", label: "Jobb, Fack & Utbildning" },
     { id: "deals_resa", icon: "✈️", label: "Resor" },
     { id: "deals_jamfor_lan", icon: "🏠", label: "Jämför Lån" },
     { id: "deals_jamfor_forsakring", icon: "🛡️", label: "Jämför Försäkring" },
@@ -10894,6 +11238,21 @@ function ErbjudandenHubFull({ subTab, setSubTab }) {
   ];
 
   const ERBJUDANDEN = {
+    deals_jobb: [
+      { namn: "LinkedIn Premium", badge: "Mest effektivt 🏆", color: "#0077b5", desc: "Syns mer för rekryterare — 40% fler jobbansökningar", detalj: "InMail, vem som sett din profil, kurser via LinkedIn Learning", url: "linkedin.com/premium", spara: "1 månad gratis — prova innan du betalar" },
+      { namn: "Academic Work", badge: "Populärast 🔥", color: "#e63946", desc: "Tusentals tjänster för unga yrkesverksamma", detalj: "IT, ekonomi, teknik, HR — konsult och fast tjänst", url: "academicwork.se", spara: null },
+      { namn: "Monster.se", badge: null, color: "#6c0", desc: "En av Sveriges största jobbsajter", detalj: "Över 10 000 lediga tjänster — skapa CV direkt på sajten", url: "monster.se", spara: null },
+      { namn: "Manpower", badge: "Snabbast 🚀", color: "#f59e0b", desc: "Bemanningsföretag med jobb över hela Sverige", detalj: "Konsultuppdrag, visstid och fasta tjänster", url: "manpower.se", spara: null },
+      { namn: "Lernia", badge: null, color: "#3b82f6", desc: "Jobb inom lager, industri, kontor och vård", detalj: "Hela Sverige · Snabbt svar · Gratis karriärcoach", url: "lernia.se", spara: null },
+      { namn: "Arbetsförmedlingen", badge: "Gratis 💚", color: "#10b981", desc: "Statlig jobbsajt — alla branscher, hela landet", detalj: "Platsbanken · Vägledning · Aktivitetsstöd", url: "arbetsformedlingen.se", spara: "Helt kostnadsfritt" },
+      { namn: "Unionen", badge: "Störst 🛡️", color: "#005b99", desc: "Sveriges största fackförbund för privatanställda tjänstemän", detalj: "A-kassa, juridisk hjälp, löneförhandling, rabatter", url: "unionen.se", spara: "Skyddar din lön och dina rättigheter" },
+      { namn: "IF Metall", badge: null, color: "#e63946", desc: "Fack för industri, verkstad och tillverkning", detalj: "A-kassa · Strejkfond · Lokala ombud", url: "ifmetall.se", spara: null },
+      { namn: "Kommunal", badge: null, color: "#10b981", desc: "Fack för vård, skola och omsorg", detalj: "Sveriges näst största fackförbund", url: "kommunal.se", spara: null },
+      { namn: "Coursera", badge: "Certifikat 🎓", color: "#0056d2", desc: "Onlinekurser från världens bästa universitet", detalj: "Google, Meta, IBM-certifikat · 7 dagars gratis", url: "coursera.org", spara: "Gratis kurser tillgängliga — betala bara för certifikat" },
+      { namn: "Udemy", badge: "Bäst pris 💸", color: "#a435f0", desc: "200 000+ kurser inom IT, design, ekonomi och mer", detalj: "Livstidstillgång · Ofta rabatter 80-90%", url: "udemy.com", spara: "Kurser från 89 kr vid rea" },
+      { namn: "Folkuniversitetet", badge: "Fysiskt 🏫", color: "#f59e0b", desc: "Kurser och utbildningar på plats i hela Sverige", detalj: "Språk, IT, yrkesutbildning, högskolebehörighet", url: "folkuniversitetet.se", spara: null },
+      { namn: "CSN", badge: "Gratis stöd 💚", color: "#10b981", desc: "Studiestöd och lån för dig som studerar", detalj: "Studiemedel · Körkortslån · Återbetalning", url: "csn.se", spara: "Upp till 13 362 kr/mån i studiestöd" },
+    ],
     deals_lan: [
       { namn: "SBAB Bolån", badge: "Lägst ränta 🏆", color: "#3b82f6", desc: "Bästa bolåneräntan just nu", detalj: "Rörlig: 3.55% · Fast 3 år: 3.89% · Max 85% belåning", url: AFF.sbab, spara: "Spara upp till 15 000 kr/år" },
       { namn: "Zmarta Lånejämförelse", badge: "Populärast ⭐", color: "#3b82f6", desc: "Jämför 30+ banker — ett svar, flera anbud", detalj: "Blankolån 5 000–600 000 kr · Ränta från 6.95%", url: AFF.zmarta, spara: "Jämför och hitta bäst ränta" },
@@ -17268,7 +17627,7 @@ const FEEDBACK_KATEGORIER = [
 
 function FeedbackKnapp() {
   const [open, setOpen] = React.useState(false);
-  const [vy, setVy] = React.useState("hem"); // hem | support | feedback | faq
+  const [vy, setVy] = React.useState("hem"); // hem | ai | feedback | faq
   const [faqKat, setFaqKat] = React.useState(null);
   const [oppnadFaq, setOppnadFaq] = React.useState(null);
   const [feedbackKat, setFeedbackKat] = React.useState(null);
@@ -17278,7 +17637,64 @@ function FeedbackKnapp() {
   const [loading, setLoading] = React.useState(false);
   const [sokFaq, setSokFaq] = React.useState("");
 
-  const reset = () => { setVy("hem"); setFaqKat(null); setOppnadFaq(null); setFeedbackKat(null); setMeddelande(""); setBetyg(null); setSkickat(false); setSokFaq(""); };
+  // AI-support chat
+  const [aiFraga, setAiFraga] = React.useState("");
+  const [aiSvar, setAiSvar] = React.useState(null);
+  const [aiLoading, setAiLoading] = React.useState(false);
+  const [aiHistorik, setAiHistorik] = React.useState([]);
+  const [visaEskalera, setVisaEskalera] = React.useState(false);
+
+  const reset = () => { setVy("hem"); setFaqKat(null); setOppnadFaq(null); setFeedbackKat(null); setMeddelande(""); setBetyg(null); setSkickat(false); setSokFaq(""); setAiFraga(""); setAiSvar(null); setAiHistorik([]); setVisaEskalera(false); };
+
+  async function fragaAI() {
+    if (!aiFraga.trim() || aiLoading) return;
+    const fraga = aiFraga.trim();
+    setAiLoading(true);
+    setAiFraga("");
+    const nyaMsg = [...aiHistorik, { roll: "user", text: fraga }];
+    setAiHistorik(nyaMsg);
+
+    // Bygg kontext från FAQ
+    const faqKontext = SUPPORT_FAQ.flatMap(k => k.fragor.map(f => `F: ${f.f}\nS: ${f.s}`)).join("\n\n");
+
+    try {
+      const resp = await fetch("/api/claude", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 400,
+          messages: [{
+            role: "user",
+            content: `Du är en vänlig AI-kundsupport för Kapital — en svensk ekonomiapp (mykapital.se). Svara kort och hjälpsamt på svenska.
+
+Vanliga frågor och svar:
+${faqKontext}
+
+Om du inte kan svara — säg "Jag är inte säker, men du kan maila hej@mykapital.se så hjälper vi dig!"
+Avsluta ALDRIG med att ge finansiella råd — du är support, inte rådgivare.
+
+Konversationshistorik:
+${nyaMsg.slice(-4).map(m => `${m.roll === "user" ? "Användare" : "Support"}: ${m.text}`).join("\n")}
+
+Svara nu kortfattat (max 3 meningar):`
+          }]
+        })
+      });
+      const data = await resp.json();
+      const svar = data.content?.[0]?.text || data.choices?.[0]?.message?.content || "Tyvärr kunde jag inte svara just nu. Maila hej@mykapital.se!";
+      const nyaHistorik = [...nyaMsg, { roll: "ai", text: svar }];
+      setAiHistorik(nyaHistorik);
+      // Visa eskalera-knapp om AI är osäker
+      if (svar.toLowerCase().includes("maila") || svar.toLowerCase().includes("inte säker") || nyaHistorik.filter(m => m.roll === "user").length >= 3) {
+        setVisaEskalera(true);
+      }
+    } catch {
+      setAiHistorik([...nyaMsg, { roll: "ai", text: "Tyvärr uppstod ett fel. Maila oss på hej@mykapital.se!" }]);
+      setVisaEskalera(true);
+    }
+    setAiLoading(false);
+  }
 
   async function skicka() {
     if (!meddelande.trim()) return;
@@ -17330,7 +17746,7 @@ function FeedbackKnapp() {
                 )}
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>
-                    {vy === "hem" ? "🛟 Hjälp & Support" : vy === "faq" ? "❓ Vanliga frågor" : vy === "feedback" ? "💬 Kontakta support" : "📋 Support"}
+                    {vy === "hem" ? "🛟 Hjälp & Support" : vy === "faq" ? "❓ Vanliga frågor" : vy === "feedback" ? "💬 Kontakta support" : vy === "ai" ? "🤖 AI-support" : "📋 Support"}
                   </div>
                   <div style={{ fontSize: 11, color: "#64748b" }}>mykapital.se · hej@mykapital.se</div>
                 </div>
@@ -17350,6 +17766,23 @@ function FeedbackKnapp() {
 
                   {/* Snabbval */}
                   <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Vad behöver du hjälp med?</div>
+                  {[
+                    { ikon: "🤖", label: "Chatta med AI-support", desc: "Få svar direkt — svarar på sekunder", action: () => setVy("ai"), color: "#10b981", badge: "Nytt!" },
+                    { ikon: "❓", label: "Vanliga frågor", desc: "28 frågor i 6 kategorier", action: () => setVy("faq"), color: "#3b82f6" },
+                    { ikon: "💬", label: "Skicka feedback / Rapportera fel", desc: "Vi svarar på hej@mykapital.se", action: () => setVy("feedback"), color: "#f59e0b" },
+                  ].map(item => (
+                    <button key={item.label} onClick={item.action} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "13px 14px", background: "var(--bg2)", border: `1px solid ${item.color}33`, borderRadius: 12, cursor: "pointer", textAlign: "left", marginBottom: 8 }}>
+                      <span style={{ fontSize: 22 }}>{item.ikon}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text, #e2e8f0)", display: "flex", alignItems: "center", gap: 6 }}>
+                          {item.label}
+                          {item.badge && <span style={{ fontSize: 10, color: "#10b981", background: "#10b98122", padding: "1px 6px", borderRadius: 20 }}>{item.badge}</span>}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{item.desc}</div>
+                      </div>
+                      <span style={{ color: "#334155" }}>›</span>
+                    </button>
+                  ))}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
                     {[
                       { emoji: "❓", titel: "Vanliga frågor", desc: "Snabba svar på det vanligaste", action: () => setVy("faq") },
@@ -17385,6 +17818,70 @@ function FeedbackKnapp() {
                     <a href="mailto:hej@mykapital.se" style={{ display: "block", padding: "10px 14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", borderRadius: 8, color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center" }}>
                       ✉️ hej@mykapital.se
                     </a>
+                  </div>
+                </div>
+              )}
+
+              {/* ── AI-SUPPORT ── */}
+              {vy === "ai" && (
+                <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12, lineHeight: 1.6 }}>
+                    🤖 Ställ din fråga — AI:n svarar direkt på svenska. Kan inte AI:n hjälpa dig skickar vi dig vidare till vårt team.
+                  </div>
+
+                  {/* Chatthistorik */}
+                  <div style={{ flex: 1, overflowY: "auto", marginBottom: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+                    {aiHistorik.length === 0 && (
+                      <div>
+                        <div style={{ fontSize: 12, color: "#475569", marginBottom: 10 }}>Snabbfrågor:</div>
+                        {["Hur fungerar Pro?", "Varför fick jag 504-fel?", "Hur ändrar jag min inkomst?", "Hur avbryter jag prenumerationen?"].map(q => (
+                          <button key={q} onClick={() => { setAiFraga(q); }} style={{ display: "block", width: "100%", padding: "8px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#94a3b8", fontSize: 12, cursor: "pointer", textAlign: "left", marginBottom: 6 }}>
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {aiHistorik.map((msg, i) => (
+                      <div key={i} style={{ display: "flex", justifyContent: msg.roll === "user" ? "flex-end" : "flex-start" }}>
+                        <div style={{ maxWidth: "85%", padding: "10px 14px", borderRadius: msg.roll === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: msg.roll === "user" ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "var(--bg2)", color: msg.roll === "user" ? "#fff" : "var(--text, #e2e8f0)", fontSize: 13, lineHeight: 1.6 }}>
+                          {msg.roll === "ai" && <div style={{ fontSize: 10, color: "#475569", marginBottom: 4 }}>🤖 AI-support</div>}
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                    {aiLoading && (
+                      <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                        <div style={{ padding: "10px 14px", borderRadius: "16px 16px 16px 4px", background: "var(--bg2)", fontSize: 13, color: "#64748b" }}>
+                          ⏳ Tänker...
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Eskalera till mail */}
+                  {visaEskalera && (
+                    <div style={{ background: "#f59e0b11", border: "1px solid #f59e0b33", borderRadius: 10, padding: 12, marginBottom: 10 }}>
+                      <div style={{ fontSize: 12, color: "#f59e0b", fontWeight: 700, marginBottom: 6 }}>Behöver du mer hjälp?</div>
+                      <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 8 }}>Vårt team hjälper dig inom 24h.</div>
+                      <button onClick={() => setVy("feedback")} style={{ width: "100%", padding: "8px", background: "linear-gradient(135deg,#f59e0b,#ef4444)", border: "none", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                        📧 Kontakta teamet →
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Input */}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input value={aiFraga} onChange={e => setAiFraga(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && fragaAI()}
+                      placeholder="Skriv din fråga..."
+                      style={{ flex: 1, padding: "11px 14px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--text, #e2e8f0)", fontSize: 14, outline: "none" }} />
+                    <button onClick={fragaAI} disabled={aiLoading || !aiFraga.trim()}
+                      style={{ padding: "11px 16px", background: aiFraga.trim() ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "#1e293b", border: "none", borderRadius: 10, color: "#fff", fontSize: 16, cursor: aiFraga.trim() ? "pointer" : "default" }}>
+                      →
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 10, color: "#334155", textAlign: "center", marginTop: 8 }}>
+                    AI-support ger generell hjälp — inte finansiell rådgivning
                   </div>
                 </div>
               )}
