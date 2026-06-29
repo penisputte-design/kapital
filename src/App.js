@@ -8162,7 +8162,21 @@ function Onboarding({ onDone }) {
   const [step, setStep] = useState(0);
   const [interests, setInterests] = useState([]);
   const [name, setName] = useState("");
-  const [ekonomi, setEkonomi] = useState({ inkomst: "", hyra: "", mat: "", transport: "", ovrigt: "", sparande: "", buffer: "" });
+  const [ekonomi, setEkonomi] = useState(() => {
+    try {
+      const expenses = JSON.parse(localStorage.getItem("kapital_expenses") || "{}");
+      return {
+        inkomst: localStorage.getItem("kapital_income") || "",
+        hyra: expenses["boende"] || localStorage.getItem("kapital_rent") || "",
+        mat: expenses["mat"] || localStorage.getItem("kapital_food") || "",
+        transport: expenses["transport"] || localStorage.getItem("kapital_transport") || "",
+        ovrigt: expenses["noje"] || localStorage.getItem("kapital_leisure") || "",
+        sparande: localStorage.getItem("kapital_monthly_savings") || "",
+        buffer: localStorage.getItem("kapital_buffer") || "",
+        lan: localStorage.getItem("kapital_other_debts") || "",
+      };
+    } catch { return { inkomst: "", hyra: "", mat: "", transport: "", ovrigt: "", sparande: "", buffer: "", lan: "" }; }
+  });
   const updEkonomi = (k, v) => setEkonomi(p => ({ ...p, [k]: v }));
 
   const INTERESTS = [
@@ -8276,7 +8290,9 @@ function Onboarding({ onDone }) {
       <div style={{ fontSize: 40, marginBottom: 16 }}>👋</div>
       <div style={{ fontSize: 22, fontWeight: 700, color: "#e2e8f0", marginBottom: 8 }}>Vad heter du?</div>
       <div style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>Helt valfritt — sparas bara lokalt på din enhet.</div>
-      <input value={name} onChange={e => setName(e.target.value)} placeholder="Ditt förnamn..."
+      <input value={name} onChange={e => setName(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && e.target.blur()}
+        placeholder="Ditt förnamn..."
         style={{ width: "100%", padding: "14px 16px", background: "var(--card)", border: "2px solid #1e293b", borderRadius: 14, color: "#e2e8f0", fontSize: 18, outline: "none", textAlign: "center", boxSizing: "border-box", marginBottom: 24 }} />
       <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, textAlign: "left" }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ 3 Bas-analyser per dag</div>
@@ -16337,7 +16353,14 @@ function ProfilByggare({ onClose }) {
     });
     return saved;
   });
-  const [current, setCurrent] = useState("");
+  const [current, setCurrent] = useState(() => {
+    // Pre-fyll med befintligt svar för nuvarande steg
+    const firstStep = PROFIL_STEPS[parseInt(localStorage.getItem("kapital_profil_step") || "0") || 0];
+    if (firstStep) {
+      try { return localStorage.getItem(firstStep.key) || ""; } catch {}
+    }
+    return "";
+  });
   const [done, setDone] = useState(false);
 
   // Find current section
@@ -16359,6 +16382,11 @@ function ProfilByggare({ onClose }) {
     const newAnswers = { ...answers, [currentStep.id]: v };
     setAnswers(newAnswers);
     try { localStorage.setItem(currentStep.key, v); } catch {}
+
+    // Ladda befintligt svar för nästa steg
+    const nextStep = PROFIL_STEPS[step + 1];
+    const nextVal = nextStep ? (() => { try { return localStorage.getItem(nextStep.key) || ""; } catch { return ""; } })() : "";
+    setCurrent(nextVal);
 
     // Synka med kapital_income och kapital_expenses + kapital_halsa_data
     if (currentStep.id === "inkomst") {
