@@ -1,4 +1,4 @@
-// Feedback API — sparar till en enkel JSON-array + mailar via SendGrid
+// Feedback API — sparar till Supabase + mailar via SendGrid
 exports.handler = async (event) => {
   const headers = {
     "Access-Control-Allow-Origin": "*",
@@ -11,14 +11,16 @@ exports.handler = async (event) => {
 
   const adminKey = process.env.ADMIN_KEY;
   const sendgridKey = process.env.SENDGRID_API_KEY;
+  const supabaseUrl = process.env.SUPABASE_URL || "https://icuwxxtvhvhogmycnspl.supabase.co";
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
   const KATEGORI_EMOJIS = {
     aktier: "📈", krypto: "₿", fonder: "📊", ekonomi: "💰",
     pro: "⭐", app: "📱", fel: "🐛", forbattring: "💡",
-    funktion: "✨", ovrigt: "💬"
+    funktion: "✨", ovrigt: "💬", support: "🛟"
   };
 
-  // ── POST: Ta emot feedback + skicka mail ──────────────────────────────
+  // ── POST: Ta emot feedback ────────────────────────────────────────────
   if (event.httpMethod === "POST") {
     try {
       const body = JSON.parse(event.body || "{}");
@@ -36,62 +38,114 @@ exports.handler = async (event) => {
       const emoji = KATEGORI_EMOJIS[kategoriKey] || "💬";
       const betygStars = betyg ? "⭐".repeat(betyg) : "Inget betyg";
 
+      const entry = {
+        nyckel,
+        typ: kategoriKey,
+        emoji,
+        meddelande: meddelande.trim().slice(0, 1000),
+        sida: sida || "okänd",
+        betyg: betyg || null,
+        version: version || "1.0",
+        skapad: now.toISOString(),
+      };
+
+      // Spara i Supabase feedback-tabell
+      if (supabaseKey) {
+        await fetch(`${supabaseUrl}/rest/v1/feedback`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": supabaseKey,
+            "Authorization": `Bearer ${supabaseKey}`,
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify(entry),
+        }).catch(e => console.log("Supabase fel:", e.message));
+      }
+
       // Skicka mail via SendGrid
       if (sendgridKey) {
-        const mailBody = {
-          personalizations: [{ to: [{ email: "hej@mykapital.se" }] }],
-          from: { email: "noreply@mykapital.se", name: "Kapital Feedback" },
-          subject: `${emoji} [${nyckel}] Ny feedback — ${kategoriKey}`,
-          content: [{
-            type: "text/html",
-            value: `
-<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0f172a;color:#e2e8f0;padding:24px;border-radius:12px">
-  <div style="background:#10b98122;border:1px solid #10b98133;border-radius:10px;padding:16px;margin-bottom:20px">
-    <div style="font-size:22px;margin-bottom:6px">${emoji} Ny feedback från Kapital</div>
-    <div style="font-size:26px;font-weight:900;color:#10b981;letter-spacing:2px">${nyckel}</div>
-  </div>
-  <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-    <tr><td style="padding:8px;color:#64748b;width:120px">Kategori</td><td style="padding:8px;font-weight:600">${emoji} ${kategoriKey}</td></tr>
-    <tr><td style="padding:8px;color:#64748b">Betyg</td><td style="padding:8px">${betygStars}</td></tr>
-    <tr><td style="padding:8px;color:#64748b">Tid</td><td style="padding:8px">${now.toLocaleString("sv-SE")}</td></tr>
-    <tr><td style="padding:8px;color:#64748b">Sida</td><td style="padding:8px">${sida || "okänd"}</td></tr>
-  </table>
-  <div style="background:#1e293b;border-radius:10px;padding:16px;margin-bottom:20px">
-    <div style="color:#64748b;font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Meddelande</div>
-    <div style="font-size:15px;line-height:1.6">${meddelande.trim().replace(/\n/g, "<br>")}</div>
-  </div>
-  <a href="https://mykapital.se/admin" style="display:inline-block;padding:10px 20px;background:linear-gradient(135deg,#10b981,#0ea5e9);border-radius:8px;color:#fff;text-decoration:none;font-weight:700">Öppna admin-panel →</a>
-</div>`
-          }]
-        };
-
         await fetch("https://api.sendgrid.com/v3/mail/send", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${sendgridKey}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(mailBody),
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: "hej@mykapital.se" }] }],
+            from: { email: "noreply@mykapital.se", name: "Kapital Feedback" },
+            subject: `${emoji} [${nyckel}] ${kategoriKey}`,
+            content: [{
+              type: "text/html",
+              value: `<div style="font-family:Arial;max-width:600px;background:#0f172a;color:#e2e8f0;padding:24px;border-radius:12px">
+                <div style="background:#10b98122;border:1px solid #10b98133;border-radius:10px;padding:16px;margin-bottom:20px">
+                  <div style="font-size:22px;margin-bottom:6px">${emoji} Ny feedback</div>
+                  <div style="font-size:26px;font-weight:900;color:#10b981;letter-spacing:2px">${nyckel}</div>
+                </div>
+                <p><b>Kategori:</b> ${emoji} ${kategoriKey}</p>
+                <p><b>Betyg:</b> ${betygStars}</p>
+                <p><b>Sida:</b> ${sida || "okänd"}</p>
+                <p><b>Tid:</b> ${now.toLocaleString("sv-SE")}</p>
+                <div style="background:#1e293b;border-radius:10px;padding:16px;margin:16px 0">
+                  <b>Meddelande:</b><br/><br/>
+                  ${meddelande.trim().replace(/\n/g, "<br>")}
+                </div>
+                <a href="https://mykapital.se/admin" style="background:linear-gradient(135deg,#10b981,#0ea5e9);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700">Öppna admin →</a>
+              </div>`
+            }]
+          }),
         }).catch(e => console.log("Mail fel:", e.message));
       }
 
-      return {
-        statusCode: 201,
-        headers,
-        body: JSON.stringify({ success: true, nyckel }),
-      };
+      return { statusCode: 201, headers, body: JSON.stringify({ success: true, nyckel }) };
     } catch (err) {
       return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
     }
   }
 
-  // ── GET: Admin — returnera tom lista (data lagras i mail) ─────────────
+  // ── GET: Hämta feedback (admin) ──────────────────────────────────────
   if (event.httpMethod === "GET") {
     const reqKey = event.headers["x-admin-key"] || event.queryStringParameters?.key;
     if (!adminKey || reqKey !== adminKey) {
       return { statusCode: 401, headers, body: JSON.stringify({ error: "Obehörig" }) };
     }
-    return { statusCode: 200, headers, body: JSON.stringify([]) };
+
+    if (!supabaseKey) {
+      return { statusCode: 200, headers, body: JSON.stringify([]) };
+    }
+
+    try {
+      const resp = await fetch(`${supabaseUrl}/rest/v1/feedback?order=skapad.desc&limit=100`, {
+        headers: {
+          "apikey": supabaseKey,
+          "Authorization": `Bearer ${supabaseKey}`,
+        },
+      });
+      const data = await resp.json();
+      return { statusCode: 200, headers, body: JSON.stringify(Array.isArray(data) ? data : []) };
+    } catch (err) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    }
+  }
+
+  // ── DELETE ───────────────────────────────────────────────────────────
+  if (event.httpMethod === "DELETE") {
+    const reqKey = event.headers["x-admin-key"] || event.queryStringParameters?.key;
+    if (!adminKey || reqKey !== adminKey) {
+      return { statusCode: 401, headers, body: JSON.stringify({ error: "Obehörig" }) };
+    }
+    try {
+      const { id } = JSON.parse(event.body || "{}");
+      if (supabaseKey && id) {
+        await fetch(`${supabaseUrl}/rest/v1/feedback?id=eq.${id}`, {
+          method: "DELETE",
+          headers: { "apikey": supabaseKey, "Authorization": `Bearer ${supabaseKey}` },
+        });
+      }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    } catch (err) {
+      return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    }
   }
 
   return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
