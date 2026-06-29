@@ -5027,8 +5027,6 @@ function KreditScore({ inc }) {
   };
 
   const income = parseFloat(form.income || inc || 0);
-  // eslint-disable-next-line no-unused-vars
-  const totalDebt = parseFloat(form.totalDebt || 0);
   const monthlyPayment = parseFloat(form.monthlyPayment || 0);
   const missedPayments = parseInt(form.missedPayments || 0);
   const creditAge = parseInt(form.creditAge || 3);
