@@ -5037,67 +5037,81 @@ function KreditScore({ inc }) {
 
   // Score calculation — realistisk svensk modell
   // Startar på 500, byggs upp med positiva faktorer, dras ner av negativa
-  let score = 500;
+  let score = 400; // Lägre startvärde — måste förtjänas
   const factors = [];
 
-  // 1. Betalningshistorik (35% av score = max 175p)
+  // 1. Betalningshistorik (35%)
   if (hasKronofogden) {
     score -= 150;
     factors.push({ label: "Kronofogden/utmätning", impact: -150, color: "#ef4444", tip: "Betalanmärkningar tar 3 år att försvinna från UC" });
-  } else {
-    score += 80;
   }
   if (hasBlankmark) {
     score -= 100;
     factors.push({ label: "Betalningsanmärkning hos UC", impact: -100, color: "#ef4444", tip: "Betalanmärkningar tas bort efter 3 år" });
   }
   if (missedPayments === 0 && !hasBlankmark && !hasKronofogden) {
-    score += 60;
-    factors.push({ label: "Perfekt betalningshistorik", impact: 60, color: "#22c55e", tip: "Fortsätt betala i tid!" });
+    score += 80;
+    factors.push({ label: "Perfekt betalningshistorik", impact: 80, color: "#22c55e", tip: "Fortsätt betala i tid!" });
   } else if (missedPayments > 0) {
     const penalty = Math.min(120, missedPayments * 30);
     score -= penalty;
     factors.push({ label: `${missedPayments} sena/missade betalningar`, impact: -penalty, color: "#f59e0b", tip: "Sätt upp autogiro för alla räkningar" });
   }
 
-  // 2. Skuldsättning (30% = max 150p)
+  // 2. Skuldsättning — både total skuld OCH månadsbelastning
   const totalDebt = parseFloat(form.totalDebt || 0);
   const dti = income > 0 ? (monthlyPayment / income) * 100 : 0;
   const debtToAnnualIncome = income > 0 ? totalDebt / (income * 12) : 0;
 
-  if (debtToAnnualIncome > 5 || dti > 50) {
-    score -= 150;
-    factors.push({ label: `Mycket hög skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -150, color: "#ef4444", tip: "Skuld bör ej överstiga 4x årsinkomst" });
-  } else if (debtToAnnualIncome > 3 || dti > 35) {
-    score -= 80;
-    factors.push({ label: `Hög skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -80, color: "#f59e0b", tip: "Mål: under 3x årsinkomst" });
-  } else if (debtToAnnualIncome > 0.5) {
-    score -= 20;
-    factors.push({ label: `Måttlig skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -20, color: "#f59e0b", tip: "Under 0.5x årsinkomst är bra" });
-  } else if (totalDebt > 0) {
-    score += 40;
-    factors.push({ label: `Låg skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: 40, color: "#22c55e", tip: "Utmärkt skuldsättning!" });
-  } else {
-    score += 60;
-    factors.push({ label: "Inga skulder", impact: 60, color: "#22c55e", tip: "Inga skulder ger hög score!" });
+  // DTI-poäng (månadsbetalning vs inkomst)
+  if (dti > 40) {
+    score -= 100;
+    factors.push({ label: `Mycket hög lånebelastning (${dti.toFixed(0)}% av inkomst)`, impact: -100, color: "#ef4444", tip: "Mål: under 20% av månadslon" });
+  } else if (dti > 20) {
+    score -= 50;
+    factors.push({ label: `Hög lånebelastning (${dti.toFixed(0)}% av inkomst)`, impact: -50, color: "#f59e0b", tip: "Försök amortera mer" });
+  } else if (dti > 10) {
+    score -= 10;
+    factors.push({ label: `Måttlig lånebelastning (${dti.toFixed(0)}% av inkomst)`, impact: -10, color: "#f59e0b", tip: "Under 10% är optimalt" });
+  } else if (dti > 0) {
+    score += 30;
+    factors.push({ label: `Låg lånebelastning (${dti.toFixed(0)}% av inkomst)`, impact: 30, color: "#22c55e", tip: "Bra skuldskötseln!" });
   }
 
-  // 3. Kreditnyttjande (20% = max 100p)
+  // Total skuld vs årsinkomst
+  if (debtToAnnualIncome > 5) {
+    score -= 80;
+    factors.push({ label: `Mycket hög skuld (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -80, color: "#ef4444", tip: "Skuld bör ej överstiga 4x årsinkomst" });
+  } else if (debtToAnnualIncome > 3) {
+    score -= 40;
+    factors.push({ label: `Hög skuld (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -40, color: "#f59e0b", tip: "Mål: under 3x årsinkomst" });
+  } else if (debtToAnnualIncome > 1) {
+    score += 10;
+    factors.push({ label: `Hanterbar skuld (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: 10, color: "#22c55e", tip: "Rimlig skuldsättning" });
+  } else if (totalDebt === 0) {
+    score += 60;
+    factors.push({ label: "Inga skulder", impact: 60, color: "#22c55e", tip: "Inga skulder ger hög score!" });
+  } else {
+    score += 30;
+    factors.push({ label: `Låg skuld (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: 30, color: "#22c55e", tip: "Utmärkt skuldsättning!" });
+  }
+
+  // 3. Kreditnyttjande (20%)
   if (utilization > 80) {
     score -= 80;
     factors.push({ label: `Mycket högt kreditnyttjande (${utilization}%)`, impact: -80, color: "#ef4444", tip: "Håll under 30% av kreditlimiten" });
   } else if (utilization > 30) {
     score -= 20;
     factors.push({ label: `Förhöjt kreditnyttjande (${utilization}%)`, impact: -20, color: "#f59e0b", tip: "Under 30% ger bättre score" });
-  } else {
-    score += 50;
-    factors.push({ label: `Bra kreditnyttjande (${utilization}%)`, impact: 50, color: "#22c55e", tip: "Under 30% är perfekt" });
+  } else if (utilization > 0) {
+    score += 40;
+    factors.push({ label: `Bra kreditnyttjande (${utilization}%)`, impact: 40, color: "#22c55e", tip: "Under 30% är perfekt" });
   }
 
-  // 4. Kredithistorik (10% = max 50p)
+  // 4. Kredithistorik (10%)
   if (creditAge < 2) {
-    score -= 30;
-    factors.push({ label: "Kort kredithistorik (<2 år)", impact: -30, color: "#f59e0b", tip: "Historiken byggs automatiskt med tid" });
+    score -= 20;
+    factors.push({ label: "Kort kredithistorik (<2 år)", impact: -20, color: "#f59e0b", tip: "Historiken byggs automatiskt med tid" });
   } else if (creditAge >= 7) {
     score += 40;
     factors.push({ label: `Lång kredithistorik (${creditAge} år)`, impact: 40, color: "#22c55e", tip: "Utmärkt! Lång historik ger bonus" });
@@ -5111,8 +5125,8 @@ function KreditScore({ inc }) {
     score -= 20;
     factors.push({ label: "Många kreditkonton", impact: -20, color: "#f59e0b", tip: "Färre aktiva konton är bättre" });
   } else if (numAccounts >= 1 && numAccounts <= 4) {
-    score += 20;
-    factors.push({ label: `Bra antal kreditkonton (${numAccounts} st)`, impact: 20, color: "#22c55e", tip: "1-4 konton är optimalt" });
+    score += 15;
+    factors.push({ label: `Bra antal kreditkonton (${numAccounts} st)`, impact: 15, color: "#22c55e", tip: "1-4 konton är optimalt" });
   }
 
   score = Math.max(300, Math.min(850, score));
