@@ -8174,8 +8174,9 @@ function Onboarding({ onDone }) {
         sparande: localStorage.getItem("kapital_monthly_savings") || "",
         buffer: localStorage.getItem("kapital_buffer") || "",
         lan: localStorage.getItem("kapital_other_debts") || "",
+        arbetsläge: localStorage.getItem("kapital_arbetsläge") || "",
       };
-    } catch { return { inkomst: "", hyra: "", mat: "", transport: "", ovrigt: "", sparande: "", buffer: "", lan: "" }; }
+    } catch { return { inkomst: "", hyra: "", mat: "", transport: "", ovrigt: "", sparande: "", buffer: "", lan: "", arbetsläge: "" }; }
   });
   const updEkonomi = (k, v) => setEkonomi(p => ({ ...p, [k]: v }));
 
@@ -8334,9 +8335,9 @@ function Onboarding({ onDone }) {
         <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 8 }}>💼 Arbetsläge</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
           {["Anställd (fast)", "Anställd (visstid)", "Egenföretagare", "Söker jobb", "Student", "Föräldraledig/Sjukskriven", "Pensionär"].map(a => {
-            const vald = (localStorage.getItem("kapital_arbetsläge") || "") === a;
+            const vald = ekonomi.arbetsläge === a;
             return (
-              <button key={a} onClick={() => { try { localStorage.setItem("kapital_arbetsläge", a); } catch {} window.location.reload(); }}
+              <button key={a} onClick={() => { updEkonomi("arbetsläge", a); try { localStorage.setItem("kapital_arbetsläge", a); } catch {} }}
                 style={{ padding: "9px 8px", background: vald ? "#10b98122" : "var(--card)", border: `1px solid ${vald ? "#10b981" : "var(--border)"}`, borderRadius: 10, color: vald ? "#10b981" : "#64748b", fontSize: 12, cursor: "pointer", fontWeight: vald ? 700 : 400, textAlign: "center" }}>
                 {a}
               </button>
