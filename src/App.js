@@ -3415,7 +3415,7 @@ function MalInline({ goals: initGoals, leftover }) {
   );
 }
 
-function SparaTab({ currency, exchangeRates, currencies }) {
+function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
   const [income, setIncome] = useState(() => {
     try { return localStorage.getItem("kapital_income") || ""; } catch { return ""; }
   });
@@ -3973,7 +3973,7 @@ function SparaTab({ currency, exchangeRates, currencies }) {
       {activeSubSection === "sparkonto_jamfor" && <SparkontoJamfor inc={inc} />}
       {activeSubSection === "fondguide" && <><FondGuide /><Disclaimer typ="fond" /></>}
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
-      {activeSubSection === "ekonomiplan" && <EkonomiPlanTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />}
+      {activeSubSection === "ekonomiplan" && <EkonomiPlanTab isPro={isPro} onUpgrade={onUpgrade} />}
       {activeSubSection === "aicoach" && <><AICoach inc={inc} expenses={expenses} goals={goals} /><Disclaimer typ="general" /></>}
       {activeSubSection === "lanansokan" && <LanAnsokan />}
       {activeSubSection === "minaforsakringar" && <MinaForsakringar />}
@@ -16094,7 +16094,7 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
         {tab === 2 && (
           <div>
             <HealthScore />
-            <SparaTab currency={currency} exchangeRates={exchangeRates} currencies={CURRENCIES} />
+            <SparaTab currency={currency} exchangeRates={exchangeRates} currencies={CURRENCIES} isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />
           </div>
         )}
 
