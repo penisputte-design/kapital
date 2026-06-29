@@ -5037,62 +5037,84 @@ function KreditScore({ inc }) {
   const hasBlankmark = form.hasBlankmark === "ja";
   const hasKronofogden = form.hasKronofogden === "ja";
 
-  // Score calculation (300-850 range, Swedish model)
-  let score = 850;
+  // Score calculation — realistisk svensk modell
+  // Startar på 500, byggs upp med positiva faktorer, dras ner av negativa
+  let score = 500;
   const factors = [];
 
-  // 1. Payment history (35% weight) — most important
+  // 1. Betalningshistorik (35% av score = max 175p)
   if (hasKronofogden) {
-    score -= 200;
-    factors.push({ label: "Kronofogden/utmätning", impact: -200, color: "#ef4444", tip: "Betalanmärkningar tar 3 år att försvinna från UC" });
+    score -= 150;
+    factors.push({ label: "Kronofogden/utmätning", impact: -150, color: "#ef4444", tip: "Betalanmärkningar tar 3 år att försvinna från UC" });
+  } else {
+    score += 80;
   }
   if (hasBlankmark) {
-    score -= 120;
-    factors.push({ label: "Betalningsanmärkning", impact: -120, color: "#ef4444", tip: "Betalanmärkningar tas bort efter 3 år" });
+    score -= 100;
+    factors.push({ label: "Betalningsanmärkning hos UC", impact: -100, color: "#ef4444", tip: "Betalanmärkningar tas bort efter 3 år" });
   }
-  if (missedPayments > 0) {
-    const penalty = Math.min(150, missedPayments * 35);
+  if (missedPayments === 0 && !hasBlankmark && !hasKronofogden) {
+    score += 60;
+    factors.push({ label: "Perfekt betalningshistorik", impact: 60, color: "#22c55e", tip: "Fortsätt betala i tid!" });
+  } else if (missedPayments > 0) {
+    const penalty = Math.min(120, missedPayments * 30);
     score -= penalty;
     factors.push({ label: `${missedPayments} sena/missade betalningar`, impact: -penalty, color: "#f59e0b", tip: "Sätt upp autogiro för alla räkningar" });
-  } else {
-    factors.push({ label: "Perfekt betalningshistorik", impact: 0, color: "#22c55e", tip: "Fortsätt betala i tid!" });
   }
 
-  // 2. Debt-to-income ratio (30% weight)
+  // 2. Skuldsättning (30% = max 150p)
+  const totalDebt = parseFloat(form.totalDebt || 0);
   const dti = income > 0 ? (monthlyPayment / income) * 100 : 0;
-  if (dti > 50) {
-    score -= 120;
-    factors.push({ label: `Skuldsättning ${dti.toFixed(0)}% av inkomst`, impact: -120, color: "#ef4444", tip: "Mål: under 35% av inkomsten" });
-  } else if (dti > 35) {
-    score -= 60;
-    factors.push({ label: `Skuldsättning ${dti.toFixed(0)}% av inkomst`, impact: -60, color: "#f59e0b", tip: "Försök minska till under 35%" });
-  } else if (dti > 0) {
-    factors.push({ label: `Bra skuldsättning (${dti.toFixed(0)}%)`, impact: 0, color: "#22c55e", tip: "Under 35% är utmärkt!" });
+  const debtToAnnualIncome = income > 0 ? totalDebt / (income * 12) : 0;
+
+  if (debtToAnnualIncome > 5 || dti > 50) {
+    score -= 150;
+    factors.push({ label: `Mycket hög skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -150, color: "#ef4444", tip: "Skuld bör ej överstiga 4x årsinkomst" });
+  } else if (debtToAnnualIncome > 3 || dti > 35) {
+    score -= 80;
+    factors.push({ label: `Hög skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -80, color: "#f59e0b", tip: "Mål: under 3x årsinkomst" });
+  } else if (debtToAnnualIncome > 0.5) {
+    score -= 20;
+    factors.push({ label: `Måttlig skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: -20, color: "#f59e0b", tip: "Under 0.5x årsinkomst är bra" });
+  } else if (totalDebt > 0) {
+    score += 40;
+    factors.push({ label: `Låg skuldsättning (${debtToAnnualIncome.toFixed(1)}x årslön)`, impact: 40, color: "#22c55e", tip: "Utmärkt skuldsättning!" });
+  } else {
+    score += 60;
+    factors.push({ label: "Inga skulder", impact: 60, color: "#22c55e", tip: "Inga skulder ger hög score!" });
   }
 
-  // 3. Credit utilization (20% weight)
+  // 3. Kreditnyttjande (20% = max 100p)
   if (utilization > 80) {
     score -= 80;
-    factors.push({ label: `Kreditnyttjande ${utilization}%`, impact: -80, color: "#ef4444", tip: "Håll under 30% av kreditlimiten" });
+    factors.push({ label: `Mycket högt kreditnyttjande (${utilization}%)`, impact: -80, color: "#ef4444", tip: "Håll under 30% av kreditlimiten" });
   } else if (utilization > 30) {
-    score -= 30;
-    factors.push({ label: `Kreditnyttjande ${utilization}%`, impact: -30, color: "#f59e0b", tip: "Under 30% ger bättre score" });
+    score -= 20;
+    factors.push({ label: `Förhöjt kreditnyttjande (${utilization}%)`, impact: -20, color: "#f59e0b", tip: "Under 30% ger bättre score" });
   } else {
-    factors.push({ label: `Bra kreditnyttjande (${utilization}%)`, impact: 0, color: "#22c55e", tip: "Under 30% är perfekt" });
+    score += 50;
+    factors.push({ label: `Bra kreditnyttjande (${utilization}%)`, impact: 50, color: "#22c55e", tip: "Under 30% är perfekt" });
   }
 
-  // 4. Credit age (10% weight)
+  // 4. Kredithistorik (10% = max 50p)
   if (creditAge < 2) {
-    score -= 40;
-    factors.push({ label: "Kort kredithistorik (<2 år)", impact: -40, color: "#f59e0b", tip: "Historiken byggs automatiskt med tid" });
+    score -= 30;
+    factors.push({ label: "Kort kredithistorik (<2 år)", impact: -30, color: "#f59e0b", tip: "Historiken byggs automatiskt med tid" });
   } else if (creditAge >= 7) {
-    factors.push({ label: `Lång kredithistorik (${creditAge} år)`, impact: 0, color: "#22c55e", tip: "Utmärkt! Lång historik ger bonus" });
+    score += 40;
+    factors.push({ label: `Lång kredithistorik (${creditAge} år)`, impact: 40, color: "#22c55e", tip: "Utmärkt! Lång historik ger bonus" });
+  } else {
+    score += 20;
+    factors.push({ label: `OK kredithistorik (${creditAge} år)`, impact: 20, color: "#22c55e", tip: "Byggs upp med tid" });
   }
 
-  // 5. Number of accounts (5% weight)
+  // 5. Antal konton (5%)
   if (numAccounts > 8) {
     score -= 20;
     factors.push({ label: "Många kreditkonton", impact: -20, color: "#f59e0b", tip: "Färre aktiva konton är bättre" });
+  } else if (numAccounts >= 1 && numAccounts <= 4) {
+    score += 20;
+    factors.push({ label: `Bra antal kreditkonton (${numAccounts} st)`, impact: 20, color: "#22c55e", tip: "1-4 konton är optimalt" });
   }
 
   score = Math.max(300, Math.min(850, score));
@@ -5168,24 +5190,19 @@ function KreditScore({ inc }) {
       {/* Inputs */}
       <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginBottom: 12 }}>📋 Fyll i din kreditprofil</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {inp("income", "Månadsinkomst (netto)", "35 000", "kr")}
-          {inp("totalDebt", "Total skuld", "500 000", "kr")}
-          {inp("monthlyPayment", "Månadsbetalningar skuld", "8 000", "kr")}
+          {inp("totalDebt", "Total skuld (lån, kredit, CSN)", "165 000", "kr")}
+          {inp("monthlyPayment", "Månadsbetalningar skuld", "2 300", "kr")}
           {inp("missedPayments", "Missade betalningar senaste 2 år", "0")}
           {inp("creditAge", "Hur länge haft kredit/lån", "5", "ar")}
-          {inp("utilization", "Kreditkortsanvändning", "30", "pct")}
-          {inp("numAccounts", "Antal lån/kreditkort", "3")}
+          {inp("utilization", "Kreditkortsanvändning (%)", "30", "pct")}
+          {inp("numAccounts", "Antal lån/kreditkort", "2")}
+          {inp("hasBlankmark", "Betalningsanmärkning hos UC?", "", "select")}
+          {inp("hasKronofogden", "Ärende hos Kronofogden?", "", "select")}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
-          <div>
-            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Betalningsanmärkning hos UC?</div>
-            {inp("hasBlankmark", "", "", "select")}
-          </div>
-          <div>
-            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>Ärende hos Kronofogden?</div>
-            {inp("hasKronofogden", "", "", "select")}
-          </div>
+        <div style={{ fontSize: 11, color: "#475569", marginTop: 10, lineHeight: 1.5 }}>
+          ℹ️ Inkomst och skulder hämtas från din profil om du fyllt i dem.
         </div>
       </div>
 
