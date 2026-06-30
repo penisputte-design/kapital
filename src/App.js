@@ -12312,15 +12312,24 @@ function MittForetagTab({ isPro, isProForetag, onUpgrade }) {
         </div>
       )}
 
-      {/* Navigation */}
-      <div style={{ display: "flex", gap: 4, overflowX: "auto", paddingBottom: 4, marginBottom: 16, scrollbarWidth: "none" }}>
-        {sektioner.map(s => (
-          <button key={s.id} onClick={() => setSektion(s.id)}
-            style={{ flexShrink: 0, padding: "7px 12px", background: sektion === s.id ? "#10b98122" : "var(--card)", border: `1px solid ${sektion === s.id ? "#10b981" : "var(--border)"}`, borderRadius: 20, color: sektion === s.id ? "#10b981" : "#64748b", fontSize: 12, cursor: "pointer", fontWeight: sektion === s.id ? 700 : 400, display: "flex", alignItems: "center", gap: 4 }}>
-            {s.emoji} {s.label}
-          </button>
-        ))}
-      </div>
+      {/* Navigation — rutnät, ingen sidoscroll */}
+      {sektion === "hem" ? null : (
+        <button onClick={() => setSektion("hem")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 4px", background: "none", border: "none", color: "#10b981", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 12 }}>
+          ← Tillbaka till översikt
+        </button>
+      )}
+
+      {sektion === "hem" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+          {sektioner.filter(s => s.id !== "hem").map(s => (
+            <button key={s.id} onClick={() => setSektion(s.id)}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 10px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#e2e8f0", fontSize: 13, fontWeight: 600, cursor: "pointer", textAlign: "left" }}>
+              <span style={{ fontSize: 18 }}>{s.emoji}</span>
+              <span>{s.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* ÖVERSIKT */}
       {sektion === "hem" && (
