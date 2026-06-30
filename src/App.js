@@ -3446,7 +3446,7 @@ function MalInline({ goals: initGoals, leftover }) {
   );
 }
 
-function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
+function SparaTab({ currency, exchangeRates, currencies, isPro, isProForetag, onUpgrade }) {
   const [income, setIncome] = useState(() => {
     try { return localStorage.getItem("kapital_income") || ""; } catch { return ""; }
   });
@@ -4023,7 +4023,7 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
       {activeSubSection === "fondguide" && <><FondGuide /><Disclaimer typ="fond" /></>}
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
       {activeSubSection === "ekonomiplan" && <EkonomiPlanTab isPro={isPro} onUpgrade={onUpgrade} />}
-      {activeSubSection === "mittforetag" && <><MittForetagTab isPro={isPro} onUpgrade={onUpgrade} /><Disclaimer typ="skatt" /></>}
+      {activeSubSection === "mittforetag" && <><MittForetagTab isPro={isPro} isProForetag={isProForetag} onUpgrade={onUpgrade} /><Disclaimer typ="skatt" /></>}
       {activeSubSection === "aicoach" && <><AICoach inc={inc} expenses={expenses} goals={goals} isPro={isPro} onUpgrade={onUpgrade} /><Disclaimer typ="general" /></>}
       {activeSubSection === "lanansokan" && <LanAnsokan />}
       {activeSubSection === "minaforsakringar" && <MinaForsakringar />}
@@ -7800,7 +7800,8 @@ function DelaTab({ result }) {
 
 // ── Pro Upgrade Modal ─────────────────────────────────────────────────────
 function UpgradeModal({ onClose, onUpgrade, t }) {
-  const [plan, setPlan] = useState("monthly");
+  const [period, setPeriod] = useState("monthly");
+  const [tier, setTier] = useState("pro"); // "pro" | "pro_foretag"
 
   const FREE_FEATURES = [
     "✓ Budget & utgiftshantering",
@@ -7826,10 +7827,24 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
     { icon: "💼", title: "Obegränsad portföljspårning", desc: "Lägg in alla dina innehav" },
     { icon: "⭐", title: "Obegränsad bevakningslista", desc: "Bevaka hur många aktier som helst" },
     { icon: "🔔", title: "Obegränsade kurslarm", desc: "Få notis när kursen når ditt mål" },
-    { icon: "🏢", title: "Mitt Företag — hela modulen", desc: "Resultat, fakturor, kvitton (AI-scanning), likviditetsprognos, moms, lön/utdelning, företagsscore" },
     { icon: "📄", title: "PDF-export av ekonomiplan", desc: "Skriv ut din handlingsplan" },
     { icon: "📊", title: "Avancerad portföljanalys", desc: "Risk, diversifiering och mer" },
   ];
+
+  const PRO_FORETAG_EXTRA = [
+    { icon: "♾️", title: "Verkligt obegränsade analyser", desc: "Ingen daglig gräns alls" },
+    { icon: "🏢", title: "Mitt Företag — hela modulen", desc: "Resultat, fakturor, kvitton (AI-scanning), likviditet, moms, lön/utdelning" },
+    { icon: "⭐", title: "Företagsscore & hälsokoll", desc: "Egen kreditvärdighetsanalys för bolaget" },
+    { icon: "🤝", title: "Företagserbjudanden", desc: "Lån, bokföring, försäkring och leasing för företagare" },
+  ];
+
+  const PRISER = {
+    pro: { monthly: 49, yearly: 399 },
+    pro_foretag: { monthly: 99, yearly: 899 },
+  };
+
+  const aktiv = tier === "pro" ? PRO_FEATURES : [...PRO_FEATURES, ...PRO_FORETAG_EXTRA];
+  const pris = PRISER[tier][period];
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#000c", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center" }} onClick={onClose}>
@@ -7852,11 +7867,25 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
           </div>
         </div>
 
+        {/* Tier toggle: Pro vs Pro+Företag */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <button onClick={() => setTier("pro")} style={{ flex: 1, padding: "14px 10px", background: tier === "pro" ? "linear-gradient(135deg,#10b98122,#0ea5e922)" : "var(--bg2)", border: `2px solid ${tier === "pro" ? "#10b981" : "var(--border)"}`, borderRadius: 14, cursor: "pointer", textAlign: "center" }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: tier === "pro" ? "#10b981" : "#94a3b8" }}>Pro</div>
+            <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>För privatpersoner</div>
+          </button>
+          <button onClick={() => setTier("pro_foretag")} style={{ flex: 1, padding: "14px 10px", background: tier === "pro_foretag" ? "linear-gradient(135deg,#8b5cf622,#3b82f622)" : "var(--bg2)", border: `2px solid ${tier === "pro_foretag" ? "#8b5cf6" : "var(--border)"}`, borderRadius: 14, cursor: "pointer", textAlign: "center", position: "relative" }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: tier === "pro_foretag" ? "#8b5cf6" : "#94a3b8" }}>Pro+Företag</div>
+            <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>+ Obegränsat & Mitt Företag</div>
+          </button>
+        </div>
+
         {/* Pro features */}
-        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>Pro — exklusiva funktioner</div>
-        {PRO_FEATURES.map((f, i) => (
+        <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, textTransform: "uppercase", letterSpacing: 1 }}>
+          {tier === "pro" ? "Pro — exklusiva funktioner" : "Pro+Företag — allt i Pro, plus:"}
+        </div>
+        {aktiv.map((f, i) => (
           <div key={i} style={{ display: "flex", gap: 12, marginBottom: 10, alignItems: "flex-start" }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#10b98122,#0ea5e922)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{f.icon}</div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: tier === "pro_foretag" && PRO_FORETAG_EXTRA.includes(f) ? "linear-gradient(135deg,#8b5cf622,#3b82f622)" : "linear-gradient(135deg,#10b98122,#0ea5e922)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{f.icon}</div>
             <div>
               <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>{f.title}</div>
               <div style={{ fontSize: 12, color: "#64748b" }}>{f.desc}</div>
@@ -7864,20 +7893,20 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
           </div>
         ))}
 
-        {/* Plan toggle */}
+        {/* Period toggle */}
         <div style={{ display: "flex", gap: 4, background: "var(--border2)", borderRadius: 12, padding: 4, marginTop: 20, marginBottom: 14 }}>
-          <button onClick={() => setPlan("monthly")} style={{ flex: 1, padding: "10px", background: plan === "monthly" ? "#0f172a" : "none", border: "none", borderRadius: 9, color: plan === "monthly" ? "#e2e8f0" : "#64748b", fontSize: 14, fontWeight: plan === "monthly" ? 700 : 400, cursor: "pointer" }}>
-            49 kr/mån
+          <button onClick={() => setPeriod("monthly")} style={{ flex: 1, padding: "10px", background: period === "monthly" ? "#0f172a" : "none", border: "none", borderRadius: 9, color: period === "monthly" ? "#e2e8f0" : "#64748b", fontSize: 14, fontWeight: period === "monthly" ? 700 : 400, cursor: "pointer" }}>
+            {PRISER[tier].monthly} kr/mån
           </button>
-          <button onClick={() => setPlan("yearly")} style={{ flex: 1, padding: "10px", background: plan === "yearly" ? "#0f172a" : "none", border: "none", borderRadius: 9, color: plan === "yearly" ? "#10b981" : "#64748b", fontSize: 14, fontWeight: plan === "yearly" ? 700 : 400, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            399 kr/år <span style={{ fontSize: 10, background: "#10b98122", color: "#10b981", padding: "1px 6px", borderRadius: 99 }}>-32%</span>
+          <button onClick={() => setPeriod("yearly")} style={{ flex: 1, padding: "10px", background: period === "yearly" ? "#0f172a" : "none", border: "none", borderRadius: 9, color: period === "yearly" ? "#10b981" : "#64748b", fontSize: 14, fontWeight: period === "yearly" ? 700 : 400, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            {PRISER[tier].yearly} kr/år <span style={{ fontSize: 10, background: "#10b98122", color: "#10b981", padding: "1px 6px", borderRadius: 99 }}>-{Math.round((1 - PRISER[tier].yearly / (PRISER[tier].monthly * 12)) * 100)}%</span>
           </button>
         </div>
 
         {/* CTA */}
-        <button onClick={() => startStripeCheckout(plan, onUpgrade)}
-          style={{ width: "100%", padding: "16px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", marginBottom: 10 }}>
-          {plan === "monthly" ? "Starta Pro — 49 kr/mån" : "Starta Pro — 399 kr/år"}
+        <button onClick={() => startStripeCheckout(`${tier}_${period}`, () => onUpgrade(tier))}
+          style={{ width: "100%", padding: "16px", background: tier === "pro" ? "linear-gradient(135deg,#10b981,#0ea5e9)" : "linear-gradient(135deg,#8b5cf6,#3b82f6)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", marginBottom: 10 }}>
+          {tier === "pro" ? `Starta Pro — ${pris} kr/${period === "monthly" ? "mån" : "år"}` : `Starta Pro+Företag — ${pris} kr/${period === "monthly" ? "mån" : "år"}`}
         </button>
 
         <div style={{ textAlign: "center", fontSize: 12, color: "#475569", marginBottom: 8 }}>
@@ -11930,7 +11959,82 @@ const KRYPTO_PRESETS = [
 
 // ── Mitt Företag — Soloföretagare & Frilansare ───────────────────────────
 // eslint-disable-next-line no-unused-vars
-function MittForetagTab({ isPro, onUpgrade }) {
+// ── Mini-onboarding för Företag — hoppar över privat ekonomi-profil ──────
+function ForetagMiniOnboarding({ onDone }) {
+  const [steg, setSteg] = useState(0);
+  const [namn, setNamn] = useState(() => { try { return localStorage.getItem("kapital_name") || ""; } catch { return ""; } });
+  const [foretagsnamn, setForetagsnamn] = useState(() => { try { return localStorage.getItem("fg_namn") || ""; } catch { return ""; } });
+  const [bolagsform, setBolagsform] = useState(() => { try { return localStorage.getItem("fg_bolagsform") || ""; } catch { return ""; } });
+
+  const klar = () => {
+    try {
+      if (namn) localStorage.setItem("kapital_name", namn);
+      if (foretagsnamn) localStorage.setItem("fg_namn", foretagsnamn);
+      if (bolagsform) localStorage.setItem("fg_bolagsform", bolagsform);
+      localStorage.setItem("fg_onboarded", "true");
+    } catch {}
+    onDone();
+  };
+
+  const BOLAGSFORMER = [
+    { id: "enskild", label: "Enskild firma", icon: "👤" },
+    { id: "ab", label: "Aktiebolag (AB)", icon: "🏢" },
+    { id: "hb", label: "Handelsbolag", icon: "🤝" },
+    { id: "ej_startat", label: "Inte startat än", icon: "💡" },
+  ];
+
+  return (
+    <div style={{ maxWidth: 420, margin: "0 auto", padding: "40px 20px", textAlign: "center" }}>
+      {steg === 0 && (
+        <div>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>🏢</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 8 }}>Välkommen till Mitt Företag</div>
+          <div style={{ fontSize: 14, color: "#64748b", marginBottom: 28, lineHeight: 1.6 }}>Två snabba frågor — sen är du igång. Ingen privat ekonomiinfo behövs.</div>
+
+          <input value={namn} onChange={e => setNamn(e.target.value)} placeholder="Ditt förnamn (valfritt)"
+            style={{ width: "100%", padding: "14px 16px", background: "var(--card)", border: "2px solid #1e293b", borderRadius: 14, color: "#e2e8f0", fontSize: 16, outline: "none", textAlign: "center", boxSizing: "border-box", marginBottom: 12 }} />
+          <input value={foretagsnamn} onChange={e => setForetagsnamn(e.target.value)} placeholder="Företagets namn (valfritt)"
+            style={{ width: "100%", padding: "14px 16px", background: "var(--card)", border: "2px solid #1e293b", borderRadius: 14, color: "#e2e8f0", fontSize: 16, outline: "none", textAlign: "center", boxSizing: "border-box", marginBottom: 24 }} />
+
+          <button onClick={() => setSteg(1)} style={{ width: "100%", padding: 15, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+            Nästa →
+          </button>
+        </div>
+      )}
+
+      {steg === 1 && (
+        <div>
+          <div style={{ fontSize: 40, marginBottom: 16 }}>📋</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 8 }}>Vilken bolagsform?</div>
+          <div style={{ fontSize: 14, color: "#64748b", marginBottom: 24 }}>Detta styr vilka beräkningar som visas (t.ex. lön vs utdelning för AB).</div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+            {BOLAGSFORMER.map(b => (
+              <button key={b.id} onClick={() => setBolagsform(b.id)}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: bolagsform === b.id ? "#10b98122" : "var(--card)", border: `2px solid ${bolagsform === b.id ? "#10b981" : "var(--border)"}`, borderRadius: 14, cursor: "pointer", textAlign: "left" }}>
+                <span style={{ fontSize: 22 }}>{b.icon}</span>
+                <span style={{ fontSize: 15, fontWeight: 600, color: bolagsform === b.id ? "#10b981" : "#e2e8f0" }}>{b.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <button onClick={klar} style={{ width: "100%", padding: 15, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 14, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", marginBottom: 10 }}>
+            🚀 Starta Mitt Företag
+          </button>
+          <button onClick={() => setSteg(0)} style={{ width: "100%", padding: 12, background: "none", border: "none", color: "#64748b", fontSize: 13, cursor: "pointer" }}>
+            ← Tillbaka
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MittForetagTab({ isPro, isProForetag, onUpgrade }) {
+  const [foretagOnboarded, setForetagOnboarded] = useState(() => {
+    try { return localStorage.getItem("fg_onboarded") === "true" || !!localStorage.getItem("kapital_onboarded"); } catch { return false; }
+  });
+
   const [sektion, setSektion] = useState("hem");
   const [form, setForm] = useState({
     bolagsform: localStorage.getItem("fg_bolagsform") || "",
@@ -12170,12 +12274,16 @@ function MittForetagTab({ isPro, onUpgrade }) {
     { id: "guide", emoji: "📋", label: "Guide" },
   ];
 
-  if (!isPro) return (
+  if (!foretagOnboarded) return <ForetagMiniOnboarding onDone={() => setForetagOnboarded(true)} />;
+
+  if (!isProForetag) return (
     <div style={{ background: "linear-gradient(135deg,#0f172a,#1e1040)", borderRadius: 16, border: "1px solid #10b98133", padding: 28, textAlign: "center" }}>
       <div style={{ fontSize: 36, marginBottom: 10 }}>🏢</div>
-      <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 8 }}>Mitt Företag <span style={{ fontSize: 11, padding: "2px 8px", background: "linear-gradient(90deg,#f59e0b,#ef4444)", borderRadius: 20, color: "#fff", fontWeight: 700 }}>PRO</span></div>
-      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 20, lineHeight: 1.7 }}>Ekonomiöversikt för soloföretagare och frilansare. Håll koll på resultat, moms och lön vs utdelning.</div>
-      <button onClick={onUpgrade} style={{ padding: "12px 28px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Uppgradera till Pro</button>
+      <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 8 }}>Mitt Företag <span style={{ fontSize: 11, padding: "2px 8px", background: "linear-gradient(90deg,#8b5cf6,#3b82f6)", borderRadius: 20, color: "#fff", fontWeight: 700 }}>PRO+FÖRETAG</span></div>
+      <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, lineHeight: 1.7 }}>Komplett ekonomiverktyg för soloföretagare och frilansare.</div>
+      <div style={{ fontSize: 12, color: "#475569", marginBottom: 20, lineHeight: 1.7 }}>Resultat · Fakturor · Kvitton (AI-scanning) · Likviditetsprognos · Moms · Lön/Utdelning · Företagsscore</div>
+      <button onClick={onUpgrade} style={{ padding: "12px 28px", background: "linear-gradient(135deg,#8b5cf6,#3b82f6)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Uppgradera till Pro+Företag — 99 kr/mån</button>
+      {isPro && <div style={{ fontSize: 11, color: "#10b981", marginTop: 12 }}>✓ Du har redan Pro — uppgradera bara mellanskillnaden</div>}
     </div>
   );
 
@@ -12217,6 +12325,11 @@ function MittForetagTab({ isPro, onUpgrade }) {
       {/* ÖVERSIKT */}
       {sektion === "hem" && (
         <div>
+          {(() => { try { return localStorage.getItem("fg_namn"); } catch { return null; } })() && (
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>
+              🏢 <span style={{ color: "var(--text, #e2e8f0)", fontWeight: 600 }}>{localStorage.getItem("fg_namn")}</span>
+            </div>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
             {[
               { label: "Intäkter", val: totIntakt, color: "#10b981", emoji: "📈" },
@@ -16109,11 +16222,27 @@ function Kapital() {
   const [cache, setCache] = useState(() => {
     try { return JSON.parse(localStorage.getItem("kapital_cache") || "{}"); } catch { return {}; }
   });
-  const [isPro, setIsPro] = useState(() => {
+  // planTier: "bas" | "pro" | "pro_foretag" — isPro kvar för bakåtkompatibilitet (true för pro OCH pro_foretag)
+  const [planTier, setPlanTier] = useState(() => {
     try {
-      return localStorage.getItem("kapital_pro") === "true";
-    } catch { return false; }
+      const stored = localStorage.getItem("kapital_plan_tier");
+      if (stored) return stored;
+      // Migrering: gammal kapital_pro=true blir "pro"
+      return localStorage.getItem("kapital_pro") === "true" ? "pro" : "bas";
+    } catch { return "bas"; }
   });
+  const isPro = planTier === "pro" || planTier === "pro_foretag";
+  const isProForetag = planTier === "pro_foretag";
+  const setIsPro = (val) => {
+    // Bakåtkompatibel setter — true sätter "pro" (ej pro_foretag), false sätter "bas"
+    const tier = val ? "pro" : "bas";
+    setPlanTier(tier);
+    try { localStorage.setItem("kapital_plan_tier", tier); localStorage.setItem("kapital_pro", String(val)); } catch {}
+  };
+  const setTier = (tier) => {
+    setPlanTier(tier);
+    try { localStorage.setItem("kapital_plan_tier", tier); localStorage.setItem("kapital_pro", String(tier !== "bas")); } catch {}
+  };
 
   // Check for upcoming events and send 3-day notifications
   useEffect(() => {
@@ -16254,8 +16383,8 @@ function Kapital() {
     const name = (company || query).trim();
     if (!name) return;
     if (!isPro && usageCount >= FREE_LIMIT) { setShowUpgrade(true); return; }
-    if (isPro && usageCount >= PRO_LIMIT) {
-      showToast("⏳ Du har nått dagens gräns (30 analyser). Återställs imorgon.");
+    if (isPro && !isProForetag && usageCount >= PRO_LIMIT) {
+      showToast("⏳ Du har nått dagens gräns (30 analyser). Återställs imorgon, eller uppgradera till Pro+Företag för obegränsat.");
       return;
     }
 
@@ -16415,10 +16544,10 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
 
   const voiceControl = useVoiceControl({ setTab, setSubTab, setQuery, analyze, income, leftover, savingsRate });
 
-  const handleUpgrade = () => {
-    setIsPro(true);
-    try { localStorage.setItem("kapital_pro", "true"); } catch {}
-    showToast("🎉 Välkommen till Pro!");
+  const handleUpgrade = (tier) => {
+    const finalTier = tier || "pro";
+    setTier(finalTier);
+    showToast(finalTier === "pro_foretag" ? "🎉 Välkommen till Pro+Företag!" : "🎉 Välkommen till Pro!");
   };
 
   // Apply theme colors
@@ -16589,7 +16718,7 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
       {toast && <Toast msg={toast} />}
       <AchievementToast achievement={newAchievement} />
       <VoiceButton voiceControl={voiceControl} />
-      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} onUpgrade={() => { handleUpgrade(); unlock("pro_member"); }} t={t} />}
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} onUpgrade={(tier) => { handleUpgrade(tier); unlock("pro_member"); }} t={t} />}
       {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
       {showProfilBuilder && <ProfilByggare onClose={() => setShowProfilBuilder(false)} />}
       {showSplash && !showOnboarding && <DagligSplash onClose={closeSplash} news={splashNews} onDisable={() => toggleSplash(false)} />}
@@ -16748,7 +16877,7 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
         {tab === 2 && (
           <div>
             <HealthScore />
-            <SparaTab currency={currency} exchangeRates={exchangeRates} currencies={CURRENCIES} isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />
+            <SparaTab currency={currency} exchangeRates={exchangeRates} currencies={CURRENCIES} isPro={isPro} isProForetag={isProForetag} onUpgrade={() => setShowUpgrade(true)} />
           </div>
         )}
 
@@ -16764,7 +16893,7 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
 
         {tab === 5 && (
           <div style={{ padding: "16px", maxWidth: 680, margin: "0 auto" }}>
-            <MittForetagTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />
+            <MittForetagTab isPro={isPro} isProForetag={isProForetag} onUpgrade={() => setShowUpgrade(true)} />
             <Disclaimer typ="skatt" />
           </div>
         )}
