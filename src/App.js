@@ -3667,6 +3667,8 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
               { id: "valutaomvandlare", icon: "💱", label: "Valutaomvandlare", desc: "Live-kurser och omvandlare" },
             ] : activeSection === "ekonomiplan" ? [
               { id: "ekonomiplan", icon: "🎯", label: "Generera plan", desc: "Snabbkoll gratis · AI-plan för Pro" },
+            ] : activeSection === "mittforetag" ? [
+              { id: "mittforetag", icon: "🏢", label: "Öppna Mitt Företag", desc: "Resultat, moms, lön vs utdelning" },
             ] : activeSection === "aicoach" ? [
               { id: "aicoach", icon: "💬", label: "Fråga AI-coachen", desc: "Personliga svar om din ekonomi" },
             ] : activeSection === "lan" ? [
@@ -4014,6 +4016,7 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
       {activeSubSection === "fondguide" && <><FondGuide /><Disclaimer typ="fond" /></>}
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
       {activeSubSection === "ekonomiplan" && <EkonomiPlanTab isPro={isPro} onUpgrade={onUpgrade} />}
+      {activeSubSection === "mittforetag" && <><MittForetagTab isPro={isPro} onUpgrade={onUpgrade} /><Disclaimer typ="skatt" /></>}
       {activeSubSection === "aicoach" && <><AICoach inc={inc} expenses={expenses} goals={goals} /><Disclaimer typ="general" /></>}
       {activeSubSection === "lanansokan" && <LanAnsokan />}
       {activeSubSection === "minaforsakringar" && <MinaForsakringar />}
@@ -11893,6 +11896,125 @@ function MittForetagTab({ isPro, onUpgrade }) {
   const [nyPost, setNyPost] = useState({ typ: "intakt", beskr: "", belopp: "", moms: "25" });
   const [addOpen, setAddOpen] = useState(false);
 
+  // Fakturor
+  const [fakturor, setFakturor] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("fg_fakturor") || "[]"); } catch { return []; }
+  });
+  const [nyFaktura, setNyFaktura] = useState({ kund: "", belopp: "", moms: "25", forfaller: "", beskrivning: "" });
+  const [fakturaOpen, setFakturaOpen] = useState(false);
+
+  const skapaFaktura = () => {
+    if (!nyFaktura.kund || !nyFaktura.belopp) return;
+    const f = {
+      id: Date.now(),
+      nummer: `F-${new Date().getFullYear()}-${String(fakturor.length + 1).padStart(3, "0")}`,
+      kund: nyFaktura.kund,
+      belopp: parseFloat(nyFaktura.belopp),
+      moms: nyFaktura.moms,
+      beskrivning: nyFaktura.beskrivning,
+      skapad: new Date().toISOString().split("T")[0],
+      forfaller: nyFaktura.forfaller || (() => { const d = new Date(); d.setDate(d.getDate() + 30); return d.toISOString().split("T")[0]; })(),
+      status: "obetald",
+    };
+    const nya = [...fakturor, f];
+    setFakturor(nya);
+    try { localStorage.setItem("fg_fakturor", JSON.stringify(nya)); } catch {}
+    setNyFaktura({ kund: "", belopp: "", moms: "25", forfaller: "", beskrivning: "" });
+    setFakturaOpen(false);
+  };
+
+  const markeraBetald = (id) => {
+    const nya = fakturor.map(f => f.id === id ? { ...f, status: f.status === "betald" ? "obetald" : "betald" } : f);
+    setFakturor(nya);
+    try { localStorage.setItem("fg_fakturor", JSON.stringify(nya)); } catch {}
+    if (nya.find(f => f.id === id)?.status === "betald") {
+      const f = nya.find(f => f.id === id);
+      const post = { id: Date.now(), typ: "intakt", beskr: `Faktura ${f.nummer} — ${f.kund}`, belopp: f.belopp, moms: f.moms, datum: new Date().toISOString().split("T")[0] };
+      const nyaIntakter = [...intakter, post];
+      setIntakter(nyaIntakter);
+      try { localStorage.setItem("fg_intakter", JSON.stringify(nyaIntakter)); } catch {}
+    }
+  };
+
+  const taBortFaktura = (id) => {
+    const nya = fakturor.filter(f => f.id !== id);
+    setFakturor(nya);
+    try { localStorage.setItem("fg_fakturor", JSON.stringify(nya)); } catch {}
+  };
+
+  // Kvitton
+  const [kvitton, setKvitton] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("fg_kvitton") || "[]"); } catch { return []; }
+  });
+  const [kvittoLoading, setKvittoLoading] = useState(false);
+  const [kvittoForhandsvisning, setKvittoForhandsvisning] = useState(null);
+
+  const hanteraKvittoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setKvittoLoading(true);
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target.result.split(",")[1];
+      setKvittoForhandsvisning(ev.target.result);
+
+      try {
+        const resp = await fetch("/api/claude", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-haiku-4-5-20251001",
+            max_tokens: 300,
+            messages: [{
+              role: "user",
+              content: [
+                { type: "image", source: { type: "base64", media_type: file.type, data: base64 } },
+                { type: "text", text: `Analysera kvittot. Svara ENDAST med giltig JSON utan markdown: {"foretag":"namn på butik/företag","belopp":totalbelopp_som_nummer,"moms":momssats_procent_som_nummer,"datum":"YYYY-MM-DD","kategori":"en av: Kontorsmaterial/Resor/Representation/IT/Marknadsföring/Övrigt"}` }
+              ]
+            }]
+          })
+        });
+        const data = await resp.json();
+        const text = data.content?.[0]?.text || "";
+        const cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          const parsed = JSON.parse(match[0]);
+          const kvitto = {
+            id: Date.now(),
+            foretag: parsed.foretag || "Okänt",
+            belopp: parseFloat(parsed.belopp) || 0,
+            moms: parsed.moms || 25,
+            datum: parsed.datum || new Date().toISOString().split("T")[0],
+            kategori: parsed.kategori || "Övrigt",
+            bild: ev.target.result,
+          };
+          const nya = [kvitto, ...kvitton];
+          setKvitton(nya);
+          try { localStorage.setItem("fg_kvitton", JSON.stringify(nya)); } catch {}
+
+          // Lägg automatiskt till som utgift
+          const post = { id: Date.now() + 1, typ: "utgift", beskr: `${kvitto.foretag} (${kvitto.kategori})`, belopp: kvitto.belopp, moms: String(kvitto.moms), datum: kvitto.datum };
+          const nyaUtgifter = [...utgifter, post];
+          setUtgifter(nyaUtgifter);
+          try { localStorage.setItem("fg_utgifter", JSON.stringify(nyaUtgifter)); } catch {}
+        }
+      } catch (err) {
+        console.error("Kvitto-analys fel:", err);
+      }
+      setKvittoLoading(false);
+      setKvittoForhandsvisning(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const taBortKvitto = (id) => {
+    const nya = kvitton.filter(k => k.id !== id);
+    setKvitton(nya);
+    try { localStorage.setItem("fg_kvitton", JSON.stringify(nya)); } catch {}
+  };
+
   const sparaForm = (key, val) => {
     setForm(p => ({ ...p, [key]: val }));
     try { localStorage.setItem("fg_" + key, val); } catch {}
@@ -11918,6 +12040,59 @@ function MittForetagTab({ isPro, onUpgrade }) {
   const totIntakt = intakter.reduce((s, i) => s + i.belopp, 0);
   const totUtgift = utgifter.reduce((s, u) => s + u.belopp, 0);
   const resultat = totIntakt - totUtgift;
+
+  // ── Företagsstatus — hälsokoll ───────────────────────────────────────
+  const vinstmarginal = totIntakt > 0 ? (resultat / totIntakt) * 100 : 0;
+  const antalManader = new Set([...intakter, ...utgifter].map(p => p.datum?.slice(0, 7)).filter(Boolean)).size || 1;
+  const snittIntaktManad = totIntakt / antalManader;
+  const obetaldaFakturor = fakturor.filter(f => f.status === "obetald");
+  const forfallnaFakturor = obetaldaFakturor.filter(f => new Date(f.forfaller) < new Date());
+
+  let halsoPoang = 0;
+  const halsoFaktorer = [];
+
+  if (vinstmarginal >= 20) { halsoPoang += 30; halsoFaktorer.push({ text: `Stark vinstmarginal (${vinstmarginal.toFixed(0)}%)`, bra: true }); }
+  else if (vinstmarginal >= 5) { halsoPoang += 15; halsoFaktorer.push({ text: `OK vinstmarginal (${vinstmarginal.toFixed(0)}%)`, bra: true }); }
+  else if (vinstmarginal < 0) { halsoFaktorer.push({ text: `Negativ vinstmarginal (${vinstmarginal.toFixed(0)}%)`, bra: false }); }
+  else { halsoFaktorer.push({ text: `Låg vinstmarginal (${vinstmarginal.toFixed(0)}%)`, bra: false }); }
+
+  if (forfallnaFakturor.length === 0 && obetaldaFakturor.length > 0) { halsoPoang += 20; halsoFaktorer.push({ text: "Inga förfallna fakturor", bra: true }); }
+  else if (forfallnaFakturor.length > 0) { halsoFaktorer.push({ text: `${forfallnaFakturor.length} förfallen(a) faktura(or)`, bra: false }); }
+
+  if (totIntakt > 0 && intakter.length >= 3) { halsoPoang += 20; halsoFaktorer.push({ text: "Stabil fakturering", bra: true }); }
+  else { halsoFaktorer.push({ text: "Bygg upp fler intäktskällor", bra: false }); }
+
+  if (resultat > 0) { halsoPoang += 20; halsoFaktorer.push({ text: "Positivt resultat", bra: true }); }
+  else { halsoFaktorer.push({ text: "Negativt resultat", bra: false }); }
+
+  if (kvitton.length > 0) { halsoPoang += 10; halsoFaktorer.push({ text: "Bokför löpande kvitton", bra: true }); }
+
+  const halsoStatus = halsoPoang >= 75 ? { text: "Stark", color: "#22c55e" } : halsoPoang >= 50 ? { text: "Stabil", color: "#10b981" } : halsoPoang >= 25 ? { text: "Behöver uppmärksamhet", color: "#f59e0b" } : { text: "Kritisk", color: "#ef4444" };
+
+  // ── Företagsscore — kreditvärdighet för företag ──────────────────────
+  let foretagScore = 400;
+  const scoreFaktorer = [];
+
+  if (vinstmarginal >= 15) { foretagScore += 100; scoreFaktorer.push({ label: `Hög vinstmarginal (${vinstmarginal.toFixed(0)}%)`, impact: 100, color: "#22c55e" }); }
+  else if (vinstmarginal >= 0) { foretagScore += 40; scoreFaktorer.push({ label: `Positiv vinstmarginal (${vinstmarginal.toFixed(0)}%)`, impact: 40, color: "#22c55e" }); }
+  else { foretagScore -= 80; scoreFaktorer.push({ label: `Negativ vinstmarginal (${vinstmarginal.toFixed(0)}%)`, impact: -80, color: "#ef4444" }); }
+
+  if (forfallnaFakturor.length === 0) { foretagScore += 60; scoreFaktorer.push({ label: "Inga förfallna fakturor", impact: 60, color: "#22c55e" }); }
+  else { foretagScore -= forfallnaFakturor.length * 40; scoreFaktorer.push({ label: `${forfallnaFakturor.length} förfallna fakturor`, impact: -forfallnaFakturor.length * 40, color: "#ef4444" }); }
+
+  if (antalManader >= 12) { foretagScore += 80; scoreFaktorer.push({ label: "Lång verksamhetshistorik (12+ mån)", impact: 80, color: "#22c55e" }); }
+  else if (antalManader >= 6) { foretagScore += 40; scoreFaktorer.push({ label: `${antalManader} månaders historik`, impact: 40, color: "#22c55e" }); }
+  else { foretagScore += 10; scoreFaktorer.push({ label: `Kort historik (${antalManader} mån)`, impact: 10, color: "#f59e0b" }); }
+
+  if (intakter.length >= 5) { foretagScore += 50; scoreFaktorer.push({ label: "Flera intäktskällor", impact: 50, color: "#22c55e" }); }
+  else { foretagScore += 10; scoreFaktorer.push({ label: "Få registrerade intäkter", impact: 10, color: "#f59e0b" }); }
+
+  if (resultat > 0 && totUtgift < totIntakt * 0.7) { foretagScore += 40; scoreFaktorer.push({ label: "Bra kostnadskontroll", impact: 40, color: "#22c55e" }); }
+
+  foretagScore = Math.max(300, Math.min(850, Math.round(foretagScore)));
+  const foretagScoreFarg = foretagScore >= 700 ? "#22c55e" : foretagScore >= 600 ? "#10b981" : foretagScore >= 500 ? "#f59e0b" : "#ef4444";
+  const foretagScoreText = foretagScore >= 700 ? "Stark" : foretagScore >= 600 ? "Bra" : foretagScore >= 500 ? "OK" : "Svag";
+
   const momsIn = intakter.reduce((s, i) => s + i.belopp * (parseFloat(i.moms) / 100), 0);
   const momsUt = utgifter.reduce((s, u) => s + u.belopp * (parseFloat(u.moms) / 100), 0);
   const momsSkuld = momsIn - momsUt;
@@ -11932,9 +12107,15 @@ function MittForetagTab({ isPro, onUpgrade }) {
 
   const sektioner = [
     { id: "hem", emoji: "🏢", label: "Översikt" },
+    { id: "status", emoji: "💚", label: "Status" },
+    { id: "score", emoji: "⭐", label: "Score" },
     { id: "resultat", emoji: "📊", label: "Resultat" },
-    { id: "moms", emoji: "🧾", label: "Moms" },
+    { id: "fakturor", emoji: "📄", label: "Fakturor" },
+    { id: "kvitton", emoji: "🧾", label: "Kvitton" },
+    { id: "likviditet", emoji: "💧", label: "Likviditet" },
+    { id: "moms", emoji: "💸", label: "Moms" },
     { id: "loneutdelning", emoji: "💰", label: "Lön/Utdelning" },
+    { id: "erbjudanden", emoji: "🤝", label: "Erbjudanden" },
     { id: "guide", emoji: "📋", label: "Guide" },
   ];
 
@@ -12087,6 +12268,306 @@ function MittForetagTab({ isPro, onUpgrade }) {
         </div>
       )}
 
+      {/* FAKTUROR */}
+      {sektion === "fakturor" && (
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text, #e2e8f0)" }}>📄 Fakturor</div>
+            <button onClick={() => setFakturaOpen(!fakturaOpen)} style={{ padding: "7px 14px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+              + Ny faktura
+            </button>
+          </div>
+          <div style={{ fontSize: 11, color: "#475569", marginBottom: 14, lineHeight: 1.6 }}>
+            ℹ️ Detta är intern uppföljning av fakturor du skickat — inte en officiell fakturadokumentgenerator. Skicka en korrekt fakturahandling till kund separat (t.ex. via Fortnox/Bokio).
+          </div>
+
+          {fakturaOpen && (
+            <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16, marginBottom: 14 }}>
+              <input value={nyFaktura.kund} onChange={e => setNyFaktura(p => ({ ...p, kund: e.target.value }))} placeholder="Kundnamn / Företag"
+                style={{ width: "100%", padding: "10px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+              <input value={nyFaktura.beskrivning} onChange={e => setNyFaktura(p => ({ ...p, beskrivning: e.target.value }))} placeholder="Beskrivning (t.ex. Konsultarbete juni)"
+                style={{ width: "100%", padding: "10px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 8, boxSizing: "border-box" }} />
+              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <input value={nyFaktura.belopp} onChange={e => setNyFaktura(p => ({ ...p, belopp: e.target.value }))} placeholder="Belopp (exkl moms)" inputMode="decimal"
+                  style={{ flex: 1, padding: "10px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", boxSizing: "border-box" }} />
+                <select value={nyFaktura.moms} onChange={e => setNyFaktura(p => ({ ...p, moms: e.target.value }))}
+                  style={{ padding: "10px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none" }}>
+                  <option value="25">25% moms</option>
+                  <option value="12">12% moms</option>
+                  <option value="6">6% moms</option>
+                  <option value="0">0% moms</option>
+                </select>
+              </div>
+              <input type="date" value={nyFaktura.forfaller} onChange={e => setNyFaktura(p => ({ ...p, forfaller: e.target.value }))}
+                style={{ width: "100%", padding: "10px 12px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 8, color: "#e2e8f0", fontSize: 14, outline: "none", marginBottom: 10, boxSizing: "border-box" }} />
+              <button onClick={skapaFaktura} style={{ width: "100%", padding: 11, background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                Skapa faktura
+              </button>
+            </div>
+          )}
+
+          {fakturor.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 0", color: "#334155" }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>📄</div>
+              <div style={{ fontSize: 13 }}>Inga fakturor ännu</div>
+            </div>
+          ) : (
+            <div>
+              {/* Sammanfattning */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+                <div style={{ flex: 1, background: "var(--card)", borderRadius: 12, padding: 12, textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "#64748b" }}>Obetalda</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#f59e0b" }}>{fakturor.filter(f => f.status === "obetald").reduce((s, f) => s + f.belopp * (1 + parseFloat(f.moms) / 100), 0).toLocaleString("sv-SE")} kr</div>
+                </div>
+                <div style={{ flex: 1, background: "var(--card)", borderRadius: 12, padding: 12, textAlign: "center" }}>
+                  <div style={{ fontSize: 11, color: "#64748b" }}>Betalda</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#10b981" }}>{fakturor.filter(f => f.status === "betald").reduce((s, f) => s + f.belopp * (1 + parseFloat(f.moms) / 100), 0).toLocaleString("sv-SE")} kr</div>
+                </div>
+              </div>
+
+              {fakturor.slice().reverse().map(f => {
+                const forfallenDatum = new Date(f.forfaller);
+                const idag = new Date();
+                const forfallen = f.status === "obetald" && forfallenDatum < idag;
+                return (
+                  <div key={f.id} style={{ background: "var(--card)", borderRadius: 12, border: `1px solid ${forfallen ? "#ef444444" : "var(--border)"}`, padding: 14, marginBottom: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                      <div>
+                        <div style={{ fontSize: 11, color: "#475569" }}>{f.nummer}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>{f.kund}</div>
+                        {f.beskrivning && <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>{f.beskrivning}</div>}
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text, #e2e8f0)" }}>{(f.belopp * (1 + parseFloat(f.moms) / 100)).toLocaleString("sv-SE")} kr</div>
+                        <div style={{ fontSize: 10, color: "#475569" }}>inkl. {f.moms}% moms</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ fontSize: 11, color: forfallen ? "#ef4444" : "#64748b" }}>
+                        {forfallen ? "⚠️ Förfallen — " : "Förfaller: "}{f.forfaller}
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button onClick={() => markeraBetald(f.id)} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 8, border: "none", cursor: "pointer", background: f.status === "betald" ? "#10b98122" : "#f59e0b22", color: f.status === "betald" ? "#10b981" : "#f59e0b", fontWeight: 700 }}>
+                          {f.status === "betald" ? "✓ Betald" : "Markera betald"}
+                        </button>
+                        <button onClick={() => taBortFaktura(f.id)} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 8, border: "1px solid #ef444433", background: "none", color: "#ef4444", cursor: "pointer" }}>🗑️</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* KVITTON */}
+      {sektion === "kvitton" && (
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text, #e2e8f0)", marginBottom: 6 }}>🧾 Kvitton</div>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 10, lineHeight: 1.6 }}>Fota ett kvitto — AI läser av belopp, moms och kategori automatiskt och lägger till som utgift.</div>
+          <div style={{ fontSize: 11, color: "#475569", background: "var(--bg2)", borderRadius: 8, padding: "8px 12px", marginBottom: 14, lineHeight: 1.6 }}>
+            🔒 Kvittobilden skickas till vår AI-leverantör för analys och sparas sedan lokalt på din enhet. Undvik att fota kvitton med känslig personlig information om annan part.
+          </div>
+
+          <label style={{ display: "block", marginBottom: 16 }}>
+            <input type="file" accept="image/*" capture="environment" onChange={hanteraKvittoUpload} style={{ display: "none" }} disabled={kvittoLoading} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "28px 16px", background: "var(--card)", border: "2px dashed #10b98155", borderRadius: 16, cursor: kvittoLoading ? "default" : "pointer" }}>
+              {kvittoLoading ? (
+                <>
+                  {kvittoForhandsvisning && <img src={kvittoForhandsvisning} alt="" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, opacity: 0.5 }} />}
+                  <div style={{ fontSize: 13, color: "#10b981" }}>⏳ AI analyserar kvittot...</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 32 }}>📸</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#10b981" }}>Fota eller ladda upp kvitto</div>
+                  <div style={{ fontSize: 11, color: "#475569" }}>JPG, PNG — AI extraherar data automatiskt</div>
+                </>
+              )}
+            </div>
+          </label>
+
+          {kvitton.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "20px 0", color: "#334155" }}>
+              <div style={{ fontSize: 13 }}>Inga kvitton sparade ännu</div>
+            </div>
+          ) : (
+            kvitton.map(k => (
+              <div key={k.id} style={{ display: "flex", gap: 12, background: "var(--card)", borderRadius: 12, border: "1px solid var(--border)", padding: 12, marginBottom: 8, alignItems: "center" }}>
+                {k.bild && <img src={k.bild} alt="" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />}
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>{k.foretag}</div>
+                  <div style={{ fontSize: 11, color: "#64748b" }}>{k.kategori} · {k.datum}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#ef4444" }}>-{k.belopp.toLocaleString("sv-SE")} kr</div>
+                  <button onClick={() => taBortKvitto(k.id)} style={{ fontSize: 10, color: "#475569", background: "none", border: "none", cursor: "pointer" }}>Ta bort</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* LIKVIDITET */}
+      {sektion === "likviditet" && (() => {
+        const manaderFramat = 6;
+        const snittIntakt = intakter.length > 0 ? totIntakt / Math.max(1, new Set(intakter.map(i => i.datum?.slice(0, 7))).size) : 0;
+        const snittUtgift = utgifter.length > 0 ? totUtgift / Math.max(1, new Set(utgifter.map(u => u.datum?.slice(0, 7))).size) : 0;
+        const nuvarandeSaldo = resultat;
+        const manadsResultat = snittIntakt - snittUtgift;
+
+        const prognos = [];
+        let saldo = nuvarandeSaldo;
+        for (let i = 1; i <= manaderFramat; i++) {
+          saldo += manadsResultat;
+          const d = new Date();
+          d.setMonth(d.getMonth() + i);
+          prognos.push({ manad: d.toLocaleDateString("sv-SE", { month: "short", year: "2-digit" }), saldo: Math.round(saldo) });
+        }
+
+        const blirNegativ = prognos.find(p => p.saldo < 0);
+
+        return (
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text, #e2e8f0)", marginBottom: 6 }}>💧 Likviditetsprognos</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginBottom: 14, lineHeight: 1.6 }}>Baserad på ditt genomsnittliga resultat de senaste månaderna.</div>
+
+            {intakter.length === 0 && utgifter.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "40px 0", color: "#334155" }}>
+                <div style={{ fontSize: 36, marginBottom: 10 }}>💧</div>
+                <div style={{ fontSize: 13 }}>Lägg till intäkter och utgifter under Resultat för att se prognosen</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+                  <div style={{ flex: 1, background: "var(--card)", borderRadius: 12, padding: 12, textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>Snittresultat/mån</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: manadsResultat >= 0 ? "#10b981" : "#ef4444" }}>{Math.round(manadsResultat).toLocaleString("sv-SE")} kr</div>
+                  </div>
+                  <div style={{ flex: 1, background: "var(--card)", borderRadius: 12, padding: 12, textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>Nuvarande saldo</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: nuvarandeSaldo >= 0 ? "#10b981" : "#ef4444" }}>{Math.round(nuvarandeSaldo).toLocaleString("sv-SE")} kr</div>
+                  </div>
+                </div>
+
+                {blirNegativ && (
+                  <div style={{ background: "#ef444411", border: "1px solid #ef444433", borderRadius: 12, padding: 14, marginBottom: 14 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444", marginBottom: 4 }}>⚠️ Varning</div>
+                    <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.6 }}>Med nuvarande trend riskerar likviditeten bli negativ i {blirNegativ.manad}. Överväg att öka intäkter eller minska utgifter.</div>
+                  </div>
+                )}
+
+                <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid var(--border)", padding: 16 }}>
+                  <div style={{ fontSize: 12, color: "#64748b", marginBottom: 12 }}>Prognos {manaderFramat} månader framåt</div>
+                  {prognos.map((p, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < prognos.length - 1 ? "1px solid var(--border)" : "none" }}>
+                      <div style={{ fontSize: 13, color: "#94a3b8" }}>{p.manad}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: p.saldo >= 0 ? "#10b981" : "#ef4444" }}>{p.saldo.toLocaleString("sv-SE")} kr</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* STATUS — Företagshälsokoll */}
+      {sektion === "status" && (
+        <div>
+          <div style={{ background: "var(--card)", borderRadius: 16, border: `1px solid ${halsoStatus.color}33`, padding: 20, marginBottom: 16, textAlign: "center" }}>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 8 }}>💚 Företagshälsa</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: halsoStatus.color, marginBottom: 4 }}>{halsoStatus.text}</div>
+            <div style={{ fontSize: 13, color: "#94a3b8" }}>{halsoPoang}/100 poäng</div>
+            <div style={{ background: "var(--bg2)", borderRadius: 99, height: 8, overflow: "hidden", marginTop: 12 }}>
+              <div style={{ width: `${halsoPoang}%`, height: "100%", background: halsoStatus.color, borderRadius: 99, transition: "width 0.4s" }} />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+            <div style={{ background: "var(--card)", borderRadius: 12, padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "#64748b" }}>Vinstmarginal</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: vinstmarginal >= 0 ? "#10b981" : "#ef4444" }}>{vinstmarginal.toFixed(0)}%</div>
+            </div>
+            <div style={{ background: "var(--card)", borderRadius: 12, padding: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 11, color: "#64748b" }}>Förfallna fakturor</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: forfallnaFakturor.length === 0 ? "#10b981" : "#ef4444" }}>{forfallnaFakturor.length}</div>
+            </div>
+          </div>
+
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 10 }}>Faktorer som påverkar</div>
+          {halsoFaktorer.map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--card)", borderRadius: 10, padding: "10px 14px", marginBottom: 6 }}>
+              <span style={{ fontSize: 16 }}>{f.bra ? "✅" : "⚠️"}</span>
+              <span style={{ fontSize: 13, color: f.bra ? "#94a3b8" : "#f59e0b" }}>{f.text}</span>
+            </div>
+          ))}
+          <Disclaimer typ="general" />
+        </div>
+      )}
+
+      {/* SCORE — Företagets kreditvärdighet */}
+      {sektion === "score" && (
+        <div>
+          <div style={{ background: "var(--card)", borderRadius: 16, border: `1px solid ${foretagScoreFarg}33`, padding: 20, marginBottom: 16, textAlign: "center" }}>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>⭐ Företagets uppskattade score</div>
+            <div style={{ fontSize: 44, fontWeight: 900, color: foretagScoreFarg }}>{foretagScore}</div>
+            <div style={{ fontSize: 14, color: foretagScoreFarg, fontWeight: 700, marginBottom: 4 }}>{foretagScoreText}</div>
+            <div style={{ fontSize: 11, color: "#475569" }}>Skala 300-850 · Uppskattning, ej officiell kreditbedömning</div>
+          </div>
+
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text, #e2e8f0)", marginBottom: 10 }}>Faktorer</div>
+          {scoreFaktorer.map((f, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--card)", borderRadius: 10, padding: "10px 14px", marginBottom: 6 }}>
+              <span style={{ fontSize: 13, color: "#94a3b8" }}>{f.label}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: f.color }}>{f.impact > 0 ? "+" : ""}{f.impact}</span>
+            </div>
+          ))}
+
+          <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 16, lineHeight: 1.6 }}>
+            ⚖️ Uppskattning baserad på din indata — inte en officiell kreditupplysning. Banker och kreditgivare gör egna bedömningar.
+          </div>
+        </div>
+      )}
+
+      {/* ERBJUDANDEN — Affiliate för företag */}
+      {sektion === "erbjudanden" && (
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text, #e2e8f0)", marginBottom: 4 }}>🤝 Erbjudanden för företagare</div>
+          <div style={{ fontSize: 12, color: "#64748b", marginBottom: 16 }}>Utvalda partners för dig som driver eget</div>
+
+          {[
+            { namn: "Qred Företagslån", badge: "Snabbast 🚀", color: "#10b981", desc: "Företagslån utan säkerhet — besked inom 24h", detalj: "50 000 - 5 000 000 kr · Ingen UC-koll för dig personligen", url: "qred.com" },
+            { namn: "Froda Företagslån", badge: "Populärt 🔥", color: "#3b82f6", desc: "Flexibel finansiering för tillväxt", detalj: "Upp till 3 000 000 kr · Snabb digital ansökan", url: "froda.se" },
+            { namn: "Fortnox Bokföring", badge: "Marknadsledare", color: "#0ea5e9", desc: "Sveriges populäraste bokföringsprogram", detalj: "Fakturering, bokföring, lön — allt i ett", url: "fortnox.se" },
+            { namn: "Bokio", badge: "Bäst för småföretag", color: "#8b5cf6", desc: "Enkel bokföring för soloföretagare", detalj: "Gratis grundversion · Smidigt för enskild firma", url: "bokio.se" },
+            { namn: "Trygg-Hansa Företag", badge: null, color: "#ef4444", desc: "Företagsförsäkring anpassad efter din verksamhet", detalj: "Ansvar, egendom, avbrott — skräddarsytt", url: "trygghansa.se" },
+            { namn: "Collector Bank Företag", badge: null, color: "#f59e0b", desc: "Factoring och företagskrediter", detalj: "Få betalt för fakturor direkt — vänta inte 30 dagar", url: "collectorbank.se" },
+            { namn: "Visma eEkonomi", badge: null, color: "#06b6d4", desc: "Bokföring och fakturering i molnet", detalj: "Populärt bland konsulter och frilansare", url: "visma.se" },
+            { namn: "Svea Företagsleasing", badge: null, color: "#ec4899", desc: "Leasa bil, maskiner och utrustning", detalj: "Bättre likviditet — slipp stora engångsutgifter", url: "svea.com" },
+          ].map((d, i) => (
+            <div key={i} style={{ background: "var(--card)", borderRadius: 14, border: `1px solid ${d.color}33`, padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text, #e2e8f0)" }}>{d.namn}</div>
+                {d.badge && <span style={{ fontSize: 10, color: d.color, background: d.color + "22", padding: "2px 8px", borderRadius: 20, fontWeight: 700 }}>{d.badge}</span>}
+              </div>
+              <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 4, lineHeight: 1.5 }}>{d.desc}</div>
+              <div style={{ fontSize: 11, color: "#64748b", marginBottom: 12 }}>{d.detalj}</div>
+              <button onClick={() => typeof trackClick === "function" ? trackClick(d.namn, "foretag", `https://${d.url}`) : window.open(`https://${d.url}`, "_blank")}
+                style={{ display: "block", width: "100%", padding: "10px 16px", background: `linear-gradient(135deg,${d.color}22,${d.color}11)`, border: `1px solid ${d.color}44`, borderRadius: 10, color: d.color, fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "center" }}>
+                Se erbjudandet →
+              </button>
+            </div>
+          ))}
+
+          <div style={{ fontSize: 11, color: "#334155", textAlign: "center", marginTop: 12, lineHeight: 1.6 }}>
+            Kapital kan få ersättning från dessa partners. Jämför alltid villkor innan du bestämmer dig.
+          </div>
+        </div>
+      )}
+
       {/* MOMS */}
       {sektion === "moms" && (
         <div>
@@ -12110,6 +12591,7 @@ function MittForetagTab({ isPro, onUpgrade }) {
               • Lämna in via Skatteverkets e-tjänst på skatteverket.se
             </div>
           </div>
+          <Disclaimer typ="skatt" />
         </div>
       )}
 
@@ -12138,6 +12620,7 @@ function MittForetagTab({ isPro, onUpgrade }) {
               💡 Optimalt löneuttag för lägsta skatt: ta ut lön upp till brytpunkten för statlig skatt (~614 000 kr/år = ~51 000 kr/mån). Resten som utdelning till 20% skatt.
             </div>
           </div>
+          <Disclaimer typ="skatt" />
         </div>
       )}
 
@@ -16220,6 +16703,13 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
         {tab === 4 && !seniorMode && <ProfilTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} lang={lang} changeLang={changeLang} t={t} currency={currency} changeCurrency={changeCurrency} exchangeRates={exchangeRates} currencies={CURRENCIES} seniorMode={seniorMode} setSeniorMode={setSeniorMode} theme={theme} setTheme={setTheme} splashEnabled={splashEnabled} toggleSplash={toggleSplash} sbUser={sbUser} onLogin={() => window.dispatchEvent(new CustomEvent("kapital_open_login"))} onLogout={async () => { await supabase.auth.signOut(); setSbUser(null); }} />}
         {tab === 4 && seniorMode && <SeniorTab setSeniorMode={setSeniorMode} />}
 
+        {tab === 5 && (
+          <div style={{ padding: "16px", maxWidth: 680, margin: "0 auto" }}>
+            <MittForetagTab isPro={isPro} onUpgrade={() => setShowUpgrade(true)} />
+            <Disclaimer typ="skatt" />
+          </div>
+        )}
+
         {/* Legal footer */}
         <div style={{ borderTop: "1px solid var(--border)", marginTop: 28, paddingTop: 16, paddingBottom: 20, fontSize: 11, color: "#334155", lineHeight: 1.8, textAlign: "center" }}>
           <div style={{ marginBottom: 6, color: "#475569", fontWeight: 600 }}>{t.legalNote}</div>
@@ -16235,7 +16725,8 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
             { icon: "🏠", label: "Hem", idx: 0 },
             { icon: "📈", label: "Aktier", idx: 1 },
             { icon: "💰", label: "Ekonomi", idx: 2 },
-            { icon: "🤝", label: "Erbjudanden", idx: 3 },
+            { icon: "🏢", label: "Företag", idx: 5 },
+            { icon: "🤝", label: "Erbjud.", idx: 3 },
             { icon: "👤", label: "Profil", idx: 4 },
           ].map(({ icon, label, idx }) => (
             <button key={idx} onClick={() => {
