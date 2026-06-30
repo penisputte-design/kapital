@@ -452,6 +452,7 @@ async function openCustomerPortal(customerId) {
 }
 
 const FREE_LIMIT = 3;
+const PRO_LIMIT = 30; // Mjuk daglig gräns för Pro — skyddar mot extrem överanvändning
 
 const CURRENCIES = [
   { code: "SEK", symbol: "kr", flag: "🇸🇪", name: "Svensk krona" },
@@ -528,7 +529,7 @@ const T = {
     legalNote: "⚠ Viktig information",
     legalText: "Kapital är ett informations- och analysverktyg och utgör inte investeringsrådgivning enligt lag (2007:528) om värdepappersmarknaden. AI-genererade analyser är inte personliga köp- eller säljrekommendationer. Historisk avkastning är ingen garanti för framtida resultat. Investeringar innebär alltid risk — du kan förlora hela ditt investerade kapital.",
     proTitle: "Du har använt dina 3 Bas-analyser",
-    proDesc: "Bas-versionen ger 3 analyser. Pro ger obegränsat + AI-coach, Hälsokoll och exklusiva funktioner.",
+    proDesc: "Bas-versionen ger 3 analyser/dag. Pro ger upp till 30/dag + obegränsad AI-coach, Mitt Företag och exklusiva funktioner.",
     proMonth: "Pro — 49 kr/mån", proYear: "399 kr/år", proCancel: "✓ Avsluta när som helst",
     language: "Språk",
   },
@@ -1619,6 +1620,12 @@ function AnalysTab({ result, loading, loadStep = 0, error, query, setQuery, anal
         </div>
       )}
 
+      {isPro && usageCount >= 20 && (
+        <div style={{ fontSize: 11, color: usageCount >= PRO_LIMIT ? "#ef4444" : "#f59e0b", textAlign: "center", marginBottom: 10 }}>
+          {usageCount}/{PRO_LIMIT} analyser idag
+        </div>
+      )}
+
       {/* Quick-access grid with live prices - visas bara nar inget resultat */}
       {!result && !loading && <QuickGrid onSelect={(name) => { setQuery(name); analyze(name); }} />}
 
@@ -2026,7 +2033,7 @@ function WatchlistTab({ onAnalyze, isPro, onUpgrade, onlySection }) {
           <div style={{ background: "linear-gradient(135deg,#0f172a,#1e1040)", borderRadius: 16, border: "1px solid #10b98133", padding: 28, textAlign: "center" }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>💾</div>
             <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>Sparade analyser</div>
-            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 20, lineHeight: 1.7 }}>Spara obegränsat med analyser och bygg upp<br />din egen analyshistorik med Pro.</div>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 20, lineHeight: 1.7 }}>Spara dina analyser och bygg upp<br />din egen analyshistorik med Pro.</div>
             <button onClick={onUpgrade} style={{ padding: "12px 28px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>Uppgradera till Pro</button>
           </div>
         ) : saved.length === 0 ? (
@@ -4017,7 +4024,7 @@ function SparaTab({ currency, exchangeRates, currencies, isPro, onUpgrade }) {
       {activeSubSection === "valutaomvandlare" && <ValutaWidget exchangeRates={exchangeRates} currency={currency} currencies={CURRENCIES} />}
       {activeSubSection === "ekonomiplan" && <EkonomiPlanTab isPro={isPro} onUpgrade={onUpgrade} />}
       {activeSubSection === "mittforetag" && <><MittForetagTab isPro={isPro} onUpgrade={onUpgrade} /><Disclaimer typ="skatt" /></>}
-      {activeSubSection === "aicoach" && <><AICoach inc={inc} expenses={expenses} goals={goals} /><Disclaimer typ="general" /></>}
+      {activeSubSection === "aicoach" && <><AICoach inc={inc} expenses={expenses} goals={goals} isPro={isPro} onUpgrade={onUpgrade} /><Disclaimer typ="general" /></>}
       {activeSubSection === "lanansokan" && <LanAnsokan />}
       {activeSubSection === "minaforsakringar" && <MinaForsakringar />}
       {activeSubSection === "forsakringsguide" && <ForsakringsGuide />}
@@ -5639,13 +5646,29 @@ function LoneKalkyl({ inc }) {
 }
 
 // ── AI Ekonomicoach ───────────────────────────────────────────────────────
-function AICoach({ inc, expenses, goals }) {
+function AICoach({ inc, expenses, goals, isPro, onUpgrade }) {
   const [messages, setMessages] = useState([
     { role: "assistant", content: "Hej! Jag är din personliga AI-ekonomicoach. Jag kan hjälpa dig med frågor om skatt, deklaration, sparande, investeringar och hur du förbättrar din ekonomi. Vad vill du veta?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+  const COACH_FREE_LIMIT = 3;
+
+  const [usageCount, setUsageCount] = useState(() => {
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const stored = JSON.parse(localStorage.getItem("kapital_coach_usage") || "{}");
+      return stored.date === today ? stored.count : 0;
+    } catch { return 0; }
+  });
+
+  const incrementUsage = () => {
+    const today = new Date().toISOString().split("T")[0];
+    const newCount = usageCount + 1;
+    setUsageCount(newCount);
+    try { localStorage.setItem("kapital_coach_usage", JSON.stringify({ date: today, count: newCount })); } catch {}
+  };
 
   const totalExpenses = Object.values(expenses || {}).reduce((s, v) => s + (parseFloat(v) || 0), 0);
   const leftover = (parseFloat(inc) || 0) - totalExpenses;
@@ -5662,12 +5685,14 @@ function AICoach({ inc, expenses, goals }) {
   const send = async (text) => {
     const msg = text || input.trim();
     if (!msg || loading) return;
+    if (!isPro && usageCount >= COACH_FREE_LIMIT) { onUpgrade(); return; }
     setInput("");
 
     const userMsg = { role: "user", content: msg };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setLoading(true);
+    if (!isPro) incrementUsage();
 
     try {
       const systemContext = `Du är en svensk personlig ekonomicoach i appen Kapital. 
@@ -5679,8 +5704,8 @@ function AICoach({ inc, expenses, goals }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: MODEL,
-          max_tokens: 600,
+          model: isPro ? PRO_MODEL : MODEL,
+          max_tokens: isPro ? 800 : 500,
           system: systemContext,
           messages: newMessages.map(m => ({ role: m.role, content: m.content }))
         })
@@ -5703,14 +5728,31 @@ function AICoach({ inc, expenses, goals }) {
   return (
     <div>
       <div style={{ background: "linear-gradient(135deg,#0f172a,#0a1f0a)", borderRadius: 14, border: "1px solid #10b98133", padding: 14, marginBottom: 14 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981", marginBottom: 4 }}>🤖 AI-ekonomicoach</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>🤖 AI-ekonomicoach</div>
+          {!isPro && (
+            <span style={{ fontSize: 11, color: usageCount >= COACH_FREE_LIMIT ? "#ef4444" : "#64748b", fontWeight: 600 }}>
+              {COACH_FREE_LIMIT - usageCount}/{COACH_FREE_LIMIT} frågor kvar idag
+            </span>
+          )}
+        </div>
         <div style={{ fontSize: 12, color: "#64748b" }}>Ställ frågor om skatt, deklaration, sparande och ekonomi. Svarar baserat på din ekonomiska situation.</div>
       </div>
+
+      {!isPro && usageCount >= COACH_FREE_LIMIT && (
+        <div style={{ background: "linear-gradient(135deg,#f59e0b11,#ef444411)", border: "1px solid #f59e0b33", borderRadius: 14, padding: 16, marginBottom: 14, textAlign: "center" }}>
+          <div style={{ fontSize: 13, color: "#f59e0b", fontWeight: 700, marginBottom: 6 }}>Dagens gratis frågor är slut</div>
+          <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 12 }}>Uppgradera till Pro för obegränsade frågor och djupare svar.</div>
+          <button onClick={onUpgrade} style={{ padding: "10px 24px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            Uppgradera till Pro →
+          </button>
+        </div>
+      )}
 
       {/* Quick questions */}
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
         {QUICK_QUESTIONS.map(q => (
-          <button key={q} onClick={() => send(q)} style={{ padding: "6px 12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 99, color: "#94a3b8", fontSize: 12, cursor: "pointer" }}>
+          <button key={q} onClick={() => send(q)} disabled={!isPro && usageCount >= COACH_FREE_LIMIT} style={{ padding: "6px 12px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 99, color: "#94a3b8", fontSize: 12, cursor: (!isPro && usageCount >= COACH_FREE_LIMIT) ? "default" : "pointer", opacity: (!isPro && usageCount >= COACH_FREE_LIMIT) ? 0.4 : 1 }}>
             {q}
           </button>
         ))}
@@ -5744,9 +5786,10 @@ function AICoach({ inc, expenses, goals }) {
       {/* Input */}
       <div style={{ display: "flex", gap: 8 }}>
         <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && send()}
-          placeholder="Skriv din fråga..."
-          style={{ flex: 1, padding: "12px 16px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none" }} />
-        <button onClick={() => send()} disabled={loading || !input.trim()} style={{ padding: "12px 20px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          placeholder={!isPro && usageCount >= COACH_FREE_LIMIT ? "Uppgradera för fler frågor..." : "Skriv din fråga..."}
+          disabled={!isPro && usageCount >= COACH_FREE_LIMIT}
+          style={{ flex: 1, padding: "12px 16px", background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12, color: "#e2e8f0", fontSize: 14, outline: "none", opacity: (!isPro && usageCount >= COACH_FREE_LIMIT) ? 0.5 : 1 }} />
+        <button onClick={() => send()} disabled={loading || !input.trim() || (!isPro && usageCount >= COACH_FREE_LIMIT)} style={{ padding: "12px 20px", background: "linear-gradient(135deg,#10b981,#0ea5e9)", border: "none", borderRadius: 12, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
           →
         </button>
       </div>
@@ -7766,22 +7809,25 @@ function UpgradeModal({ onClose, onUpgrade, t }) {
     "✓ Försäkringsjämförelse",
     "✓ Lånejämförelse med affiliate",
     "✓ Juridisk AI-assistent",
-    "✓ AI-ekonomicoach",
+    "✓ AI-ekonomicoach (3 frågor/dag)",
     "✓ Snittlöner & lönespecifikation",
     "✓ Kreditscore-beräkning",
     "✓ 3 AI-aktieanalyser per dag",
+    "✓ Min Ekonomiplan (Snabbkoll + AI)",
     "✓ Bevakningslista (5 aktier)",
     "✓ Ekonomisk tidslinje",
   ];
 
   const PRO_FEATURES = [
-    { icon: "🔍", title: "Obegränsade AI-analyser", desc: "Analysera hur många aktier du vill" },
+    { icon: "🔍", title: "Upp till 30 AI-analyser/dag", desc: "10x fler analyser + djupare AI-modell (Sonnet)" },
+    { icon: "🤖", title: "Obegränsad AI-ekonomicoach", desc: "Ställ så många frågor du vill, inga dagliga gränser" },
     { icon: "💾", title: "Spara & jämför analyser", desc: "Bygg din egen analyshistorik" },
     { icon: "⚖️", title: "Jämför bolag sida vid sida", desc: "Ericsson vs Volvo på sekunden" },
     { icon: "💼", title: "Obegränsad portföljspårning", desc: "Lägg in alla dina innehav" },
     { icon: "⭐", title: "Obegränsad bevakningslista", desc: "Bevaka hur många aktier som helst" },
     { icon: "🔔", title: "Obegränsade kurslarm", desc: "Få notis när kursen når ditt mål" },
-    { icon: "🏦", title: "Bankintegration (Tink)", desc: "Automatisk transaktionsimport — snart" },
+    { icon: "🏢", title: "Mitt Företag — hela modulen", desc: "Resultat, fakturor, kvitton (AI-scanning), likviditetsprognos, moms, lön/utdelning, företagsscore" },
+    { icon: "📄", title: "PDF-export av ekonomiplan", desc: "Skriv ut din handlingsplan" },
     { icon: "📊", title: "Avancerad portföljanalys", desc: "Risk, diversifiering och mer" },
   ];
 
@@ -8287,7 +8333,7 @@ function Onboarding({ onDone }) {
         Din smarta AI-assistent för aktier, sparande och privatekonomi — allt på ett ställe.
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
-        {[["📊", "AI-analys av aktier på sekunder"],["💰", "Budget, abonnemang & boendekostnader"],["🏠", "Jämför bolån & ansök om lån direkt"],["🛡️", "Försäkringsguide & jämförelse"],["🔥", "FIRE, pension & lönekalkylator"],["🧾", "Skatt — K4, ISK & ROT/RUT"],["🤖", "AI-ekonomicoach för alla frågor"]].map(([icon, text]) => (
+        {[["📊", "AI-analys av aktier på sekunder"],["💰", "Budget, abonnemang & boendekostnader"],["⭐", "Kreditscore & finansiell hälsokoll"],["🎯", "Personlig ekonomiplan steg för steg"],["🏠", "Jämför bolån & ansök om lån direkt"],["🛡️", "Försäkringsguide & jämförelse"],["🔥", "FIRE, pension & lånekalkylator"],["🧾", "Skatt — K4, ISK & ROT/RUT"],["🏢", "Mitt Företag — fakturor, kvitton & moms"],["🤝", "Erbjudanden — jobb, lån & rabatter"],["🤖", "AI-ekonomicoach för alla frågor"]].map(([icon, text]) => (
           <div key={text} style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--card)", borderRadius: 12, padding: "12px 16px", border: "1px solid var(--border)" }}>
             <span style={{ fontSize: 22 }}>{icon}</span>
             <span style={{ fontSize: 14, color: "#e2e8f0" }}>{text}</span>
@@ -8325,7 +8371,8 @@ function Onboarding({ onDone }) {
       <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, textAlign: "left" }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ 3 Bas-analyser per dag</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Kurslarm och bevakningar</div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Budget & sparmål</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Budget, sparmål & kreditscore</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Personlig ekonomiplan</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 8 }}>✓ Skatteberäkning K4, ISK & ROT/RUT</div>
         <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981" }}>✓ FIRE, pension & lånekalkylator</div>
       </div>
@@ -9474,7 +9521,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
         <div style={{ background: "var(--card)", borderRadius: 14, border: "1px solid #10b98133", padding: 16, marginTop: 8 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#10b981", marginBottom: 10 }}>❓ Vanliga frågor</div>
           {[
-            ["Kostar appen något?", "Grundfunktioner är gratis. Pro kostar 49 kr/mån och ger obegränsade analyser och mer."],
+            ["Kostar appen något?", "Grundfunktioner är gratis. Pro kostar 49 kr/mån och ger upp till 30 analyser/dag, Mitt Företag och mer."],
             ["Är mina uppgifter säkra?", "All data sparas lokalt i din webbläsare. Vi säljer aldrig din data."],
             ["Hur fungerar AI-analysen?", "Vi använder Anthropic Claude för att analysera bolag och ge köp/sälj-signaler baserade på tillgänglig information."],
             ["Är det finansiell rådgivning?", "Nej. Kapital är ett informationsverktyg. Rådgör alltid med en auktoriserad rådgivare."],
@@ -9607,7 +9654,7 @@ function HemTab({ result, setResult, query, setQuery, analyze, loading, isPro, o
             <div style={{ width: 38, height: 38, borderRadius: 10, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🚀</div>
             <div style={{ textAlign: "left" }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: "#e2e8f0" }}>Uppgradera till Pro</div>
-              <div style={{ fontSize: 11, color: "#475569" }}>49 kr/mån · Obegränsade analyser</div>
+              <div style={{ fontSize: 11, color: "#475569" }}>49 kr/mån · Upp till 30 analyser/dag</div>
             </div>
           </div>
           <span style={{ color: "#10b981", fontSize: 18 }}>›</span>
@@ -11284,9 +11331,13 @@ Skriv på svenska. Var specifik med belopp. Ej finansiell rådgivning — skriv 
               style={{ flex: 1, padding: 11, background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 10, color: "#64748b", fontSize: 13, cursor: "pointer" }}>
               🔄 Ny plan
             </button>
-            {!isPro && (
+            {isPro ? (
+              <button onClick={() => window.print()} style={{ flex: 1, padding: 11, background: "linear-gradient(135deg,#3b82f6,#10b981)", border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                📄 Skriv ut / PDF
+              </button>
+            ) : (
               <button onClick={onUpgrade} style={{ flex: 1, padding: 11, background: "linear-gradient(135deg,#8b5cf6,#10b981)", border: "none", borderRadius: 10, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                ✨ AI-plan (Pro)
+                📄 PDF-export (Pro)
               </button>
             )}
           </div>
@@ -15273,7 +15324,7 @@ function ProfilTab({ isPro, onUpgrade, lang, changeLang, t, currency, changeCurr
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#10b981,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>🚀</div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#e2e8f0" }}>Uppgradera till Pro</div>
-                <div style={{ fontSize: 12, color: "#475569" }}>49 kr/mån · Obegränsade analyser & mer</div>
+                <div style={{ fontSize: 12, color: "#475569" }}>49 kr/mån · Upp till 30 analyser/dag & mer</div>
               </div>
               <span style={{ marginLeft: "auto", color: "#10b981", fontSize: 18 }}>›</span>
             </button>
@@ -16134,7 +16185,11 @@ function Kapital() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [usageCount, setUsageCount] = useState(() => {
-    try { return parseInt(localStorage.getItem("kapital_usage") || "0", 10); } catch { return 0; }
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const stored = JSON.parse(localStorage.getItem("kapital_usage_v2") || "{}");
+      return stored.date === today ? stored.count : 0;
+    } catch { return 0; }
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [sbUser, setSbUser] = useState(null);
@@ -16199,6 +16254,10 @@ function Kapital() {
     const name = (company || query).trim();
     if (!name) return;
     if (!isPro && usageCount >= FREE_LIMIT) { setShowUpgrade(true); return; }
+    if (isPro && usageCount >= PRO_LIMIT) {
+      showToast("⏳ Du har nått dagens gräns (30 analyser). Återställs imorgon.");
+      return;
+    }
 
     // Cache hit — visa direkt, 0ms
     const cacheKey = name.toLowerCase();
@@ -16342,7 +16401,7 @@ ticker ska vara Finnhub-format: svenska aktier=ERIC-B.ST, amerikanska=AAPL. scor
       setResult(parsed);
       setUsageCount(c => {
         const next = c + 1;
-        try { localStorage.setItem("kapital_usage", String(next)); } catch {}
+        try { localStorage.setItem("kapital_usage_v2", JSON.stringify({ date: new Date().toISOString().split("T")[0], count: next })); } catch {}
         return next;
       });
       setHistory(prev => [parsed, ...prev.filter(h => h.company !== parsed.company)].slice(0, 5));
@@ -16761,7 +16820,7 @@ function ProBanner({ isPro }) {
       <div style={{ fontSize: 28 }}>⭐</div>
       <div>
         <div style={{ fontSize: 14, fontWeight: 800, background: "linear-gradient(90deg,#f59e0b,#fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Kapital Pro — Aktivt</div>
-        <div style={{ fontSize: 12, color: "#92400e" }}>Obegränsade analyser · Alla funktioner upplåsta</div>
+        <div style={{ fontSize: 12, color: "#92400e" }}>Upp till 30 analyser/dag · Alla funktioner upplåsta</div>
       </div>
     </div>
   );
@@ -18171,7 +18230,7 @@ const SUPPORT_FAQ = [
   {
     kategori: "aktier", emoji: "📈", label: "Aktier & Analys",
     fragor: [
-      { f: "Hur många analyser får jag gratis?", s: "Bas-versionen ger 3 AI-analyser totalt. Med Pro får du obegränsade analyser." },
+      { f: "Hur många analyser får jag gratis?", s: "Bas-versionen ger 3 AI-analyser per dag. Med Pro får du upp till 30 analyser per dag." },
       { f: "Varför stämmer inte kursen?", s: "Kurser är fördröjda ~15 min via Finnhub/Alpha Vantage, eller simulerade om API saknas. Kontrollera alltid hos din mäklare." },
       { f: "Hur sparar jag en analys?", s: "Tryck på 💾-ikonen i analysresultatet. Sparade analyser finns under Aktier → Bevakningar → Sparade (kräver Pro)." },
       { f: "Kan jag jämföra aktier?", s: "Ja! I analysresultatet finns en Jämför-knapp. Du kan jämföra upp till 3 bolag sida vid sida (kräver Pro)." },
@@ -18207,7 +18266,7 @@ const SUPPORT_FAQ = [
   {
     kategori: "pro", emoji: "⭐", label: "Pro & Betalning",
     fragor: [
-      { f: "Vad ingår i Pro?", s: "Obegränsade analyser, portföljspårning, Ekonomisk Hälsokoll, AI-ekonomicoach, Drömresor, sparade analyser, notiser och inga annonser." },
+      { f: "Vad ingår i Pro?", s: "Upp till 30 analyser/dag, obegränsad AI-coach, portföljspårning, Mitt Företag (fakturor/kvitton/moms), Ekonomisk Hälsokoll, sparade analyser, kurslarm och PDF-export." },
       { f: "Hur aktiverar jag Pro?", s: "Tryck på Uppgradera till Pro var som helst i appen. Betalning via Stripe — 49 kr/mån eller 399 kr/år. 7 dagars gratis provperiod." },
       { f: "Hur avbryter jag prenumerationen?", s: "Gå till Profil → Hantera prenumeration → Stripe-portalen. Du kan avbryta när som helst." },
       { f: "Kan jag använda ångerrätten?", s: "Ja, 14 dagars ångerrätt. Kontakta hej@mykapital.se med ditt namn och ordernummer inom 14 dagar från köpet." },
